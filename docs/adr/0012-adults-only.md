@@ -1,7 +1,8 @@
 # ADR-0012: 18+ only
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 The app connects strangers for travel and nightlife. India's DPDP Act requires verifiable parental consent to process children's data (under 18).

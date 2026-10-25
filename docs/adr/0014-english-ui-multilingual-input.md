@@ -1,7 +1,8 @@
 # ADR-0014: English UI in MVP; free text accepted in any language
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 Users include Indian and foreign travellers (for example from Iran). Translating the interface into several languages, including right-to-left Farsi, multiplies design and testing work.

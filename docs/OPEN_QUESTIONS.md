@@ -16,6 +16,8 @@ Living list. When an item is resolved, move it into an ADR or the PRD and delete
 | Safety stance | Women-only discovery and mutual-only messaging, validated with users | ADR-0007, ADR-0013 |
 | Budget | Free tiers plus pay-as-you-go, low thousands of rupees a month, until funding; MVP must be pitchable | PRD section 9 |
 | Where docs live | This repository | ADR-0001 |
+| API host | Render (default approved with the blueprint, PR #2) | DEPLOYMENT_GUIDE |
+| Chat delay | Up to 3 seconds in an open chat is acceptable | ADR-0016 |
 
 ## Working assumptions
 
@@ -37,3 +39,4 @@ Living list. When an item is resolved, move it into an ADR or the PRD and delete
 | Q5 | LLM and embedding provider | Before the matching feature | Decided by a 50-example evaluation |
 | Q6 | Which 5 to 10 partner venues commit to month one? | Before pilot | — |
 | Q7 | Legal review: who and when? | Before public launch | — |
+| Q9 | Minimum scores the extraction eval must reach before M3 ships | M3 | Set after the first eval run, agreed with ARPIT |

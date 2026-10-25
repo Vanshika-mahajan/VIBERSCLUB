@@ -14,4 +14,4 @@ Event group chats are out of scope for MVP.
 
 ## Consequences
 - Messaging needs a connections check on every send, enforced in the API, not the app.
-- Realtime delivery uses a managed service (Supabase Realtime) for MVP.
+- Delivery uses REST plus push plus polling in MVP (ADR-0016).

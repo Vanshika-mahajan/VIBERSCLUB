@@ -1,7 +1,8 @@
 # ADR-0005: Supabase Auth with Google, Apple, email OTP and phone OTP
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 Users are both Indian and foreign (including visitors from Iran and elsewhere). Phone verification raises the cost of fake accounts, but SMS to international numbers is expensive and unreliable, and some foreign visitors use local SIMs or none.
