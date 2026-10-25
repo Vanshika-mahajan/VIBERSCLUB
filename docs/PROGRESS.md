@@ -8,11 +8,11 @@ Phase 1: product requirements. Draft PRD and first ADRs are up for review.
 ## Completed
 - Phase 0 discovery (shared with ARPIT as a doc; its decisions are now recorded here).
 - Answers to the 10 discovery questions, recorded in [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).
-- ADR-0001 to ADR-0014 in [adr/](adr/).
+- ADR-0001 to ADR-0015 in [adr/](adr/).
 - Draft [PRD.md](PRD.md).
 
 ## Decisions
-See the [ADR index](adr/README.md). Accepted: 0001, 0002, 0003, 0006, 0007, 0008, 0009, 0013. Proposed: the rest.
+See the [ADR index](adr/README.md). Accepted: 0001, 0002, 0003, 0006, 0007, 0008, 0009, 0013, 0015. Proposed: the rest.
 
 ## Open questions
 See [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).

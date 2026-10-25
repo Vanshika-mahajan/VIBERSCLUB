@@ -26,9 +26,16 @@ Hosts (hostels, cafés, activity providers, individual Vibers) have no cheap cha
 | **Planner** | Indian or foreign traveller with a Manali trip in the next 1 to 3 months | Find people going at the same time, see what's on, plan | Yes |
 | **Visitor** | Currently in Manali for 2 to 14 days, often solo or in a pair, hostel or homestay | Meet compatible people and find something to do this week | Yes (primary) |
 | **Local / long-stayer** | Lives in the valley or stays for months (workcation) | Meet newcomers, host small activities | Yes |
-| **Host** | Any verified Viber, or a hostel, café or activity provider, possibly outside Manali | Fill an event with the right people | Yes (lite) |
+| **Community host** | A Viber who creates an event, such as a sunrise walk, from inside or outside Manali | Find people to do something with | Yes |
+| **Business owner** | Owner or staff of a hotel, hostel, homestay, cottage, café or activity provider, possibly outside Manali | Create events and promote their property to the right travellers | Yes |
 | **Alumnus** | Visited before | Share recommendations, plan a return trip | Later |
 | **Moderator** | Vibers Club team member | Review reports, remove harmful content, suspend accounts | Yes |
+
+**Two sides of the app.** Vibers and business owners use different interfaces ([ADR-0015](adr/0015-viber-and-business-accounts.md)):
+
+- A **Viber** is part of the community: profile, discovery, connections, chat, events, feedback. A Viber can also host community events.
+- A **business** is not part of the community: it does not appear in people discovery, cannot send connection requests and cannot message Vibers one to one. Its interface is a dashboard for properties, events, registrations and promotion.
+- One person can own both: they sign in once and switch between their Viber profile and the business dashboard, like a personal and a professional account.
 
 Audience mix: Indian and international travellers, including visitors from Iran and other countries ([ADR-0014](adr/0014-english-ui-multilingual-input.md)). All users are 18+ ([ADR-0012](adr/0012-adults-only.md)).
 
@@ -45,7 +52,11 @@ Audience mix: Indian and international travellers, including visitors from Iran 
 | Discover Vibers | Card stack of eligible Vibers with a "why you match" line; like, pass, save, request to connect |
 | Connections and chat | Mutual-acceptance connections; 1:1 text chat between connections ([ADR-0007](adr/0007-messaging-mutual-connections-only.md)) |
 | Events | Create (free or paid), discover ranked by fit, RSVP, capacity and waitlist, reminders, attendee list visibility setting ([ADR-0008](adr/0008-any-verified-viber-can-host-events.md), [ADR-0009](adr/0009-paid-events-organizer-collects.md)) |
-| Host tools | Manage registrations, mark paid, mark attendance, cancel event with notification |
+| Host tools | Manage registrations, mark paid, mark attendance, cancel event with notification (for both community hosts and businesses) |
+| Business accounts | Create a business, add staff members, switch to business mode from the same login |
+| Business dashboard | Property profiles (hotel, hostel, homestay, cottage, café, activity provider) with photos, area, amenities, vibe and interests; create events linked to a property; see registrations and simple counts (views, RSVPs, attendance); send updates to an event's registrants |
+| Property pages for Vibers | Vibers can view a property, see its upcoming events, and save it; booking links out to the property's own channel |
+| Business verification | Manual review gives a Verified Business badge; unverified businesses can create a limited number of events |
 | Explore (curated) | 100 to 200 hand-curated places with area, category, interests; 3 to 5 ready-made roadmaps; save places and roadmaps |
 | Feedback | After an attended event: rating plus short review, only for registered attendees |
 | Notifications | Push and in-app: connection request and acceptance, new message, event reminder, event changed or cancelled, feedback request. Per-type opt-out |
@@ -59,7 +70,8 @@ Audience mix: Indian and international travellers, including visitors from Iran 
 | --- | --- | --- |
 | In-app payments, refunds, payouts | 2 | [ADR-0009](adr/0009-paid-events-organizer-collects.md) |
 | Public feed and structured post composer | 2 | A feed needs user density; profile vibes carry intent in MVP |
-| Business organizer and property profiles with verification | 2 | Hosts are individual accounts in MVP; a verified-organizer badge is manual |
+| Paid promotion (featured events or properties) | 2 | Needs clear "Promoted" labelling and pricing; MVP promotion is organic ranking plus a property page |
+| Advanced business analytics | Future | MVP shows simple counts only |
 | AI-generated or editable custom roadmaps | 2 | Needs a reliable places dataset first; never invent places or times |
 | Place reviews, travel stories | 2 | Moderation capacity |
 | Vibe Circles, group chat | 2 | Group moderation is harder than 1:1 |
@@ -114,6 +126,15 @@ A new user gets from install to a first relevant recommendation in under 2 minut
 - [ ] Editing time or place, or cancelling, notifies every registrant.
 - [ ] New hosts can have at most 3 upcoming events until they complete one without upheld reports.
 
+### J5b. Business owner sets up and promotes
+- [ ] A signed-in user can create a business and becomes its owner; owners can invite staff by email.
+- [ ] The same login can switch between Viber mode and business mode; business mode shows only the business dashboard.
+- [ ] A business can add one or more properties. Accommodation properties and events are separate records; an event can optionally link to a property.
+- [ ] Business events appear in Vibers' event lists under the business name and badge, ranked by the same rules as community events. They are never shown as people in discovery.
+- [ ] A business cannot send connection requests or one-to-one messages to Vibers. It can send event updates to its registrants, and Vibers can turn those off.
+- [ ] Registrants' visible profile details are shown to the business only for its own events, limited to name, photo and registration status.
+- [ ] Unverified businesses can have at most 3 upcoming events; a moderator grants the Verified Business badge after review.
+
 ### J6. Feedback after an event
 - [ ] Two hours after an event ends, registered attendees get a feedback request (if enabled).
 - [ ] Only users with a confirmed registration can review; a host cannot review their own event.
@@ -162,7 +183,8 @@ No benchmarks are assumed; targets are set after the first pilot.
 | Show-up rate | Attended / confirmed registrations | Are RSVPs real? |
 | Feedback rate and average rating | Reviews / attendances, mean rating | Experience quality |
 | Week-1 and trip-length retention | Users active on 3 or more days during their stated trip | Habit during a trip |
-| Repeat hosts | Hosts with a second event within 30 days | Is supply sustainable? |
+| Repeat hosts | Community hosts and businesses with a second event within 30 days, tracked separately | Is supply sustainable? |
+| Business activation | Businesses that publish a property and at least one event within 14 days of signing up | Is the business side easy to use? |
 | Safety | Reports per 1,000 active users; median time to resolve | Is the community safe? |
 | AI cost per meaningful interaction | AI spend / (connections + RSVPs) | Is AI earning its cost? |
 

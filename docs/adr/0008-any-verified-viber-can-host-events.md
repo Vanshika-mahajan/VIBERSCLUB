@@ -12,7 +12,7 @@ Events solve cold start: they give people a reason to meet. Requiring business v
 - Hosts accept community rules at first event creation (meet in public venues, honest descriptions, no illegal activity).
 - Events can be reported; reported events go to the moderation queue and can be hidden.
 - New hosts are limited (for example, a small number of upcoming events at once) until they have completed events without reports.
-- Business organizers (hostels, cafés, activity providers) get a verified-organizer badge after manual review. That flow is light in MVP and fuller in phase 2.
+- Businesses (hotels, hostels, cafés, activity providers) host through a business account with its own interface and Verified Business badge (ADR-0015).
 
 ## Consequences
 - Moderation workload rises with event volume; the admin queue is part of MVP.
