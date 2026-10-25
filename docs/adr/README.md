@@ -27,4 +27,4 @@ To add one, copy `0000-template.md`, take the next number, and add a line to the
 | [0012](0012-adults-only.md) | 18+ only | Proposed |
 | [0013](0013-women-only-discovery-option.md) | Opt-in women-only discovery | Accepted, pending user validation |
 | [0014](0014-english-ui-multilingual-input.md) | English UI in MVP; free text accepted in any language | Proposed |
-| [0015](0015-viber-and-business-accounts.md) | Separate Viber and business interfaces in one app | Accepted |
+| [0015](0015-viber-and-business-accounts.md) | Separate Viber and business accounts, with separate sign-in | Accepted |

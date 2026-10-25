@@ -35,7 +35,7 @@ Hosts (hostels, cafés, activity providers, individual Vibers) have no cheap cha
 
 - A **Viber** is part of the community: profile, discovery, connections, chat, events, feedback. A Viber can also host community events.
 - A **business** is not part of the community: it does not appear in people discovery, cannot send connection requests and cannot message Vibers one to one. Its interface is a dashboard for properties, events, registrations and promotion.
-- One person can own both: they sign in once and switch between their Viber profile and the business dashboard, like a personal and a professional account.
+- **Separate sign-in.** The welcome screen offers "Join as a Viber" and "Sign in as a business". These are separate accounts with separate onboarding. An owner who also wants to travel as a Viber creates a Viber account with a different sign-in.
 
 Audience mix: Indian and international travellers, including visitors from Iran and other countries ([ADR-0014](adr/0014-english-ui-multilingual-input.md)). All users are 18+ ([ADR-0012](adr/0012-adults-only.md)).
 
@@ -53,7 +53,7 @@ Audience mix: Indian and international travellers, including visitors from Iran 
 | Connections and chat | Mutual-acceptance connections; 1:1 text chat between connections ([ADR-0007](adr/0007-messaging-mutual-connections-only.md)) |
 | Events | Create (free or paid), discover ranked by fit, RSVP, capacity and waitlist, reminders, attendee list visibility setting ([ADR-0008](adr/0008-any-verified-viber-can-host-events.md), [ADR-0009](adr/0009-paid-events-organizer-collects.md)) |
 | Host tools | Manage registrations, mark paid, mark attendance, cancel event with notification (for both community hosts and businesses) |
-| Business accounts | Create a business, add staff members, switch to business mode from the same login |
+| Business accounts | Separate business sign-up and sign-in, business onboarding (business name, type, contact, location), invite staff members |
 | Business dashboard | Property profiles (hotel, hostel, homestay, cottage, café, activity provider) with photos, area, amenities, vibe and interests; create events linked to a property; see registrations and simple counts (views, RSVPs, attendance); send updates to an event's registrants |
 | Property pages for Vibers | Vibers can view a property, see its upcoming events, and save it; booking links out to the property's own channel |
 | Business verification | Manual review gives a Verified Business badge; unverified businesses can create a limited number of events |
@@ -127,8 +127,9 @@ A new user gets from install to a first relevant recommendation in under 2 minut
 - [ ] New hosts can have at most 3 upcoming events until they complete one without upheld reports.
 
 ### J5b. Business owner sets up and promotes
-- [ ] A signed-in user can create a business and becomes its owner; owners can invite staff by email.
-- [ ] The same login can switch between Viber mode and business mode; business mode shows only the business dashboard.
+- [ ] Business sign-up is a separate entry on the welcome screen, with its own onboarding: business name, type, contact phone and email, area. It never asks for Viber fields such as interests or travel dates.
+- [ ] A business account only ever sees the business dashboard; a Viber account only ever sees the Viber app. The API rejects Viber endpoints for business accounts and the reverse.
+- [ ] The person who signs up becomes the owner and can invite staff by email; staff sign in through the business entry.
 - [ ] A business can add one or more properties. Accommodation properties and events are separate records; an event can optionally link to a property.
 - [ ] Business events appear in Vibers' event lists under the business name and badge, ranked by the same rules as community events. They are never shown as people in discovery.
 - [ ] A business cannot send connection requests or one-to-one messages to Vibers. It can send event updates to its registrants, and Vibers can turn those off.
