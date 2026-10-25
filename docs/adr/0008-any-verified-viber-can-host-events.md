@@ -12,7 +12,7 @@ Events solve cold start: they give people a reason to meet. Requiring business v
 - Hosts accept community rules at first event creation (meet in public venues, honest descriptions, no illegal activity).
 - Events can be reported; reported events go to the moderation queue and can be hidden.
 - New hosts are limited (for example, a small number of upcoming events at once) until they have completed events without reports.
-- Businesses (hotels, hostels, cafés, activity providers) host through a business account with its own interface and Verified Business badge (ADR-0015).
+- Owners of hotels, hostels, cafés and activities are Vibers too and host the same way; they can link events to a property page (ADR-0015).
 
 ## Consequences
 - Moderation workload rises with event volume; the admin queue is part of MVP.

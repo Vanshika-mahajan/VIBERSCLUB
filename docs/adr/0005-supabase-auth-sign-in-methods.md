@@ -15,7 +15,6 @@ Users are both Indian and foreign (including visitors from Iran and elsewhere). 
 Option 2 on Supabase Auth:
 - Sign in with Google, Sign in with Apple (required by Apple when offering Google), or email one-time code.
 - **Verified Viber** = signed in plus a verified phone number (Indian or international) **or**, for users who cannot receive SMS, a later alternative such as ID verification. Verification is required to send connection requests, message, and host events. Browsing does not require it.
-- These rules are for Viber accounts. Business accounts sign in through a separate entry (ADR-0015).
 - FastAPI verifies the Supabase JWT on every request and maps it to our own `users` row.
 
 ## Consequences
