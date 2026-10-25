@@ -12,7 +12,7 @@ AI extraction, embeddings, reminders, feedback requests and emails must run in t
 3. **Cloud task services**: vendor lock-in and more setup.
 
 ## Decision
-Option 1. Every job is idempotent (keyed by entity id plus a content hash or schedule key), retried with backoff, and moved to a failed state after a fixed number of attempts, visible in the admin console.
+Option 1, using the **Procrastinate** library (Postgres-backed, async, supports scheduled and periodic jobs). Every job is idempotent (keyed by entity id plus a content hash or schedule key), retried with backoff, and moved to a failed state after a fixed number of attempts, visible to admins. The job list is in SYSTEM_ARCHITECTURE section 5.
 
 ## Revisit when
 Job volume reaches thousands per minute.

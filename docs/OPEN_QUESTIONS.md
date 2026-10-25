@@ -37,3 +37,6 @@ Living list. When an item is resolved, move it into an ADR or the PRD and delete
 | Q5 | LLM and embedding provider | Before the matching feature | Decided by a 50-example evaluation |
 | Q6 | Which 5 to 10 partner venues commit to month one? | Before pilot | — |
 | Q7 | Legal review: who and when? | Before public launch | — |
+| Q8 | API host: Render, Railway or Fly.io? | M0 | Render (simplest; web service plus background worker from one image) |
+| Q9 | Minimum scores the extraction eval must reach before M3 ships | M3 | Set after the first eval run, agreed with ARPIT |
+| Q10 | Is a 3-second delay in open chats acceptable (ADR-0016)? | M6 | Yes |
