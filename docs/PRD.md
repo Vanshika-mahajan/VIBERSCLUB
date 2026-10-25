@@ -108,7 +108,7 @@ A new user gets from install to a first relevant recommendation in under 2 minut
 
 ### J5. Host an event
 - [ ] Only Verified Vibers can create events, and they accept community rules the first time.
-- [ ] Required fields: title, description, category, start and end time, area, meeting point (public venue), capacity, pricing type. Interests are suggested from the description and confirmed by the host.
+- [ ] Required fields: title, description, category, start and end time, area, meeting point (public venue), capacity, pricing type (defaults to Free; Paid is optional). Interests are suggested from the description and confirmed by the host.
 - [ ] Hosts can create events from anywhere; times are stored with the Asia/Kolkata time zone and shown in it.
 - [ ] Hosts see registrations, mark paid, mark attended, and message all registrants about changes.
 - [ ] Editing time or place, or cancelling, notifies every registrant.
