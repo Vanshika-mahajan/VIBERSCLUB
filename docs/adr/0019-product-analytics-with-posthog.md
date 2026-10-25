@@ -1,7 +1,8 @@
 # ADR-0019: Product analytics with PostHog, without personal data
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 The PRD's metrics (onboarding completion, time to first recommendation, conversions) and the investor pitch need event data from the app. Nothing in the design collected it.

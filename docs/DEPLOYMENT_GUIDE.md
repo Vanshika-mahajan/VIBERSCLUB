@@ -27,7 +27,7 @@ flowchart LR
     Prod --> SupaP[("Supabase production, Mumbai")]
 ```
 
-- **API host:** a platform service such as Render, Railway or Fly.io, running two processes from one Docker image: `web` (`uvicorn`) and `worker` (`procrastinate worker`). Choose the region closest to Mumbai the provider offers. The final pick is an open decision (OPEN_QUESTIONS).
+- **API host:** a platform service such as Render, Railway or Fly.io, running two processes from one Docker image: `web` (`uvicorn`) and `worker` (`procrastinate worker`). Choose the region closest to Mumbai the provider offers. Chosen: **Render** (approved with the blueprint); Railway or Fly.io remain fallbacks.
 - **Migrations:** run as a release step before the new web process starts (`alembic upgrade head`). Migrations are backwards-compatible (DATABASE_DESIGN), so the old version keeps working during deploy.
 - **App updates:** JavaScript-only fixes ship as EAS Update (over the air) to the matching build channel; native changes need a new store build.
 - **Rollback:** API: redeploy the previous image (the host keeps previous deploys). Database: forward-fix migrations; point-in-time restore only for disasters. App: republish the previous EAS Update.

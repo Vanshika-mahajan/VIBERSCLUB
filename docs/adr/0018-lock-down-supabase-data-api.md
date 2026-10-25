@@ -1,7 +1,8 @@
 # ADR-0018: Lock down Supabase's Data API; the backend is the only data path
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 Supabase automatically offers a REST and GraphQL API over the `public` schema, usable with the public (anon) key that ships inside the app. If our tables were exposed there, anyone could read them, bypassing every rule in the backend.

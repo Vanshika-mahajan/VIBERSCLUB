@@ -1,7 +1,8 @@
 # ADR-0011: Controlled interest taxonomy with schema-validated LLM extraction
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 Users describe trips in their own words ("slow village life in Old Manali"). Matching needs consistent structured attributes. LLM output cannot be trusted blindly, and hashtags alone are too noisy to match on.

@@ -1,7 +1,8 @@
 # ADR-0017: Moderation tools inside the app, role-gated
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 ADR-0002 defers any web surface, but moderators need a way to handle reports from day one of a pilot.

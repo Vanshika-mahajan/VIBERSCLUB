@@ -1,7 +1,8 @@
 # ADR-0010: Postgres-backed job queue, no Redis
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 AI extraction, embeddings, reminders, feedback requests and emails must run in the background with retries.

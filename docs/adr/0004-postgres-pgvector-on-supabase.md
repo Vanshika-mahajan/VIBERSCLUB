@@ -1,7 +1,8 @@
 # ADR-0004: PostgreSQL with pgvector, hosted on Supabase
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 We need relational data with strong constraints (connections, RSVPs, capacity), vector similarity for semantic matching, and low cost while the budget is free tiers plus low thousands of rupees a month.

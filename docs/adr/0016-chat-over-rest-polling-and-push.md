@@ -1,7 +1,8 @@
 # ADR-0016: Chat over REST, with push notifications and polling
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-25
+- **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
 Phase 0 suggested Supabase Realtime for chat. Realtime delivers database changes to the app directly, which requires the app to read tables under row-level security policies. ADR-0004 and ADR-0018 keep all data access in the backend so authorization lives in one place. Chat volume in the MVP is small.
