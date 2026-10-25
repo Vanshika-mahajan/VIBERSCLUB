@@ -35,6 +35,7 @@ flowchart LR
 ---
 
 ## M0. Foundations
+- **Delivered in three steps:** M0a backend skeleton; M0b Expo app skeleton calling `/healthz`; M0c CI workflow and staging deploy.
 - **Objective:** an empty but real app and API that build, test and deploy.
 - **Prerequisites:** blueprint approved; GitHub repo (exists); Expo account; API host account; Sentry project.
 - **Affected:** `backend/` skeleton (`app/main.py`, `app/core/config.py`, `app/core/db.py`, `app/core/errors.py`), `backend/migrations/`, `docker-compose.yml`, `apps/mobile/` (Expo Router skeleton with 5 empty tabs), `.github/workflows/ci.yml`, `.env.example` files.

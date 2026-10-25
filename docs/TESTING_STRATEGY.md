@@ -19,6 +19,14 @@ Most of the risk in Vibers Club sits in the backend rules: who can see whom, cap
 | App end to end | Maestro flows on an Android emulator against staging | Sign-in with a test account, onboarding, swipe, connect, chat, RSVP | Before each release build (from M12) |
 | Contract | Regenerate the TypeScript client from OpenAPI in CI and fail if the committed client differs | App and API agree | Every push |
 
+## Required end-to-end journey
+
+The minimum journey every release must pass (ARPIT, 2026-10-25):
+
+> Sign up → complete onboarding → select interests → write a vibe (in the MVP, the profile vibe is the "post"; real posts are phase 2) → the vibe's intent is extracted → discover relevant Vibers.
+
+It is first covered as a backend API test (from M4, using a fake LLM adapter), then as a Maestro flow on a device (M12). Connections, events and other features are added to the journey as their milestones land.
+
 ## Rules
 
 - **Every endpoint has a negative authorization test.** A shared fixture creates: a normal Viber, an unverified Viber, a blocked pair, a host, a moderator and a suspended user. Each route is called as each relevant role.

@@ -2,23 +2,50 @@
 
 **Last updated:** 2026-10-25
 
-## Current phase
-Phase 2 complete: PRD and blueprint approved by ARPIT on 2026-10-25. Next: milestone M0 (Foundations). No application code exists yet.
+## Completed milestones
+- Phase 0 to 2: discovery, PRD, blueprint, ADR-0001 to ADR-0019 (all Accepted; ADR-0013 pending user validation).
+- **M0a, backend skeleton** (local branch `m0a-backend-skeleton`, not pushed).
 
-## Completed
-- Phase 0 discovery and answers ([OPEN_QUESTIONS.md](OPEN_QUESTIONS.md)).
-- Phase 1: [PRD.md](PRD.md) draft, ADR-0001 to ADR-0015.
-- Phase 2 drafts: architecture review and system architecture, database design, AI matching design, API outline, MVP feature specs, UI navigation, security and privacy, testing strategy, environment and deployment plan, implementation roadmap, ADR-0016 to ADR-0019.
+## Current milestone
+M0 Foundations. Next step: M0b (Expo app skeleton), then M0c (CI and staging deploy).
 
-## Decisions
-See the [ADR index](adr/README.md). All of ADR-0001 to ADR-0019 are Accepted (0013 still needs validation with women travellers).
+## Files created or modified in M0a
+| File | Purpose |
+| --- | --- |
+| `backend/pyproject.toml`, `backend/uv.lock` | Python project, pinned dependencies, ruff, mypy and pytest settings |
+| `backend/app/main.py` | FastAPI app factory |
+| `backend/app/core/config.py` | Settings from environment variables, with validation |
+| `backend/app/core/db.py` | Async database engine and session dependency |
+| `backend/app/core/errors.py` | Problem-details error format for every error |
+| `backend/app/core/health.py` | `GET /healthz` with a database check |
+| `backend/alembic.ini`, `backend/migrations/` | Alembic setup; migration 0001 creates the `app` schema and the `vector` and `citext` extensions |
+| `backend/tests/` | Unit, API and integration tests |
+| `backend/.env.example` | Sanitized settings template (no secrets) |
+| `backend/README.md` | How to run, check and troubleshoot |
+| `docker-compose.yml`, `docker/postgres-init/` | Local Postgres 16 with pgvector, plus a test database |
+| `docs/TESTING_STRATEGY.md` | Added the required end-to-end journey |
+| `docs/IMPLEMENTATION_ROADMAP.md` | M0 split into M0a, M0b, M0c |
 
-## Open questions
-See [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).
+## Tests executed (M0a, 2026-10-25, in the cloud workspace)
+| Check | Result |
+| --- | --- |
+| `uv run pytest` | 11 passed (4 config, 4 error-format, 2 health check, 1 migration round-trip), also with deprecation warnings treated as errors |
+| `uv run ruff check .` / `ruff format --check .` | Passed |
+| `uv run mypy app tests migrations` (strict) | Passed, 17 files |
+| `alembic upgrade head` from the command line | Applied 0001 |
+| `uvicorn` + `curl /healthz` | `200 {"status":"ok","database":"ok"}`; unknown route returns problem JSON 404 |
 
-## Known bugs
-None (no code yet).
+Tests ran against Postgres 16.15 with pgvector 0.6.0 installed natively in the workspace. **Not verified here:** `docker-compose.yml` (Docker cannot run in this workspace). Please run `docker compose up -d db` once on your machine to confirm.
 
-## Next steps
-1. Milestone M0 (Foundations).
-2. Start parallel non-code tracks T1 to T7 ([IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md)).
+## Known issues
+- None in code. The workspace is temporary: local commits are lost if it is reclaimed before they are pushed.
+
+## Missing credentials or configuration
+- None needed for M0a (local database only).
+- Needed for M0c: Render account (API hosting), Expo account (app builds). Needed for M1: Supabase dev project, Google OAuth client. Details will be given when each is needed.
+
+## Unresolved decisions
+- OPEN_QUESTIONS Q1 to Q7 and Q9 (none block M0).
+
+## Next recommended action
+Review M0a, then approve M0b (Expo app with five empty tabs that shows the `/healthz` result), or ask me to push M0a.
