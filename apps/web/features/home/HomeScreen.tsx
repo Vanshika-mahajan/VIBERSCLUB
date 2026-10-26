@@ -36,8 +36,8 @@ export function HomeScreen() {
     <div>
       <header className="space-y-2">
         <p className="kicker">Vibers Club · {areas[me.area].label}</p>
-        <h1 className="text-4xl font-extrabold tracking-[-0.05em] md:text-5xl">
-          Hi {me.name}, find your <span className="gradient-text">people</span> in Manali.
+        <h1 className="display text-4xl md:text-5xl">
+          Hi {me.name}, find your <span className="accent-word">people</span> in Manali.
         </h1>
       </header>
 
@@ -55,7 +55,7 @@ export function HomeScreen() {
             ))}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/discover" className="btn">
+            <Link href="/discover" className="btn btn-accent">
               Find people like this
             </Link>
             <Link href="/profile" className="btn-ghost">
@@ -77,14 +77,14 @@ export function HomeScreen() {
         </section>
       </div>
 
-      <Section title="Vibers like you" action={<Link href="/discover" className="text-sm font-bold text-blue">Discover</Link>}>
+      <Section title="Vibers like you" action={<Link href="/discover" className="link text-sm">Discover</Link>}>
         <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:px-0">
           {likeYou.map((m) => (
             <li key={m.viber.id} className="card flex w-64 shrink-0 items-center gap-3 p-3 md:w-auto">
               <Avatar name={m.viber.name} src={m.viber.photoUrl} size={52} />
               <span className="min-w-0">
                 <b className="block truncate">{m.viber.name}</b>
-                <small className="block truncate font-semibold text-blue">{m.shared.join(" · ")}</small>
+                <small className="block truncate font-semibold text-accent">{m.shared.join(" · ")}</small>
                 <small className="block truncate text-muted">{areas[m.viber.area].label}</small>
               </span>
             </li>
@@ -92,7 +92,7 @@ export function HomeScreen() {
         </ul>
       </Section>
 
-      <Section title="Happening this week" action={<Link href="/events" className="text-sm font-bold text-blue">All events</Link>}>
+      <Section title="Happening this week" action={<Link href="/events" className="link text-sm">All events</Link>}>
         <div className="grid gap-4 md:grid-cols-3">
           {upcoming.map((e) => (
             <EventCard key={e.id} e={e} compact />
@@ -100,10 +100,10 @@ export function HomeScreen() {
         </div>
       </Section>
 
-      <Section title="Explore Manali" action={<Link href="/explore" className="text-sm font-bold text-blue">Places</Link>}>
+      <Section title="Explore Manali" action={<Link href="/explore" className="link text-sm">Places</Link>}>
         <div className="grid gap-3 md:grid-cols-3">
           {roadmaps.map((r) => (
-            <Link key={r.id} href={`/explore#${r.id}`} className="card block p-4 transition hover:border-blue/40">
+            <Link key={r.id} href={`/explore#${r.id}`} className="card block p-4 transition hover:border-brand/30 hover:shadow-soft">
               <b className="block">{r.title}</b>
               <small className="text-muted">{r.summary}</small>
               <p className="mt-2 text-xs font-bold text-ink2">{r.stops.map((s) => places.find((p) => p.id === s.placeId)?.name).join(" → ")}</p>

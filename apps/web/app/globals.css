@@ -1,23 +1,48 @@
 @import "tailwindcss";
 
-/* Vibers Club look, shared with Discover: pearl-white, graphite type, blue / violet / cyan accents. Light only for now. */
-@theme {
-  --color-ink: #171b26;
-  --color-ink2: #3a4154;
-  --color-muted: #6a7288;
-  --color-silver: #aeb6c8;
-  --color-pearl: #f6f8fc;
-  --color-haze: #e3e8f6;
-  --color-line: rgba(23, 27, 38, 0.1);
-  --color-line2: rgba(23, 27, 38, 0.18);
-  --color-blue: #4f6bff;
-  --color-violet: #8b7cff;
-  --color-cyan: #35c8e8;
-  --color-coral: #ff765f;
-  --color-ok: #0b8f5b;
+/* Vibers Club look: an alpine travel club. Forest green brand on warm ivory, sage for soft surfaces,
+   burnt terracotta for the moments that matter (discover, like, connect), alpine gold for curated
+   and special details. Light only for now.
+   `static` emits every token as a CSS variable, so the Discover module and canvas can read them too. */
+@theme static {
+  /* brand */
+  --color-brand: #173d35;
+  --color-brand-hover: #23544a;
+  --color-sage: #dce7de;
+  --color-sage-deep: #c3d6c8;
+  /* accent: terracotta is decorative (dots, hearts, glows); accent is its deeper shade, safe for text and filled buttons */
+  --color-terracotta: #d97757;
+  --color-accent: #b5532f;
+  --color-accent-hover: #9c4526;
+  --color-accent-wash: #f8e7de;
+  /* highlight: gold fills carry ink text; gold-ink is the readable shade for text */
+  --color-gold: #e7bc69;
+  --color-gold-ink: #7a5a12;
+  --color-gold-wash: #f7ecd3;
+  /* surfaces */
+  --color-canvas: #f8f6f0;
+  --color-surface: #fffdf9;
+  --color-raised: #ffffff;
+  --color-sand: #f0ece2;
+  /* text and lines */
+  --color-ink: #242b28;
+  --color-ink2: #3c4440;
+  --color-muted: #686c64;
+  --color-silver: #a3a69c;
+  --color-line: rgba(36, 43, 40, 0.1);
+  --color-line2: rgba(36, 43, 40, 0.18);
+  /* status */
+  --color-ok: #2e7350;
+  --color-warn: #8a5d0c;
+  --color-danger: #b42318;
+  --color-danger-hover: #961d13;
+  --color-focus: #b5532f;
+
   --font-sans: "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
-  --shadow-soft: 0 18px 50px -20px rgba(55, 75, 150, 0.38), 0 2px 6px rgba(30, 40, 80, 0.06);
-  --shadow-card: 0 10px 30px -18px rgba(40, 60, 130, 0.45);
+  --font-display: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
+  /* shadows are tinted with the forest green, never blue-grey */
+  --shadow-soft: 0 18px 50px -22px rgba(23, 61, 53, 0.32), 0 2px 6px rgba(36, 43, 40, 0.05);
+  --shadow-card: 0 10px 30px -20px rgba(23, 61, 53, 0.38), 0 1px 2px rgba(36, 43, 40, 0.04);
 }
 
 :root {
@@ -25,34 +50,49 @@
 }
 
 body {
-  background: var(--color-pearl);
+  background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: var(--color-gold-wash);
+  color: var(--color-ink);
+}
+
 :focus-visible {
-  outline: 2.5px solid var(--color-blue);
+  outline: 2.5px solid var(--color-focus);
   outline-offset: 3px;
   border-radius: 10px;
 }
 
 @layer components {
   .card {
-    @apply rounded-3xl border border-line bg-white shadow-card;
+    @apply rounded-3xl border border-line bg-surface shadow-card;
   }
   .chip {
-    @apply inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-white px-3 text-sm font-bold whitespace-nowrap;
+    @apply inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-sm font-bold whitespace-nowrap text-ink2;
+  }
+  button.chip {
+    @apply cursor-pointer transition hover:border-brand/35 hover:text-brand;
   }
   .chip[aria-pressed="true"],
   .chip[aria-selected="true"] {
-    @apply border-blue/40 bg-blue/10 text-blue;
+    @apply border-brand/25 bg-sage text-brand;
   }
   .btn {
-    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-ink px-5 font-extrabold text-white transition hover:bg-blue disabled:pointer-events-none disabled:opacity-45;
+    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-brand px-5 font-extrabold text-white transition hover:bg-brand-hover disabled:pointer-events-none disabled:opacity-45;
+  }
+  /* the warm call to action: one per screen, for discovering people */
+  .btn-accent {
+    @apply bg-accent shadow-[0_10px_24px_-12px_rgba(181,83,47,0.7)] hover:bg-accent-hover;
+  }
+  .btn-danger {
+    @apply bg-danger hover:bg-danger-hover;
   }
   .btn-ghost {
-    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-line2 bg-white px-5 font-extrabold text-ink transition hover:border-blue hover:text-blue disabled:pointer-events-none disabled:opacity-45;
+    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-line2 bg-surface px-5 font-extrabold text-ink transition hover:border-brand hover:text-brand disabled:pointer-events-none disabled:opacity-45;
   }
   .btn-sm {
     @apply h-9 px-4 text-sm;
@@ -60,12 +100,21 @@ body {
   .kicker {
     @apply text-xs font-extrabold tracking-[0.12em] text-muted uppercase;
   }
-  .field {
-    @apply w-full rounded-xl border border-line2 bg-white px-3 py-2.5 outline-none focus:border-blue focus:ring-3 focus:ring-blue/15;
+  .link {
+    @apply font-bold text-brand decoration-terracotta decoration-2 underline-offset-4 hover:underline;
   }
-  .gradient-text {
-    background: linear-gradient(95deg, var(--color-blue), var(--color-violet) 55%, var(--color-cyan));
-    background-clip: text;
-    color: transparent;
+  .field {
+    @apply w-full rounded-xl border border-line2 bg-raised px-3 py-2.5 outline-none focus:border-brand focus:ring-3 focus:ring-brand/15;
+  }
+  .field[aria-invalid="true"] {
+    @apply border-danger/60 focus:border-danger focus:ring-danger/15;
+  }
+  .display {
+    @apply font-display font-semibold tracking-[-0.025em];
+    font-optical-sizing: auto;
+  }
+  /* one word in a headline, set in italic terracotta */
+  .accent-word {
+    @apply font-display font-medium text-accent italic;
   }
 }

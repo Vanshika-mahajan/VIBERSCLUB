@@ -124,7 +124,7 @@ export function ProfilePanel({ viber: v, match, liked, saved, connection, onConn
           <Icon name="bookmark" />
           {saved ? "Saved" : "Save"}
         </button>
-        <button type="button" className={`${s.btn} ${s.grow} ${liked ? s.on : ""}`} aria-pressed={liked} onClick={onLike}>
+        <button type="button" className={`${s.btn} ${s.grow} ${liked ? s.liked : ""}`} aria-pressed={liked} onClick={onLike}>
           <Icon name="heart" />
           {liked ? "Liked" : "Like"}
         </button>

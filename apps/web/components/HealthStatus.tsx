@@ -22,26 +22,26 @@ export function HealthStatus() {
   }, [attempt]);
 
   if (state.kind === "loading") {
-    return <p role="status" className="text-zinc-500">Checking the API…</p>;
+    return <p role="status" className="text-muted">Checking the API…</p>;
   }
   if (state.kind === "ok") {
     return (
-      <p role="status" className="font-medium text-emerald-700 dark:text-emerald-400">
+      <p role="status" className="font-medium text-ok">
         API OK
       </p>
     );
   }
   return (
     <div role="alert" className="space-y-2">
-      <p className="font-medium text-red-700 dark:text-red-400">API unavailable</p>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">{state.message}</p>
+      <p className="font-medium text-danger">API unavailable</p>
+      <p className="text-sm text-muted">{state.message}</p>
       <button
         type="button"
         onClick={() => {
           setState({ kind: "loading" });
           setAttempt((n) => n + 1);
         }}
-        className="rounded-full border border-zinc-300 px-4 py-1.5 text-sm dark:border-zinc-700"
+        className="rounded-full border border-line2 px-4 py-1.5 text-sm hover:border-brand hover:text-brand"
       >
         Try again
       </button>

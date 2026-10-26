@@ -22,7 +22,8 @@ const TRY = [
   "Yoga and hot springs in Vashisht",
   "Workation buddies with good wifi",
 ];
-const HUE_COLOR = { blue: "#4F6BFF", violet: "#8B7CFF", cyan: "#35C8E8" } as const;
+// category hues keep their old ids; on screen they read forest, terracotta and gold
+const HUE_COLOR = { blue: "#2F6B5C", violet: "#D97757", cyan: "#D9A548" } as const;
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 const first = (v: Viber) => v.name.split(" ")[0];

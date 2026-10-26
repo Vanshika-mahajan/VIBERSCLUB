@@ -90,7 +90,7 @@ export function EventsScreen() {
           Nothing matches those filters.{" "}
           <button
             type="button"
-            className="font-bold text-blue"
+            className="link"
             onClick={() => {
               setWhen("all");
               setCost("all");

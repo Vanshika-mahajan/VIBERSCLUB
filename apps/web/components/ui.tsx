@@ -13,7 +13,7 @@ export function Avatar({ name, src, size = 44, className = "" }: { name: string;
   const [failed, setFailed] = useState(false);
   return (
     <span
-      className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full border-2 border-white bg-haze font-extrabold text-ink2 ${className}`}
+      className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full border-2 border-surface bg-sage font-extrabold text-ink2 ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.34 }}
       aria-hidden="true"
     >
@@ -26,11 +26,11 @@ export function Avatar({ name, src, size = 44, className = "" }: { name: string;
   );
 }
 
-/** A cover photo with a soft pearl gradient underneath, so a missing photo still looks intended. */
+/** A cover photo with a soft sage-to-gold gradient underneath, so a missing photo still looks intended. */
 export function Cover({ src, className = "", children }: { src?: string; className?: string; children?: ReactNode }) {
   const [failed, setFailed] = useState(false);
   return (
-    <div className={`relative overflow-hidden bg-gradient-to-br from-[#eef2ff] via-[#f3eeff] to-[#e8f7fb] ${className}`}>
+    <div className={`relative overflow-hidden bg-gradient-to-br from-sage via-sand to-gold-wash ${className}`}>
       {src && !failed && (
         // eslint-disable-next-line @next/next/no-img-element -- sample photos from a CDN
         <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" ref={checkBroken(() => setFailed(true))} onError={() => setFailed(true)} />
@@ -41,14 +41,14 @@ export function Cover({ src, className = "", children }: { src?: string; classNa
 }
 
 export function SampleBadge() {
-  return <span className="inline-flex h-5 items-center rounded-full bg-violet/15 px-2 text-[0.62rem] font-extrabold tracking-[0.08em] text-[#5d4fd6] uppercase">Sample</span>;
+  return <span className="inline-flex h-5 items-center rounded-full bg-gold-wash px-2 text-[0.62rem] font-extrabold tracking-[0.08em] text-gold-ink uppercase">Sample</span>;
 }
 
 export function PageHeader({ kicker, title, children }: { kicker?: string; title: ReactNode; children?: ReactNode }) {
   return (
     <header className="mb-6 space-y-1.5">
       {kicker && <p className="kicker">{kicker}</p>}
-      <h1 className="text-3xl font-extrabold tracking-[-0.04em] md:text-4xl">{title}</h1>
+      <h1 className="display text-3xl md:text-4xl">{title}</h1>
       {children && <div className="text-ink2">{children}</div>}
     </header>
   );
@@ -78,7 +78,7 @@ export function Toggle({ label, hint, checked, onChange }: { label: string; hint
         {hint && <span className="block text-sm text-muted">{hint}</span>}
       </span>
       <input type="checkbox" role="switch" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="relative mt-0.5 h-7 w-12 shrink-0 rounded-full bg-silver transition peer-checked:bg-blue peer-focus-visible:ring-3 peer-focus-visible:ring-blue/40 after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-5" />
+      <span className="relative mt-0.5 h-7 w-12 shrink-0 rounded-full bg-silver transition peer-checked:bg-brand peer-focus-visible:ring-3 peer-focus-visible:ring-focus/40 after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition peer-checked:after:translate-x-5" />
     </label>
   );
 }
@@ -112,7 +112,7 @@ export function Toaster() {
   return (
     <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[90] mx-auto grid w-[min(520px,92vw)] gap-2 md:bottom-6">
       {list.map((t) => (
-        <div key={t.id} className="rounded-2xl bg-ink px-4 py-3 text-sm font-semibold text-white shadow-soft">
+        <div key={t.id} className="rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-white shadow-soft">
           {t.text}
         </div>
       ))}

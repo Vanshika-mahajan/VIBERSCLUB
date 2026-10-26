@@ -18,7 +18,7 @@ export function EventScreen({ id }: { id: string }) {
     return (
       <Empty>
         <h1 className="mb-2 text-xl font-extrabold text-ink">Event not found</h1>
-        It may have ended or been removed. <Link href="/events" className="font-bold text-blue">See all events</Link>
+        It may have ended or been removed. <Link href="/events" className="link">See all events</Link>
       </Empty>
     );
   }
@@ -35,7 +35,7 @@ export function EventScreen({ id }: { id: string }) {
 
   return (
     <article>
-      <Link href="/events" className="mb-4 inline-flex text-sm font-bold text-blue">
+      <Link href="/events" className="link mb-4 inline-flex text-sm">
         ← All events
       </Link>
       <Cover src={e.photoUrl} className="h-56 rounded-3xl md:h-72">
@@ -48,7 +48,7 @@ export function EventScreen({ id }: { id: string }) {
       <div className="mt-5 grid gap-6 md:grid-cols-[1.5fr_1fr]">
         <div>
           <p className="kicker">{today ? formatWhen(e, today) : e.time} · {e.durationHours >= 24 ? `${Math.round(e.durationHours / 24)} days` : `${e.durationHours} h`}</p>
-          <h1 className="mt-1 text-3xl font-extrabold tracking-[-0.04em] md:text-4xl">{e.title}</h1>
+          <h1 className="display mt-1 text-3xl md:text-4xl">{e.title}</h1>
           <p className="mt-3 text-ink2">{e.description}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {e.interests.map((i) => (
@@ -79,7 +79,7 @@ export function EventScreen({ id }: { id: string }) {
           <p className="text-sm text-ink2">
             <b>Meet at:</b> {e.meetingPoint}, {areas[e.area].label}
           </p>
-          {e.priceInr > 0 && <p className="rounded-2xl bg-haze p-3 text-sm text-ink2">The host collects payment directly. Vibers Club doesn&apos;t take money in this version.</p>}
+          {e.priceInr > 0 && <p className="rounded-2xl bg-sage/60 p-3 text-sm text-ink2">The host collects payment directly. Vibers Club doesn&apos;t take money in this version.</p>}
           {mine ? (
             <p className="font-bold text-ok">You&apos;re hosting this.</p>
           ) : rsvp ? (

@@ -49,7 +49,7 @@ export function ChatsScreen() {
               const last = (messages[id] ?? none).at(-1);
               return (
                 <li key={id}>
-                  <Link href={`/chats?with=${id}`} className="flex items-center gap-3 p-4 hover:bg-haze/60">
+                  <Link href={`/chats?with=${id}`} className="flex items-center gap-3 p-4 hover:bg-sand">
                     <Avatar name={v.name} src={v.photoUrl} size={48} />
                     <span className="min-w-0 flex-1">
                       <b className="block">{v.name}</b>
@@ -63,7 +63,7 @@ export function ChatsScreen() {
           </ul>
         ) : (
           <Empty>
-            No chats yet. <Link href="/discover" className="font-bold text-blue">Find your people</Link>, and when you both like each other you can connect.
+            No chats yet. <Link href="/discover" className="link">Find your people</Link>, and when you both like each other you can connect.
           </Empty>
         )
       ) : (
@@ -143,7 +143,7 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
           {reported ? "Reported" : "Report"}
         </button>
         {confirmBlock ? (
-          <button type="button" className="btn btn-sm bg-coral" onClick={() => (actions.block(id), toast(`${v.name} is blocked. Neither of you will see the other.`), onBack())}>
+          <button type="button" className="btn btn-sm btn-danger" onClick={() => (actions.block(id), toast(`${v.name} is blocked. Neither of you will see the other.`), onBack())}>
             Confirm block
           </button>
         ) : (
@@ -156,7 +156,7 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
         <li className="pb-2 text-center text-xs text-muted">You connected. Meet in public places, and tell someone your plans.</li>
         {list.map((m) => (
           <li key={m.id} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-            <span className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-ink text-white" : "bg-haze text-ink"}`}>{m.text}</span>
+            <span className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-brand text-white" : "bg-sand text-ink"}`}>{m.text}</span>
           </li>
         ))}
         <li ref={end} aria-hidden="true" />

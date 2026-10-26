@@ -15,15 +15,15 @@ export function EventCard({ e, compact = false }: { e: DemoEvent; compact?: bool
   const going = e.goingIds.length + (rsvp === "going" && !e.goingIds.includes("me") ? 1 : 0);
   const full = going >= e.capacity;
   return (
-    <Link href={`/events/${e.id}`} className="card group block overflow-hidden transition hover:-translate-y-0.5 hover:border-blue/40">
+    <Link href={`/events/${e.id}`} className="card group block overflow-hidden transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-soft">
       <Cover src={e.photoUrl} className={compact ? "h-28" : "h-36"}>
-        <span className="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-extrabold">{price(e)}</span>
+        <span className={`absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-extrabold shadow-card ${e.priceInr > 0 ? "bg-gold text-ink" : "bg-surface/95 text-brand"}`}>{price(e)}</span>
         {rsvp && (
-          <span className="absolute top-3 right-3 rounded-full bg-ink px-2.5 py-1 text-xs font-extrabold text-white">{rsvp === "going" ? "You're going" : "On waitlist"}</span>
+          <span className="absolute top-3 right-3 rounded-full bg-brand px-2.5 py-1 text-xs font-extrabold text-white">{rsvp === "going" ? "You're going" : "On waitlist"}</span>
         )}
       </Cover>
       <div className="space-y-2 p-4">
-        <p className="text-xs font-bold text-blue">{today ? formatWhen(e, today) : e.time}</p>
+        <p className="text-xs font-bold text-accent">{today ? formatWhen(e, today) : e.time}</p>
         <h3 className="text-lg leading-tight font-extrabold tracking-[-0.02em]">{e.title}</h3>
         <p className="text-sm text-muted">
           {areas[e.area].label} · {full ? "Full, waitlist open" : `${e.capacity - going} of ${e.capacity} seats left`}

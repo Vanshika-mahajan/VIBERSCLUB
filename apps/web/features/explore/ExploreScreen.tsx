@@ -60,7 +60,7 @@ export function ExploreScreen() {
               return (
                 <li key={p.id} className="card overflow-hidden">
                   <Cover src={p.photoUrl} className="h-32">
-                    <span className="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-extrabold capitalize">{p.kind}</span>
+                    <span className="absolute top-3 left-3 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-extrabold text-brand capitalize shadow-card">{p.kind}</span>
                   </Cover>
                   <div className="space-y-2 p-4">
                     <div className="flex items-start justify-between gap-2">
@@ -73,7 +73,7 @@ export function ExploreScreen() {
                       </button>
                     </div>
                     <p className="text-sm text-ink2">{p.blurb}</p>
-                    <p className="rounded-2xl bg-haze p-3 text-sm text-ink2">
+                    <p className="rounded-2xl bg-sage/60 p-3 text-sm text-ink2">
                       <b>Local tip:</b> {p.tip}
                     </p>
                   </div>
@@ -95,7 +95,7 @@ export function ExploreScreen() {
               <ol className="mt-4 space-y-3 border-l-2 border-line pl-4">
                 {r.stops.map((s) => (
                   <li key={s.placeId}>
-                    <span className="text-xs font-bold text-blue">{s.time}</span>
+                    <span className="text-xs font-bold text-accent">{s.time}</span>
                     <b className="block">{placeById[s.placeId]?.name}</b>
                     <small className="text-muted">{s.note}</small>
                   </li>

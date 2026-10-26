@@ -169,7 +169,7 @@ export function ProfileScreen() {
           <ul className="card divide-y divide-line">
             {myEvents.map((e) => (
               <li key={e.id}>
-                <Link href={`/events/${e.id}`} className="flex justify-between gap-3 p-4 font-semibold hover:bg-haze/60">
+                <Link href={`/events/${e.id}`} className="flex justify-between gap-3 p-4 font-semibold hover:bg-sand">
                   {e.title}
                   <small className="text-muted">{e.hostId === "me" ? "Hosting" : rsvps[e.id] === "going" ? "Going" : "Waitlist"}</small>
                 </Link>
@@ -178,7 +178,7 @@ export function ProfileScreen() {
           </ul>
         ) : (
           <Empty>
-            No plans yet. <Link href="/events" className="font-bold text-blue">Find an event</Link>
+            No plans yet. <Link href="/events" className="link">Find an event</Link>
           </Empty>
         )}
       </Section>

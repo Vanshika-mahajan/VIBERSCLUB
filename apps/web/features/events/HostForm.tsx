@@ -61,7 +61,7 @@ export function HostForm() {
 
   const err = (k: keyof Errors) =>
     errors[k] ? (
-      <p id={`${k}-error`} className="mt-1 text-sm font-semibold text-coral">
+      <p id={`${k}-error`} className="mt-1 text-sm font-semibold text-danger">
         {errors[k]}
       </p>
     ) : null;
