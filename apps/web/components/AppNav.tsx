@@ -19,6 +19,8 @@ export function AppNav() {
   const pathname = usePathname();
   const connections = useDemo((s) => s.connections);
   const requests = Object.values(connections).filter((c) => c === "incoming").length;
+  // Home is the full-screen universe, with its own menu
+  if (pathname === "/") return null;
   const link = (href: string, label: string, sidebarOnly = false) => {
     const active = isActive(pathname, href);
     return (

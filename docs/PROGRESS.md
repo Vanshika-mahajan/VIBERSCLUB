@@ -14,6 +14,18 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the home universe, step 1 (2026-10-26)
+ARPIT asked for the landing page to be one full-screen 3D discovery universe. Decision: collective rooms appear in the demo as sample data only; real rooms with moderation stay in phase 2.
+- `apps/web/features/discover/sphere.ts`: new opt-in tier mode (`tiers: true`): a wider camera, inner, middle and outer orbit bands (inner turns fastest), floating thread and photo screens, a swarm of 2,400 tiny decorative profile specks on the outer orbits, and cards that spiral between bands as relevance changes. Discover itself is unchanged.
+- `apps/web/features/universe/`: `UniverseScreen.tsx` (the home page, with the thought bar at the centre, chips, a live status line, a list view, calm and pause, a menu, and the profile panel), `tiers.ts` (pure: which orbit each person and conversation rides), `sample-screens.ts` (24 sample threads and 12 sample photos by sample Vibers), `universe.module.css`.
+- `apps/web/app/page.tsx` now shows the universe; the old dashboard moved to `apps/web/app/today/page.tsx` (in the sidebar and the universe menu). `AppNav` hides itself on `/`.
+- Tests: `tests/unit/universe.test.tsx`, `e2e/universe.spec.ts`; `e2e/home.spec.ts` now starts from `/today`.
+
+## Tests executed (home universe step 1, 2026-10-26, in the cloud workspace)
+- Vitest: 64 passed. Typecheck and lint clean.
+- Playwright (phone and desktop): 24 passed. The "API OK" test was skipped because the API was not running in this workspace.
+- Visual check from screenshots of the running app. Photos are blocked in this workspace, so cards show initials there.
+
 ## Files created or modified in the pitch demo
 | File | Why |
 |---|---|

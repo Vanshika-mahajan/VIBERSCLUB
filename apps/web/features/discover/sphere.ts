@@ -12,6 +12,11 @@
  *   instant arrangement.
  *
  * The room transition from the prototype is left out: rooms are phase 2.
+ *
+ * Tier mode (`tiers: true`, the home universe): a wider camera, three bands of fast orbits
+ * (inner, middle, outer), floating discussion and photo screens, and a swarm of thousands of tiny
+ * profile specks on the outer orbits. Relevance moves each card between bands: it keeps orbiting
+ * while its radius, plane and speed ease toward the new band, so matches spiral inward.
  */
 
 const TAU = Math.PI * 2;
@@ -68,19 +73,39 @@ class Spring {
   }
 }
 
-const CAM = 3.2; // camera distance in sphere radii
+const CAM = 3.2; // camera distance in sphere radii (tier mode moves it back, see TIER_CAM)
+const TIER_CAM = 5.4;
 const FOCUS = -0.25; // focal plane (toward the camera is negative)
 const PERSON_AR = 0.77;
 const WORLD_AR = 1.36;
+const SCREEN_AR = 1.5;
 // warm alpine palette, matching the theme tokens in app/globals.css
 const KIND_COL: Record<string, string> = { event: "#D97757", place: "#2F6B5C" };
 const PEARL = ["#E9F0E9", "#F6EEE1", "#F4E7DD", "#EEF0E4"];
 const INK = "#242B28";
 const FONT = "Manrope, system-ui, sans-serif";
 
+/** tier mode orbits: [tier, radius, angular speed, tilt a, tilt b, card scale]. Inner bands turn fastest. */
+const TIER_RINGS: [number, number, number, number, number, number][] = [
+  [0, 1.02, 1.7, 0.35, 0.2, 1.18],
+  [0, 1.12, -1.95, 1.1, -0.6, 1.18],
+  [0, 1.2, 1.55, 0.75, 1.0, 1.18],
+  [1, 1.55, -1.1, 0.2, -0.3, 1],
+  [1, 1.68, 1.25, 0.95, 0.7, 1],
+  [1, 1.8, -1.0, 1.35, -1.0, 1],
+  [2, 2.2, 0.62, 0.12, 0.1, 0.86],
+  [2, 2.36, -0.72, 0.62, -0.5, 0.86],
+  [2, 2.5, 0.55, 1.05, 0.9, 0.86],
+  [2, 2.64, -0.66, 1.4, -0.2, 0.86],
+];
+const SWARM = 2400;
+const SWARM_COL = ["#173D35", "#2F6B5C", "#D97757", "#E7BC69", "#B9A58E", "#C9D6CC"];
+
 export type SpherePerson = { uid: string; title: string; photoUrl?: string; pos?: string };
 export type SphereWorld = { uid: string; kind: "event" | "place"; photoUrl?: string };
 export type SphereTag = { id: string; label: string; col: string };
+/** a floating screen: a discussion thread or a shared photo */
+export type SphereScreen = { uid: string; kind: "thread" | "photo"; title: string; snippet?: string; author: string; meta: string; photoUrl?: string };
 /** one slot of the formation, in CSS pixels of the canvas */
 export type Slot = { x: number; y: number; h: number; rot: number };
 /** where a formed card is this frame, so the page can lay a button over it */
@@ -89,21 +114,27 @@ export type Formed = { uid: string; x: number; y: number; w: number; h: number; 
 export type SphereItem =
   | { kind: "person"; e: SpherePerson }
   | { kind: "tag"; e: SphereTag }
-  | { kind: "world"; e: SphereWorld };
+  | { kind: "world"; e: SphereWorld }
+  | { kind: "screen"; e: SphereScreen };
 
 type Sprite = { c: HTMLCanvasElement; w: number; h: number; bw?: number; bh?: number; pad: number; down: HTMLCanvasElement[]; ar: number; tag?: boolean };
-type Ring = { r: number; om: number; ang: number; u: Vec3; v: Vec3; wob: number };
+/** tier: 0 inner, 1 middle, 2 outer (tier mode only); sz scales the cards riding it */
+type Ring = { r: number; om: number; ang: number; u: Vec3; v: Vec3; wob: number; tier?: number; sz?: number };
+/** a card's own orbit in tier mode, easing toward its target ring */
+type Orbit = { ang: number; r: Spring; om: Spring; sz: Spring; u: Vec3; v: Vec3; to: Ring; at: number };
 type Shell = { r: number; ax: Vec3; om: number; ang: number };
 type Flight = { phase: "out" | "form" | "back"; t0: number; dur: number; seed: number; active?: boolean; from?: { x: number; y: number } };
 type Pos = { x: number; y: number; h: number; rot: number };
 
 type Item = {
-  kind: "person" | "world" | "tag" | "crowd";
+  kind: "person" | "world" | "tag" | "crowd" | "screen";
   uid: string;
   n: number;
   person?: SpherePerson;
   world?: SphereWorld;
   tag?: SphereTag;
+  screen?: SphereScreen;
+  orb?: Orbit;
   img?: HTMLImageElement;
   built?: boolean;
   spr: Sprite | null;
@@ -152,6 +183,20 @@ type Item = {
 };
 
 /* ---------------------------------------------------------------- sprites */
+function makeSwarm(R: () => number, rings: Ring[]): Swarm {
+  const outer = rings.map((r, i) => (r.tier === 2 ? i : -1)).filter((i) => i >= 0);
+  const n = SWARM;
+  const sw: Swarm = { n, ring: new Uint8Array(n), th: new Float32Array(n), rj: new Float32Array(n), c: new Uint8Array(n), s: new Float32Array(n), out: new Float32Array(n * 4) };
+  for (let i = 0; i < n; i++) {
+    sw.ring[i] = outer[i % outer.length];
+    sw.th[i] = R() * TAU;
+    sw.rj[i] = 0.9 + R() * 0.24;
+    sw.c[i] = Math.floor(R() * SWARM_COL.length);
+    sw.s[i] = 0.6 + R() * 0.9;
+  }
+  return sw;
+}
+
 function mk(w: number, h: number) {
   const c = document.createElement("canvas");
   c.width = Math.max(2, Math.round(w));
@@ -287,6 +332,109 @@ function worldSprite(sc: number, img: HTMLImageElement | undefined, kind: string
   return { c, w: cw, h: ch, bw, bh, pad, down: [soft(c, 3), soft(c, 7)], ar: WORLD_AR };
 }
 
+/** fit text into at most `lines` lines of width w, with an ellipsis on the last one */
+function wrap(g: CanvasRenderingContext2D, text: string, w: number, lines: number): string[] {
+  const out: string[] = [];
+  let cur = "";
+  for (const word of text.split(/\s+/)) {
+    const next = cur ? cur + " " + word : word;
+    if (!cur || g.measureText(next).width <= w) cur = next;
+    else {
+      out.push(cur);
+      cur = word;
+    }
+  }
+  if (cur) out.push(cur);
+  const kept = out.slice(0, lines);
+  let last = kept[kept.length - 1] ?? "";
+  if (out.length > lines || g.measureText(last).width > w) {
+    while (last && g.measureText(last + "…").width > w) last = last.slice(0, -1);
+    kept[kept.length - 1] = last.trimEnd() + "…";
+  }
+  return kept;
+}
+
+/** a floating screen: a thread (author, title, latest reply) or a shared photo with its caption */
+function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereScreen, seed: number): Sprite {
+  const bh = 62 * sc;
+  const bw = bh * SCREEN_AR;
+  const pad = 0.12;
+  const cw = Math.round(bw * (1 + pad * 2));
+  const ch = Math.round(bh * (1 + pad * 2.2));
+  const c = mk(cw, ch);
+  const g = ctx(c);
+  const x = bw * pad;
+  const y = bh * pad;
+  const r = bh * 0.12;
+  g.save();
+  g.shadowColor = "rgba(23,52,45,.24)";
+  g.shadowBlur = bh * 0.3;
+  g.shadowOffsetY = bh * 0.1;
+  g.fillStyle = "#FFFDF9";
+  rrect(g, x, y, bw, bh, r);
+  g.fill();
+  g.restore();
+  g.save();
+  rrect(g, x, y, bw, bh, r);
+  g.clip();
+  const p = bh * 0.1;
+  if (e.kind === "photo") {
+    if (img && ready(img)) cover(g, img, x, y, bw, bh, "50% 50%");
+    else {
+      const gr = g.createLinearGradient(x, y, x + bw, y + bh);
+      gr.addColorStop(0, PEARL[seed % 4]);
+      gr.addColorStop(1, "#CBD6CC");
+      g.fillStyle = gr;
+      g.fillRect(x, y, bw, bh);
+    }
+    const sh = g.createLinearGradient(0, y + bh * 0.45, 0, y + bh);
+    sh.addColorStop(0, "rgba(20,32,28,0)");
+    sh.addColorStop(1, "rgba(20,32,28,.78)");
+    g.fillStyle = sh;
+    g.fillRect(x, y, bw, bh);
+    g.fillStyle = "#fff";
+    g.font = `800 ${bh * 0.125}px ${FONT}`;
+    g.textBaseline = "alphabetic";
+    g.fillText(wrap(g, e.title, bw - p * 2, 1)[0], x + p, y + bh - p - bh * 0.13);
+    g.globalAlpha = 0.85;
+    g.font = `600 ${bh * 0.095}px ${FONT}`;
+    g.fillText(wrap(g, `${e.author} · ${e.meta}`, bw - p * 2, 1)[0], x + p, y + bh - p);
+  } else {
+    g.fillStyle = "#D97757";
+    g.fillRect(x, y, bw, bh * 0.035);
+    const ar = bh * 0.1;
+    g.fillStyle = PEARL[seed % 4];
+    g.beginPath();
+    g.arc(x + p + ar, y + p + ar, ar, 0, TAU);
+    g.fill();
+    g.fillStyle = "#173D35";
+    g.font = `800 ${ar * 0.9}px ${FONT}`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillText(initials(e.author), x + p + ar, y + p + ar + ar * 0.05);
+    g.textAlign = "left";
+    g.fillStyle = "#686C64";
+    g.font = `700 ${bh * 0.09}px ${FONT}`;
+    g.fillText(wrap(g, e.author, bw - p * 3 - ar * 2, 1)[0], x + p * 1.6 + ar * 2, y + p + ar);
+    g.fillStyle = INK;
+    g.font = `800 ${bh * 0.128}px ${FONT}`;
+    g.textBaseline = "top";
+    const lines = wrap(g, e.title, bw - p * 2, 2);
+    lines.forEach((l, i) => g.fillText(l, x + p, y + p + ar * 2 + bh * 0.07 + i * bh * 0.155));
+    if (e.snippet) {
+      g.fillStyle = "#686C64";
+      g.font = `500 ${bh * 0.098}px ${FONT}`;
+      g.fillText(wrap(g, "“" + e.snippet + "”", bw - p * 2, 1)[0], x + p, y + p + ar * 2 + bh * 0.1 + lines.length * bh * 0.155);
+    }
+    g.fillStyle = "#B5532F";
+    g.font = `800 ${bh * 0.09}px ${FONT}`;
+    g.textBaseline = "alphabetic";
+    g.fillText(e.meta, x + p, y + bh - p * 0.8);
+  }
+  g.restore();
+  return { c, w: cw, h: ch, bw, bh, pad, down: [soft(c, 3), soft(c, 7)], ar: SCREEN_AR };
+}
+
 function tagSprite(sc: number, label: string, col: string): Sprite {
   const f = 15 * sc;
   const g0 = ctx(mk(4, 4));
@@ -349,6 +497,8 @@ function glowSprite() {
 
 export type SphereOptions = {
   reduced?: boolean;
+  /** the home universe: inner, middle and outer orbit bands that relevance moves cards between */
+  tiers?: boolean;
   onPick?: (it: SphereItem) => void;
   onHover?: (it: SphereItem | null, p?: { x: number; y: number }) => void;
   /** called every drawn frame with the formed cards, so DOM buttons can ride on them */
@@ -356,6 +506,8 @@ export type SphereOptions = {
 };
 
 type Dust = { n: number; p: Float32Array; g: Uint8Array; s: Float32Array; c: Uint8Array; out: Float32Array; groups: Shell[] };
+/** tier mode: thousands of tiny profile specks riding the outer orbits (decorative) */
+type Swarm = { n: number; ring: Uint8Array; th: Float32Array; rj: Float32Array; c: Uint8Array; s: Float32Array; out: Float32Array };
 
 export class Sphere {
   private g: CanvasRenderingContext2D;
@@ -366,6 +518,9 @@ export class Sphere {
   private rings: Ring[] = [];
   private shells: Shell[] = [];
   private dust!: Dust;
+  private swarm: Swarm | null = null;
+  private tiers: boolean;
+  private cam: number;
   private t = 0;
   private last = 0;
   private frame = 0;
@@ -414,6 +569,8 @@ export class Sphere {
   ) {
     this.g = cv.getContext("2d", { alpha: false })!;
     this.reduced = !!o.reduced;
+    this.tiers = !!o.tiers;
+    this.cam = this.tiers ? TIER_CAM : CAM;
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(cv.parentElement ?? cv);
     this.bind();
@@ -421,39 +578,40 @@ export class Sphere {
   }
 
   /* ---------- setup ---------- */
-  load(people: SpherePerson[], worlds: SphereWorld[], tags: SphereTag[]) {
+  load(people: SpherePerson[], worlds: SphereWorld[], tags: SphereTag[], screens: SphereScreen[] = []) {
     const R = rng(7);
     this.sc = clamp(this.dpr * 1.3, 1.5, 2.6);
     this.glow = glowSprite();
     const tilts: [number, number][] = [[0.15, 0], [0.6, 0.5], [1.0, -0.7], [1.35, 0.2], [0.4, -1.1], [0.85, 1.2], [1.2, -0.3], [1.5, 0.9]];
     const radii = [0.84, 0.96, 1.08, 1.2, 1.3, 1.02, 1.16, 1.26];
     const oms = [0.52, -0.64, 0.78, -0.9, 1.1, -0.72, 0.96, -1.2];
-    this.rings = tilts.map(([a, b], i) => ({
-      r: radii[i],
-      om: oms[i],
-      ang: R() * TAU,
-      u: [Math.cos(b), Math.sin(b), 0],
-      v: [-Math.cos(a) * Math.sin(b), Math.cos(a) * Math.cos(b), Math.sin(a)],
-      wob: 0.03 + R() * 0.03,
-    }));
+    const plane = (a: number, b: number) => ({ u: [Math.cos(b), Math.sin(b), 0] as Vec3, v: [-Math.cos(a) * Math.sin(b), Math.cos(a) * Math.cos(b), Math.sin(a)] as Vec3 });
+    this.rings = this.tiers
+      ? TIER_RINGS.map(([tier, r, om, a, b, sz]) => ({ r, om, tier, sz, ang: R() * TAU, ...plane(a, b), wob: 0.02 + R() * 0.02 }))
+      : tilts.map(([a, b], i) => ({ r: radii[i], om: oms[i], ang: R() * TAU, ...plane(a, b), wob: 0.03 + R() * 0.03 }));
+    // in tier mode the core is a little smaller, so the inner orbit reads as separate from it
+    const core = this.tiers ? 0.8 : 1;
     this.shells = [
-      { r: 0.58, ax: norm([0.3, 1, 0.2]), om: -0.16, ang: 0 },
-      { r: 0.99, ax: norm([-0.25, 1, -0.4]), om: 0.1, ang: 0 },
+      { r: 0.58 * core, ax: norm([0.3, 1, 0.2]), om: -0.16, ang: 0 },
+      { r: 0.99 * core, ax: norm([-0.25, 1, -0.4]), om: 0.1, ang: 0 },
     ];
     // hero pool: every person once, worlds and tags interleaved, spread across the rings
     const pool: SphereItem[] = [
       ...people.map((e) => ({ kind: "person" as const, e })),
       ...worlds.map((e) => ({ kind: "world" as const, e })),
       ...tags.map((e) => ({ kind: "tag" as const, e })),
+      ...screens.map((e) => ({ kind: "screen" as const, e })),
     ];
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(R() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    const per = pool.length / this.rings.length;
-    const ringOf = pool.map((_, idx) => this.rings[Math.min(this.rings.length - 1, Math.floor(idx / per))]);
+    // tier mode starts everyone on the outer band; a thought pulls cards inward later
+    const homes = this.tiers ? this.rings.filter((r) => r.tier === 2) : this.rings;
+    const per = pool.length / homes.length;
+    const ringOf = pool.map((_, idx) => homes[Math.min(homes.length - 1, Math.floor(idx / per))]);
     const th = new Map<number, number>();
-    this.rings.forEach((ring) => {
+    homes.forEach((ring) => {
       const mine = pool.map((_, i) => i).filter((i) => ringOf[i] === ring);
       mine.forEach((i, k) => th.set(i, (k / mine.length) * TAU + (R() - 0.5) * 0.25));
     });
@@ -468,10 +626,17 @@ export class Sphere {
       it.ph = R() * TAU;
       it.fl = 0.6 + R() * 0.8;
       it.hero = true;
-      it.size = p.kind === "person" ? 0.27 : p.kind === "world" ? 0.17 : 0.07;
+      it.size = p.kind === "person" ? 0.27 : p.kind === "world" ? 0.17 : p.kind === "screen" ? 0.2 : 0.07;
+      // the tier camera sits further back, so its cards are drawn larger to stay readable
+      if (this.tiers && p.kind !== "tag") it.size *= 1.45;
       if (p.kind === "person") it.person = p.e;
       else if (p.kind === "world") it.world = p.e;
+      else if (p.kind === "screen") it.screen = p.e;
       else it.tag = p.e;
+      if (this.tiers) {
+        const ring = it.ring!;
+        it.orb = { ang: it.th + ring.ang, r: new Spring(ring.r, 7), om: new Spring(ring.om, 5), sz: new Spring(ring.sz ?? 1, 7), u: [...ring.u], v: [...ring.v], to: ring, at: 0 };
+      }
       this.items.push(it);
       this.byUid.set(uid, it);
     });
@@ -516,6 +681,7 @@ export class Sphere {
     }
     for (let gI = 0; gI < 6; gI++) dust.groups.push({ r: 1, ax: norm([R() - 0.5, 1 + R(), R() - 0.5]), om: (gI % 2 ? -1 : 1) * (0.07 + R() * 0.2), ang: R() * TAU });
     this.dust = dust;
+    this.swarm = this.tiers ? makeSwarm(R, this.rings) : null;
     this.loadImages();
     this.buildSprites(true);
     this.dirty = true;
@@ -532,7 +698,7 @@ export class Sphere {
 
   private loadImages() {
     for (const it of this.items) {
-      const url = it.person?.photoUrl ?? it.world?.photoUrl;
+      const url = it.person?.photoUrl ?? it.world?.photoUrl ?? it.screen?.photoUrl;
       if (!url) continue;
       const im = new Image();
       im.decoding = "async";
@@ -561,6 +727,9 @@ export class Sphere {
       } else if (it.kind === "world") {
         it.spr = worldSprite(this.sc, ok ? it.img : undefined, it.world!.kind, it.n);
         it.built = ok;
+      } else if (it.kind === "screen") {
+        it.spr = screenSprite(this.sc, ok ? it.img : undefined, it.screen!, it.n);
+        it.built = ok || !it.screen!.photoUrl;
       } else {
         it.spr = tagSprite(this.sc, it.tag!.label, it.tag!.col);
         it.built = true;
@@ -582,7 +751,7 @@ export class Sphere {
       }
       it.spr = tile;
     }
-    this.needSprites = this.items.some((it) => (it.kind === "person" || it.kind === "world") && ready(it.img) && !it.built);
+    this.needSprites = this.items.some((it) => (it.kind === "person" || it.kind === "world" || it.kind === "screen") && ready(it.img) && !it.built);
     this.dirty = true;
   }
 
@@ -658,6 +827,7 @@ export class Sphere {
   private public(it: Item): SphereItem {
     if (it.kind === "person") return { kind: "person", e: it.person! };
     if (it.kind === "tag") return { kind: "tag", e: it.tag! };
+    if (it.kind === "screen") return { kind: "screen", e: it.screen! };
     return { kind: "world", e: it.world! };
   }
   private setHover(it: Item | null, p?: { x: number; y: number }) {
@@ -701,8 +871,14 @@ export class Sphere {
   private layoutTargets(snap: boolean) {
     const { W, H, L } = this;
     const n = this.narrow;
-    const base = n ? Math.min(W * 0.33, H * 0.2) : Math.min(W * 0.24, H * 0.262);
-    let cy = n ? H * 0.37 : H * 0.475;
+    const base = this.tiers
+      ? n
+        ? Math.min(W * 0.27, H * 0.14)
+        : Math.min(W * 0.17, H * 0.23)
+      : n
+        ? Math.min(W * 0.33, H * 0.2)
+        : Math.min(W * 0.24, H * 0.262);
+    let cy = this.tiers ? H * 0.5 : n ? H * 0.37 : H * 0.475;
     let S = base;
     let a = 1;
     if (this.mode === "form") {
@@ -788,7 +964,24 @@ export class Sphere {
     this.rel = map ?? new Map();
     this.searching = !!map;
     if (map) this.boost = Math.max(this.boost, 0.8);
+    if (this.tiers) this.retier();
     this.dirty = true;
+  }
+  /** tier mode: relevance 0.9+ → inner band, above 0 → middle band, else outer. Cards set off in a loose stagger. */
+  private retier() {
+    const bands = [0, 1, 2].map((t) => this.rings.filter((r) => r.tier === t));
+    let k = 0;
+    for (const it of this.items) {
+      if (!it.orb) continue;
+      const r = this.rel.get(it.uid) ?? 0;
+      const band = bands[r >= 0.9 ? 0 : r > 0 ? 1 : 2];
+      const to = band[it.n % band.length];
+      if (to === it.orb.to) continue;
+      it.orb.to = to;
+      // stronger matches leave a beat later, so they arrive last and closest
+      it.orb.at = this.t + (this.reduced ? 0 : (k++ % 9) * 0.06 + (to.tier === 0 ? 0.25 : 0));
+    }
+    this.start();
   }
   setFormation(slots: Slot[]) {
     this.slots = slots;
@@ -891,7 +1084,7 @@ export class Sphere {
 
   private draw(dt: number) {
     if (!this.bg || !this.dust) return;
-    const { g, dpr: d, W, H, L, t } = this;
+    const { g, dpr: d, W, H, L, t, cam } = this;
     const cx = L.cx.x;
     const cy = L.cy.x;
     const S = L.S.x * (1 + this.punch.x * 0.05);
@@ -913,12 +1106,12 @@ export class Sphere {
       const z1 = -x0 * sinY + z0 * cosY;
       const y2 = y0 * cosX - z1 * sinX;
       const z2 = y0 * sinX + z1 * cosX;
-      const den = CAM + z2;
+      const den = cam + z2;
       if (den < 0.45) {
         out.ok = false;
         return out;
       }
-      const k = (CAM / den) * zoom;
+      const k = (cam / den) * zoom;
       out.ok = true;
       out.x = x1;
       out.y = y2;
@@ -976,9 +1169,10 @@ export class Sphere {
             pf = false;
           }
         }
-        g.strokeStyle = `rgba(140,145,132,${0.15 * sphA})`;
+        const lit = this.searching && ring.tier !== undefined && ring.tier < 2 ? (ring.tier === 0 ? 1 : 0.5) : 0;
+        g.strokeStyle = lit ? `rgba(217,119,87,${(0.12 + 0.12 * lit) * sphA})` : `rgba(140,145,132,${0.15 * sphA})`;
         g.stroke(back);
-        g.strokeStyle = `rgba(104,112,100,${0.28 * sphA})`;
+        g.strokeStyle = lit ? `rgba(181,83,47,${(0.24 + 0.24 * lit) * sphA})` : `rgba(104,112,100,${0.28 * sphA})`;
         g.stroke(front);
       }
     }
@@ -1028,6 +1222,8 @@ export class Sphere {
       g.globalAlpha = 1;
     };
     dustPass(false);
+    const swarmPass = this.swarm ? this.swarmProject(proj, W, H, sphA) : null;
+    swarmPass?.(false);
 
     /* ---- cards: project, resolve flights, sort back → front ---- */
     const qualCrowd = this.quality === 0 ? 1 : this.quality === 1 ? 0.55 : 0.28;
@@ -1049,6 +1245,42 @@ export class Sphere {
         wx = (f[0] * c + cr[0] * s + a[0] * it.dot! * (1 - c)) * shl.r;
         wy = (f[1] * c + cr[1] * s + a[1] * it.dot! * (1 - c)) * shl.r;
         wz = (f[2] * c + cr[2] * s + a[2] * it.dot! * (1 - c)) * shl.r;
+      } else if (it.orb) {
+        const o = it.orb;
+        if (this.t >= o.at) {
+          o.r.t = o.to.r;
+          o.om.t = o.to.om;
+          o.sz.t = o.to.sz ?? 1;
+        }
+        const ease = this.t >= o.at ? 1 - Math.exp(-dt * 2.4) : 0;
+        if (this.reduced) {
+          o.r.snap(o.r.t);
+          o.om.snap(o.om.t);
+          o.sz.snap(o.sz.t);
+        } else {
+          o.r.step(dt);
+          o.om.step(dt);
+          o.sz.step(dt);
+        }
+        // the orbit plane turns toward the target ring's plane, then is made orthonormal again
+        const f = this.reduced ? (this.t >= o.at ? 1 : 0) : ease;
+        for (let q = 0; q < 3; q++) {
+          o.u[q] += (o.to.u[q] - o.u[q]) * f;
+          o.v[q] += (o.to.v[q] - o.v[q]) * f;
+        }
+        const u = norm(o.u);
+        const dv = u[0] * o.v[0] + u[1] * o.v[1] + u[2] * o.v[2];
+        const v = norm([o.v[0] - u[0] * dv, o.v[1] - u[1] * dv, o.v[2] - u[2] * dv]);
+        o.u = u;
+        o.v = v;
+        o.ang += o.om.x * this.speed.x * dt;
+        const th = o.ang + Math.sin(t * 0.8 + it.ph) * 0.012 * it.fl;
+        const rr = o.r.x * it.rj * (1 + 0.03 * Math.sin(t * 0.9 + it.ph));
+        const c = Math.cos(th) * rr;
+        const s = Math.sin(th) * rr;
+        wx = c * u[0] + s * v[0];
+        wy = c * u[1] + s * v[1] + Math.sin(th * 3 + it.ph) * o.to.wob * rr * 0.5;
+        wz = c * u[2] + s * v[2];
       } else {
         const ring = it.ring!;
         const th = it.th + ring.ang + Math.sin(t * 0.8 + it.ph) * 0.012 * it.fl;
@@ -1080,7 +1312,7 @@ export class Sphere {
       const r = it.hero ? (this.searching ? (this.rel.get(it.uid) ?? 0) : -1) : -1;
       it.glow.t = r > 0 ? r : 0;
       it.dim.t = this.searching && it.hero && r <= 0 ? 1 : 0;
-      it.pushS.t = it.dim.t;
+      it.pushS.t = this.tiers ? 0 : it.dim.t;
       it.glow.step(dt);
       it.dim.step(dt);
       it.pushS.step(dt);
@@ -1101,14 +1333,15 @@ export class Sphere {
         sx = it.pos!.x;
         sy = it.pos!.y;
       }
-      const base = it.kind === "crowd" ? it.sz! * S : it.size * S;
+      const base = it.kind === "crowd" ? it.sz! * S : it.size * S * (it.orb ? it.orb.sz.x : 1);
       let h = base * k;
       if (own && it.kind === "person") h = it.pos!.h;
       let w = h * spr.ar;
       // depth of field band + fade
-      const dist = Math.abs(zc - FOCUS);
+      // the wider tier camera gets a deeper focus band, so the inner and middle orbits stay sharp
+      const dist = Math.abs(zc - FOCUS) / (this.tiers ? 1.5 : 1);
       let lvl = dist < 0.8 ? 0 : dist < 1.45 ? 1 : 2;
-      if (zc < -1.6) lvl = 2;
+      if (zc < (this.tiers ? -2.3 : -1.6)) lvl = 2;
       if (this.quality === 2 && lvl === 1) lvl = 0;
       let a = clamp(1 - Math.max(0, zc + 0.2) * 0.3, 0.2, 1);
       if (own) {
@@ -1116,19 +1349,19 @@ export class Sphere {
         lvl = 0;
       }
       a *= it.a * (own ? 1 : sphA);
-      a *= 1 - (own ? 0 : it.dim.x * 0.66);
+      a *= 1 - (own ? 0 : it.dim.x * (this.tiers ? 0.45 : 0.66));
       if (it.kind === "crowd") a *= 0.82;
       if (a < 0.02) continue;
       // facing: cards turn to follow the curve of the sphere → foreshortened edges, no flat carousel
       let xs = 1;
       let skew = 0;
       let roll = 0;
-      if (!own && it.kind !== "tag") {
+      if (!own && it.kind !== "tag" && it.kind !== "screen") {
         const r = Math.hypot(it.x, it.y, it.z) || 1;
         xs = lerp(1, Math.max(0.42, Math.abs(-it.z / r) * 0.6 + 0.4), 0.85);
         skew = -(it.x / r) * 0.18;
       }
-      if (!this.reduced) roll = Math.sin(t * 1.3 * it.fl + it.ph) * 0.045 + (it.hero ? it.ring!.om * this.speed.x * 0.012 * (it.x > 0 ? 1 : -1) : 0);
+      if (!this.reduced) roll = Math.sin(t * 1.3 * it.fl + it.ph) * 0.045 + (it.hero ? (it.orb ? it.orb.om.x : it.ring!.om) * this.speed.x * 0.012 * (it.x > 0 ? 1 : -1) : 0);
       if (own) roll = it.pos!.rot;
       // motion streak behind fast hero cards
       if (!this.reduced && it.hero && !own && this.quality === 0) {
@@ -1168,7 +1401,7 @@ export class Sphere {
         g.strokeRect(sx - ww / 2 - 1, sy - h / 2 - 1, ww + 2, h + 2);
       }
       // hit-testing: orbiting people and interest tokens only; formed cards are DOM buttons
-      if (it.hero && !it.fly && a > 0.45 && lvl < 2 && (it.kind === "person" || it.kind === "tag")) {
+      if (it.hero && !it.fly && a > 0.45 && (lvl < 2 || (this.tiers && zc < 0)) && (it.kind === "person" || it.kind === "tag" || it.kind === "screen")) {
         const ww = w * xs * (it.kind === "tag" ? 0.9 : 0.85);
         const hh = h * (it.kind === "tag" ? 0.62 : 0.84);
         this.hit.push({ it, x0: sx - ww / 2 - 3, x1: sx + ww / 2 + 3, y0: sy - hh / 2 - 3, y1: sy + hh / 2 + 3 });
@@ -1177,8 +1410,53 @@ export class Sphere {
     }
     g.globalAlpha = 1;
     if (this.searching && this.quality < 2) this.links(sphA);
+    swarmPass?.(true);
     dustPass(true);
     this.o.onFormed?.(formed);
+  }
+
+  /** project the swarm once per frame; the returned pass draws the far (false) or near (true) half */
+  private swarmProject(proj: (x: number, y: number, z: number) => { ok: boolean; z: number; k: number; sx: number; sy: number }, W: number, H: number, sphA: number) {
+    const sw = this.swarm!;
+    const { g } = this;
+    const n = Math.floor(sw.n * (this.quality === 0 ? 1 : this.quality === 1 ? 0.5 : 0.25));
+    const S = this.L.S.x;
+    const o = sw.out;
+    for (let i = 0; i < n; i++) {
+      const ring = this.rings[sw.ring[i]];
+      const th = sw.th[i] + ring.ang * (0.9 + (i % 5) * 0.05);
+      const rr = ring.r * sw.rj[i];
+      const c = Math.cos(th) * rr;
+      const s = Math.sin(th) * rr;
+      const p = proj(c * ring.u[0] + s * ring.v[0], c * ring.u[1] + s * ring.v[1] + Math.sin(th * 5 + i) * 0.04, c * ring.u[2] + s * ring.v[2]);
+      if (!p.ok || p.sx < -10 || p.sx > W + 10 || p.sy < -10 || p.sy > H + 10) {
+        o[i * 4 + 3] = 0;
+        continue;
+      }
+      o[i * 4] = p.sx;
+      o[i * 4 + 1] = p.sy;
+      o[i * 4 + 2] = p.z;
+      o[i * 4 + 3] = p.k;
+    }
+    // with a thought, the unrelated crowd fades back a little
+    const fade = this.searching ? 0.6 : 1;
+    return (near: boolean) => {
+      for (let ci = 0; ci < SWARM_COL.length; ci++) {
+        g.fillStyle = SWARM_COL[ci];
+        for (let i = 0; i < n; i++) {
+          if (sw.c[i] !== ci) continue;
+          const k = o[i * 4 + 3];
+          if (k === 0) continue;
+          const z = o[i * 4 + 2];
+          if (z < 0 !== near) continue;
+          g.globalAlpha = clamp(0.45 - z * 0.1, 0.1, 0.55) * fade * Math.max(0.4, sphA);
+          // a speck is a tiny portrait card: taller than wide
+          const h = sw.s[i] * k * S * 0.019;
+          g.fillRect(o[i * 4] - h * 0.38, o[i * 4 + 1] - h / 2, h * 0.77, h);
+        }
+      }
+      g.globalAlpha = 1;
+    };
   }
 
   private blit(spr: Sprite, level: number, sx: number, sy: number, w: number, h: number, xs: number, skew: number, roll: number) {

@@ -1,0 +1,96 @@
+/* The home universe reuses Discover's styles (discover.module.css); these rules only change the layout:
+   full screen with no app navigation, and the thought bar at the centre, over the core. */
+
+div.root {
+  inset: 0;
+  z-index: 45;
+}
+
+.intro {
+  top: clamp(70px, 13vh, 150px);
+}
+.intro h1 {
+  font-size: clamp(1.9rem, min(4vw, 7vh), 3.6rem);
+}
+.root[data-hasq="true"] .intro {
+  opacity: 0;
+  transform: translateY(-14px) scale(0.98);
+  filter: blur(6px);
+}
+
+/* the bar sits on the core of the sphere */
+.ask {
+  top: calc(50% - 32px);
+  width: min(600px, calc(100% - 28px));
+}
+
+.try {
+  top: auto;
+  bottom: max(22px, env(safe-area-inset-bottom));
+}
+
+.menuWrap {
+  position: relative;
+}
+.menuBtn {
+  width: auto;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.86rem;
+  color: var(--brand);
+}
+.menu {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  min-width: 190px;
+  padding: 8px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.menu a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: var(--ink2);
+}
+.menu a:hover {
+  background: var(--sage);
+  color: var(--brand);
+}
+
+.screenRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.screenRow b {
+  display: block;
+}
+.screenRow small {
+  color: var(--muted);
+  font-weight: 600;
+  display: block;
+}
+
+@media (max-width: 719px) {
+  .ask {
+    top: calc(50% - 29px);
+  }
+  .try button + button {
+    display: none;
+  }
+}

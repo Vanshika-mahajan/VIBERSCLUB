@@ -1,5 +1,5 @@
-import { HomeScreen } from "@/features/home/HomeScreen";
+import { UniverseScreen } from "@/features/universe/UniverseScreen";
 
 export default function HomePage() {
-  return <HomeScreen />;
+  return <UniverseScreen />;
 }

@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-test("home shows API OK from the real API", async ({ page }) => {
-  await page.goto("/");
+test("today shows API OK from the real API", async ({ page }) => {
+  await page.goto("/today");
   await expect(page.getByRole("heading", { name: /find your people/, level: 1 })).toBeVisible();
   await expect(page.getByText("API OK")).toBeVisible();
 });
 
 test("navigation reaches every section", async ({ page, isMobile }) => {
-  await page.goto("/");
+  await page.goto("/today");
   const nav = page.getByRole("navigation", { name: "Main" });
   const box = await nav.boundingBox();
   const viewport = page.viewportSize()!;
