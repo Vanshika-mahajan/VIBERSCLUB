@@ -94,3 +94,305 @@ div.root {
     display: none;
   }
 }
+
+/* ---------------- into the core ---------------- */
+.root[data-phase="pulling"] .intro,
+.root[data-phase="pulling"] .ask,
+.root[data-phase="pulling"] .try,
+.root[data-phase="room"] .intro,
+.root[data-phase="room"] .ask,
+.root[data-phase="room"] .try {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s;
+}
+
+/* ---------------- the room: the core expands into it ---------------- */
+.room {
+  position: absolute;
+  inset: 0;
+  z-index: 26;
+  display: flex;
+  flex-direction: column;
+  padding: 76px max(16px, 5%) 16px;
+  /* see-through, so the universe keeps turning behind the room */
+  background: radial-gradient(70% 60% at 50% 45%, rgba(255, 253, 249, 0.72), rgba(248, 246, 240, 0.45));
+  backdrop-filter: blur(2px);
+  animation: coreOpen 0.9s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+.room[data-leaving="true"] {
+  animation: coreClose 0.42s cubic-bezier(0.6, 0, 0.8, 0.4) both;
+}
+@keyframes coreOpen {
+  from {
+    clip-path: circle(3% at 50% 50%);
+    transform: scale(1.08);
+    filter: blur(14px);
+  }
+  to {
+    clip-path: circle(150% at 50% 50%);
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes coreClose {
+  to {
+    clip-path: circle(3% at 50% 50%);
+    transform: scale(0.96);
+    filter: blur(10px);
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .room,
+  .room[data-leaving="true"] {
+    animation: none;
+  }
+}
+.root[data-calm="true"] .room {
+  animation: none;
+}
+
+.roomHead {
+  flex: none;
+}
+.leave {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px 0 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--brand);
+}
+.kicker {
+  margin: 14px 0 2px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.roomTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--brand);
+  outline: none;
+}
+.roomBlurb {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.roomBody {
+  flex: 1;
+  min-height: 0;
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+}
+.chat {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+.msgs {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  list-style: none;
+  margin: 0;
+  padding: 16px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+.msg {
+  display: flex;
+  gap: 10px;
+  animation: msgIn 0.5s var(--ease) both;
+}
+.msg:nth-child(2) { animation-delay: 0.08s; }
+.msg:nth-child(3) { animation-delay: 0.16s; }
+.msg:nth-child(4) { animation-delay: 0.24s; }
+.msg:nth-child(5) { animation-delay: 0.32s; }
+.msg:nth-child(n + 6) { animation-delay: 0.4s; }
+@keyframes msgIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.msg[data-me="true"] .who b {
+  color: var(--accent);
+}
+.av {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--sage) center/cover;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--brand);
+}
+.who {
+  margin: 0;
+  font-size: 0.82rem;
+}
+.who span {
+  color: var(--muted);
+  font-weight: 600;
+}
+.text {
+  margin: 2px 0 0;
+  color: var(--ink);
+}
+.shot {
+  display: block;
+  margin-top: 8px;
+  width: min(320px, 100%);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 14px;
+  background: var(--sage);
+}
+.composer {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  margin: 0 12px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.composer input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  font: inherit;
+  background: none;
+}
+.composer button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--brand);
+  color: #fff;
+}
+.note {
+  margin: 6px 16px 12px;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.side {
+  min-height: 0;
+  overflow: auto;
+}
+.side h3 {
+  margin: 4px 0 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.side h3:not(:first-child) {
+  margin-top: 18px;
+}
+.threads,
+.people,
+.others {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.threads button,
+.people button,
+.others button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.threads button:hover,
+.people button:hover,
+.others button:hover {
+  border-color: rgba(var(--tint), 0.4);
+}
+.threads b,
+.people b {
+  display: block;
+  font-size: 0.9rem;
+}
+.threads small,
+.people small {
+  display: block;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.76rem;
+}
+.threadOpen {
+  padding: 4px 12px 8px;
+  color: var(--ink2);
+  font-size: 0.86rem;
+}
+.threadOpen p {
+  margin: 6px 0 0;
+}
+.people button {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.others button {
+  font-weight: 700;
+  color: var(--brand);
+}
+
+@media (max-width: 719px) {
+  .room {
+    padding-top: 68px;
+    overflow: auto;
+  }
+  .roomBody {
+    display: block;
+  }
+  .chat {
+    min-height: 60vh;
+  }
+  .composer {
+    position: sticky;
+    bottom: 8px;
+    box-shadow: var(--shadow);
+  }
+  .side {
+    margin-top: 16px;
+    overflow: visible;
+  }
+}

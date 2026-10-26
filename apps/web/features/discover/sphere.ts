@@ -123,7 +123,8 @@ type Ring = { r: number; om: number; ang: number; u: Vec3; v: Vec3; wob: number;
 /** a card's own orbit in tier mode, easing toward its target ring */
 type Orbit = { ang: number; r: Spring; om: Spring; sz: Spring; u: Vec3; v: Vec3; to: Ring; at: number };
 type Shell = { r: number; ax: Vec3; om: number; ang: number };
-type Flight = { phase: "out" | "form" | "back"; t0: number; dur: number; seed: number; active?: boolean; from?: { x: number; y: number } };
+/** out → form → back: Discover's formation. core → gone: tier mode's pull into the core. */
+type Flight = { phase: "out" | "form" | "back" | "core" | "gone"; t0: number; dur: number; seed: number; active?: boolean; from?: { x: number; y: number } };
 type Pos = { x: number; y: number; h: number; rot: number };
 
 type Item = {
@@ -519,6 +520,8 @@ export class Sphere {
   private shells: Shell[] = [];
   private dust!: Dust;
   private swarm: Swarm | null = null;
+  private backdrop = false;
+  private burst = 0;
   private tiers: boolean;
   private cam: number;
   private t = 0;
@@ -886,6 +889,10 @@ export class Sphere {
       S = base * 0.62;
       a = 0.62;
     }
+    if (this.backdrop) {
+      S = base * 1.18;
+      a = 0.42;
+    }
     L.cx.t = W / 2;
     L.cy.t = cy;
     L.S.t = S;
@@ -1014,6 +1021,36 @@ export class Sphere {
   release() {
     this.extract([]);
   }
+  /** tier mode: pull these cards into the core from wherever they orbit. Returns seconds until the last one lands. */
+  pull(uids: string[]): number {
+    const now = this.t;
+    let end = 0;
+    uids.forEach((uid, i) => {
+      const it = this.byUid.get(uid);
+      if (!it?.hero) return;
+      const delay = this.reduced ? 0 : i * 0.07;
+      const dur = this.reduced ? 0.01 : 0.78 + (i % 3) * 0.08;
+      it.fly = { phase: "core", t0: now + delay, dur, seed: (it.n * 37) % 11 };
+      it.hist.length = 0;
+      end = Math.max(end, delay + dur);
+    });
+    this.boost = 1;
+    this.dirty = true;
+    this.start();
+    return end;
+  }
+  /** put cards that were pulled into the core back on their orbits */
+  unpull() {
+    for (const it of this.items) if (it.fly?.phase === "core" || it.fly?.phase === "gone") it.fly = null;
+    this.dirty = true;
+  }
+  /** a room is open: the universe keeps turning, slower and fainter, behind it */
+  setBackdrop(on: boolean) {
+    this.backdrop = on;
+    this.layoutTargets(false);
+    this.dirty = true;
+    this.start();
+  }
   private release1(it: Item) {
     if (it.fly?.phase === "out" && !it.fly.active) {
       it.fly = null;
@@ -1050,7 +1087,7 @@ export class Sphere {
     this.dirty = false;
   }
   private busy() {
-    return this.items.some((it) => it.fly) || this.intro < 1 || Math.abs(this.L.cy.x - this.L.cy.t) > 0.5 || Math.abs(this.L.S.x - this.L.S.t) > 0.5;
+    return this.items.some((it) => it.fly && it.fly.phase !== "gone") || this.burst > 0 || this.intro < 1 || Math.abs(this.L.cy.x - this.L.cy.t) > 0.5 || Math.abs(this.L.S.x - this.L.S.t) > 0.5;
   }
 
   private update(dt: number) {
@@ -1059,7 +1096,8 @@ export class Sphere {
     // speed: calm on hover, boosted when the thought changes, frozen when paused or reduced
     const hov = this.hover ? 0.5 : 1;
     this.boost = Math.max(0, this.boost - dt * 0.75);
-    this.speed.t = this.paused || this.reduced ? 0 : hov * (1 + this.boost * 1.15);
+    this.speed.t = this.paused || this.reduced ? 0 : hov * (1 + this.boost * 1.15) * (this.backdrop ? 0.3 : 1);
+    this.burst = Math.max(0, this.burst - dt * 1.4);
     this.speed.step(dt);
     const gust = 1 + 0.16 * Math.sin(this.t * 0.7) + 0.1 * Math.sin(this.t * 1.9 + 1);
     const sp = this.speed.x * gust;
@@ -1317,6 +1355,7 @@ export class Sphere {
       it.dim.step(dt);
       it.pushS.step(dt);
       if (it.fly) this.flight(it, dt);
+      if (it.fly?.phase === "gone") continue;
       visible.push(it);
     }
     visible.sort((a, b) => b.zs - a.zs); // far → near
@@ -1335,7 +1374,7 @@ export class Sphere {
       }
       const base = it.kind === "crowd" ? it.sz! * S : it.size * S * (it.orb ? it.orb.sz.x : 1);
       let h = base * k;
-      if (own && it.kind === "person") h = it.pos!.h;
+      if (own && it.kind !== "crowd") h = it.pos!.h;
       let w = h * spr.ar;
       // depth of field band + fade
       // the wider tier camera gets a deeper focus band, so the inner and middle orbits stay sharp
@@ -1379,6 +1418,13 @@ export class Sphere {
       it.psx = sx;
       it.psy = sy;
       if (own && it.hist.length > 1 && !this.reduced) this.trail(it, h);
+      // motion blur on the way into the core: fading copies along the path
+      if (own && it.fly?.phase === "core" && !this.reduced) {
+        for (let m = 2; m < it.hist.length; m += 2) {
+          g.globalAlpha = a * 0.22 * (1 - m / it.hist.length);
+          this.blit(spr, 1, it.hist[m].x, it.hist[m].y, w, h, 1, 0, roll);
+        }
+      }
       // halo for what matches the thought
       if (it.glow.x > 0.02 && this.glow) {
         const gw = h * spr.ar * 2.1 + h * 0.5;
@@ -1409,6 +1455,7 @@ export class Sphere {
       if (it.fly?.phase === "form") formed.push({ uid: it.uid, x: sx, y: sy, w: h * PERSON_AR, h, rot: roll, slot: it.slot });
     }
     g.globalAlpha = 1;
+    if (this.burst > 0) this.coreBurst(cx, cy, S);
     if (this.searching && this.quality < 2) this.links(sphA);
     swarmPass?.(true);
     dustPass(true);
@@ -1487,6 +1534,72 @@ export class Sphere {
     }
     g.globalAlpha = 1;
   }
+  /** a card pulled into the core: it swings round the core and accelerates in, shrinking as it goes */
+  private coreFlight(it: Item, f: Flight) {
+    const now = this.t;
+    if (now < f.t0) {
+      it.pos = null;
+      f.active = false;
+      return;
+    }
+    const S = this.L.S.x;
+    const cx = this.L.cx.x;
+    const cy = this.L.cy.x;
+    if (!f.from) {
+      f.from = { x: it.cx, y: it.cy };
+      it.lastH = it.size * S * it.ck * (it.orb?.sz.x ?? 1);
+    }
+    f.active = true;
+    const pr = clamp((now - f.t0) / f.dur, 0, 1);
+    const e = pr * pr * pr;
+    const side = f.seed % 2 ? 1 : -1;
+    const dx = cx - f.from.x;
+    const dy = cy - f.from.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const swing = Math.sin(Math.PI * pr) * S * 0.45 * side;
+    const pos: Pos = {
+      x: lerp(f.from.x, cx, e) + (-dy / len) * swing,
+      y: lerp(f.from.y, cy, e) + (dx / len) * swing,
+      h: it.lastH! * (1 + 0.3 * Math.sin(Math.PI * pr)) * (1 - 0.88 * e),
+      rot: side * 0.6 * e,
+    };
+    it.pos = pos;
+    it.zs = -2.2;
+    it.cx = pos.x;
+    it.cy = pos.y;
+    it.hist.unshift({ x: pos.x, y: pos.y });
+    if (it.hist.length > 10) it.hist.pop();
+    if (pr >= 1) {
+      it.fly = { ...f, phase: "gone", active: false };
+      it.pos = null;
+      this.burst = 1;
+      this.flash = 1;
+      this.punch.t = 1;
+      setTimeout(() => (this.punch.t = 0), 260);
+    }
+  }
+  /** the core takes a card in: a bright ring rushes outward */
+  private coreBurst(cx: number, cy: number, S: number) {
+    const { g } = this;
+    const b = this.burst;
+    const r = S * (0.7 + (1 - b) * 1.8);
+    const gr = g.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
+    gr.addColorStop(0, `rgba(255,253,249,${0.5 * b})`);
+    gr.addColorStop(0.8, `rgba(231,188,105,${0.25 * b})`);
+    gr.addColorStop(1, "rgba(231,188,105,0)");
+    g.fillStyle = gr;
+    g.beginPath();
+    g.arc(cx, cy, r, 0, TAU);
+    g.fill();
+    g.globalAlpha = b * 0.8;
+    g.strokeStyle = "#D97757";
+    g.lineWidth = 1.5 + 3 * b;
+    g.beginPath();
+    g.arc(cx, cy, r, 0, TAU);
+    g.stroke();
+    g.globalAlpha = 1;
+  }
+
   /** thin dashed links between the people who match */
   private links(sphA: number) {
     const { g } = this;
@@ -1517,6 +1630,8 @@ export class Sphere {
   /** one card's flight: orbit → (curved, fast, decelerating) → floating formation, or back */
   private flight(it: Item, dt: number) {
     const f = it.fly!;
+    if (f.phase === "gone") return;
+    if (f.phase === "core") return this.coreFlight(it, f);
     const S = this.L.S.x;
     const cx = this.L.cx.x;
     const now = this.t;

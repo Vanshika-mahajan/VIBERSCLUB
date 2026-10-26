@@ -14,6 +14,17 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the home universe, step 2 (2026-10-26)
+- `apps/web/features/discover/sphere.ts`: `pull()` sends cards into the core on accelerating, swinging paths with motion-blur copies and a burst ring as each one lands; `unpull()` and `setBackdrop()` (the universe keeps turning, slower and fainter, behind a room).
+- `apps/web/features/universe/sample-rooms.ts`: six sample collective rooms with conversations already in progress, plus `roomFor(thought)`.
+- `apps/web/features/universe/RoomView.tsx`: the room the core expands into: messages and photos, a composer (messages stay in the browser), active threads that open in place, the people here (profile panel), other rooms, and back to the universe (also Escape).
+- `UniverseScreen.tsx`: Enter, the arrow, or "Step into <room>" starts the pull; the room opens as a circle growing from the core. Calm mode and reduced motion skip the animation.
+- Tests: room cases in `tests/unit/universe.test.tsx` and `e2e/universe.spec.ts`.
+
+## Tests executed (home universe step 2, 2026-10-26, in the cloud workspace)
+- Vitest: 67 passed. Typecheck and lint clean.
+- Playwright (phone and desktop): 26 passed. "API OK" skipped (no API running here).
+
 ## Files created or modified in the home universe, step 1 (2026-10-26)
 ARPIT asked for the landing page to be one full-screen 3D discovery universe. Decision: collective rooms appear in the demo as sample data only; real rooms with moderation stay in phase 2.
 - `apps/web/features/discover/sphere.ts`: new opt-in tier mode (`tiers: true`): a wider camera, inner, middle and outer orbit bands (inner turns fastest), floating thread and photo screens, a swarm of 2,400 tiny decorative profile specks on the outer orbits, and cards that spiral between bands as relevance changes. Discover itself is unchanged.

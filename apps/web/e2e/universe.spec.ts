@@ -36,3 +36,24 @@ test("the menu reaches the rest of the site", async ({ page }) => {
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Events" }).click();
   await expect(page.getByRole("heading", { name: "Events", level: 1 })).toBeVisible();
 });
+
+test("stepping in pulls matches into the core, which opens into a room", async ({ page }) => {
+  const input = page.getByRole("textbox", { name: "What's on your mind?" });
+  await input.focus();
+  await input.pressSequentially("people who love photography", { delay: 15 });
+  await expect(page.getByText(/in the inner orbit/)).toBeVisible();
+  await page.keyboard.press("Enter");
+  const room = page.getByRole("region", { name: "Manali through a lens" });
+  await expect(room).toBeVisible({ timeout: 5000 });
+  // the universe keeps turning behind the room
+  await expect(page.locator("canvas")).toBeVisible();
+  await expect(room.getByText("Anyone up for Lamadugh at golden hour tomorrow?", { exact: false })).toBeVisible();
+  await room.getByRole("button", { name: /Golden hour spots/ }).click();
+  await expect(room.getByText(/Lamadugh meadow at 6 pm/)).toBeVisible();
+  await room.getByRole("button", { name: /^Meera Kapoor, .*Open profile/ }).click();
+  await expect(page.getByRole("dialog", { name: /profile/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape");
+  await expect(room).toBeHidden();
+  await expect(input).toBeFocused();
+});

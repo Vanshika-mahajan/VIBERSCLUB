@@ -13,6 +13,8 @@ import { useCalm } from "@/features/discover/useCalm";
 import { likedMe } from "@/lib/demo/data";
 import { actions, useDemo } from "@/lib/demo/store";
 import { areas, hueOf, interestById } from "@/lib/taxonomy";
+import { RoomView } from "./RoomView";
+import { roomFor, sampleRooms, type Room } from "./sample-rooms";
 import { sampleScreens, type Screen } from "./sample-screens";
 import { ago, orbitsFor, screenUid } from "./tiers";
 import u from "./universe.module.css";
@@ -40,7 +42,8 @@ type Toast = { id: number; text: string };
 /**
  * The home page: one full-screen universe. People, threads and photos orbit a human sphere in three
  * bands. Each word of a thought re-ranks everything, and the closest matches spiral into the inner
- * orbit. Everything on the canvas is also reachable as a plain list.
+ * orbit. Stepping in pulls them into the core, which opens into a collective room (sample, demo only).
+ * Everything on the canvas is also reachable as a plain list.
  */
 export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreens }: { adapter?: DiscoveryAdapter; screens?: Screen[] }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,6 +71,12 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
   const saved = useMemo(() => new Set(savedList), [savedList]);
   const passed = useMemo(() => new Set(passedList), [passedList]);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const [room, setRoom] = useState<Room | null>(null);
+  const [phase, setPhase] = useState<"universe" | "pulling" | "room">("universe");
+  const [leaving, setLeaving] = useState(false);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const later = (fn: () => void, ms: number) => timers.current.push(setTimeout(fn, ms));
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const toast = useCallback((msg: string) => {
     const id = Date.now() + Math.random();
@@ -138,6 +147,61 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
     sphereRef.current?.setRelevance(orbits ? orbits.relevance : null);
   }, [orbits, sphereReady]);
 
+  /* ---------- into the core, and the room it opens ---------- */
+  const fitRoom = useMemo(() => (orbits && result ? roomFor(result.thought) : null), [orbits, result]);
+
+  function enter() {
+    if (!fitRoom || !orbits || phase !== "universe") return;
+    inputRef.current?.blur();
+    setListOpen(false);
+    const uids = [...orbits.inner.people.map((m) => m.viber.id), ...orbits.inner.screens.map((x) => screenUid(x.screen.id))];
+    const secs = sphereRef.current?.pull(uids) ?? 0;
+    setPhase("pulling");
+    later(() => {
+      setRoom(fitRoom);
+      setPhase("room");
+      sphereRef.current?.setBackdrop(true);
+    }, secs * 1000 + 120);
+  }
+  const leave = useCallback(() => {
+    setLeaving(true);
+    later(
+      () => {
+        setLeaving(false);
+        setRoom(null);
+        setPhase("universe");
+        sphereRef.current?.setBackdrop(false);
+        sphereRef.current?.unpull();
+        inputRef.current?.focus({ preventScroll: true });
+      },
+      calm ? 0 : 420,
+    );
+  }, [calm]);
+  function switchRoom(r: Room) {
+    setLeaving(true);
+    later(
+      () => {
+        setLeaving(false);
+        setRoom(r);
+      },
+      calm ? 0 : 380,
+    );
+  }
+
+  const roomPeople = useMemo(() => {
+    if (!room) return [];
+    const ids = [...(orbits?.inner.people.map((m) => m.viber.id) ?? []), ...room.memberIds];
+    return [...new Set(ids)].filter((id) => !passed.has(id)).flatMap((id) => byId.get(id) ?? []);
+  }, [room, orbits, passed, byId]);
+  const roomThreads = useMemo(() => {
+    if (!room) return [];
+    const overlap = (x: Screen) => x.interests.filter((i) => room.interests.includes(i)).length;
+    return screens
+      .filter((x) => overlap(x) > 0)
+      .sort((a, b) => overlap(b) - overlap(a) || a.minutesAgo - b.minutesAgo)
+      .slice(0, 6);
+  }, [room, screens]);
+
   const edit = (fn: (c: Corrections) => Corrections) => setCorr(fn);
   const reset = () => {
     setText("");
@@ -174,6 +238,7 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (peekId) closePeek();
+      else if (room) leave();
       else if (menuOpen) setMenuOpen(false);
       else if (listOpen) setListOpen(false);
       else return;
@@ -181,7 +246,7 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [peekId, menuOpen, listOpen, closePeek]);
+  }, [peekId, menuOpen, listOpen, closePeek, room, leave]);
 
   const peekViber = peekId ? byId.get(peekId) : undefined;
   const peekMatch = peekId ? result?.matches.find((m) => m.viber.id === peekId) : undefined;
@@ -226,6 +291,14 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
           {plural(orbits.inner.people.length, "Viber", "Vibers")} and {plural(orbits.inner.screens.length, "conversation", "conversations")}
         </b>{" "}
         in the inner orbit{middle ? `, ${middle} more on the middle orbit` : ""}.{" "}
+        {fitRoom && (
+          <>
+            <button type="button" onClick={enter}>
+              Step into {fitRoom.title}
+            </button>
+            {" · "}
+          </>
+        )}
         <button type="button" onClick={() => setListOpen(true)}>
           See as a list
         </button>
@@ -237,7 +310,7 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
   const hasQ = !!text || corr.added.length > 0;
 
   return (
-    <div className={`${s.root} ${u.root}`} data-hasq={hasQ} data-list={listOpen} data-calm={calm} data-searching={!!orbits}>
+    <div className={`${s.root} ${u.root}`} data-hasq={hasQ} data-list={listOpen} data-calm={calm} data-searching={!!orbits} data-phase={phase}>
       <div className={s.stage}>
         <canvas
           ref={canvasRef}
@@ -295,7 +368,7 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
           </h1>
         </div>
         <div className={`${s.ask} ${u.ask}`}>
-          <form role="search" autoComplete="off" onSubmit={(e) => (e.preventDefault(), inputRef.current?.blur())}>
+          <form role="search" autoComplete="off" onSubmit={(e) => (e.preventDefault(), fitRoom ? enter() : inputRef.current?.blur())}>
             <div className={s.bar}>
               <span className={s.orbit} aria-hidden="true" />
               <svg className={s.ret} viewBox="0 0 40 40" aria-hidden="true">
@@ -323,7 +396,7 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
                   <Icon name="x" />
                 </button>
               )}
-              <button type="submit" className={s.go} aria-label="Done typing">
+              <button type="submit" className={s.go} aria-label={fitRoom ? `Step into ${fitRoom.title}` : "Done typing"}>
                 <Icon name="arrow" />
               </button>
             </div>
@@ -407,6 +480,21 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
             </>
           )}
         </section>
+      )}
+
+      {room && (
+        <RoomView
+          key={room.id}
+          room={room}
+          people={roomPeople}
+          threads={roomThreads}
+          otherRooms={sampleRooms.filter((r) => r.id !== room.id)}
+          byId={byId}
+          leaving={leaving}
+          onLeave={leave}
+          onSwitch={switchRoom}
+          onOpenPerson={openPeek}
+        />
       )}
 
       {peekViber && (

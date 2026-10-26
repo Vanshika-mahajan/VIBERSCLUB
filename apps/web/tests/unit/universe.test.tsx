@@ -1,16 +1,18 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { createSampleAdapter } from "@/features/discover/adapter";
 import { interpret } from "@/features/discover/interpret";
 import { discover } from "@/features/discover/rank";
 import { sampleVibers } from "@/features/discover/sample-data";
+import { roomFor, sampleRooms } from "@/features/universe/sample-rooms";
 import { sampleScreens } from "@/features/universe/sample-screens";
 import { INNER, ago, orbitsFor, scoreScreen, screenUid } from "@/features/universe/tiers";
 import { UniverseScreen } from "@/features/universe/UniverseScreen";
 
 // jsdom has no canvas; the universe is covered by the browser tests
 const relevance: (Map<string, number> | null)[] = [];
+const pulled: string[] = [];
 vi.mock("@/features/discover/sphere", () => ({
   initials: (n: string) => n.slice(0, 1),
   Sphere: class {
@@ -22,6 +24,12 @@ vi.mock("@/features/discover/sphere", () => ({
     setRelevance(m: Map<string, number> | null) {
       relevance.push(m);
     }
+    pull(uids: string[]) {
+      pulled.push(...uids);
+      return 0;
+    }
+    unpull() {}
+    setBackdrop() {}
   },
 }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
@@ -37,6 +45,20 @@ describe("sample screens", () => {
   it("are written by sample Vibers", () => {
     const ids = new Set(sampleVibers.map((v) => v.id));
     for (const s of sampleScreens) expect(ids, s.title).toContain(s.authorId);
+  });
+});
+
+describe("sample rooms", () => {
+  it("are written by sample Vibers", () => {
+    const ids = new Set(sampleVibers.map((v) => v.id));
+    for (const r of sampleRooms) for (const id of [...r.memberIds, ...r.messages.map((m) => m.authorId)]) expect(ids, r.title).toContain(id);
+  });
+
+  it("opens the room that shares the most with the thought", () => {
+    expect(roomFor(interpret("people who love photography"))?.id).toBe("lens");
+    expect(roomFor(interpret("trek Hampta and camp"))?.id).toBe("trail");
+    expect(roomFor(interpret("good wifi for a workation"))?.id).toBe("work");
+    expect(roomFor(interpret("Old Manali"))).toBeNull();
   });
 });
 
@@ -98,6 +120,29 @@ describe("UniverseScreen", () => {
     await user.click(screen.getByRole("button", { name: "See as a list" }));
     const list = screen.getByRole("region", { name: "The universe as a list" });
     expect(list).toHaveTextContent(/Inner orbit: 6 Vibers/);
+  });
+
+  it("pulls the inner orbit into the core and opens a room that was already talking", async () => {
+    const user = userEvent.setup();
+    render(<UniverseScreen adapter={createSampleAdapter()} />);
+    await act(async () => {});
+    await user.type(screen.getByRole("textbox", { name: "What's on your mind?" }), "people who love photography");
+    await screen.findAllByRole("button", { name: "Step into Manali through a lens" }, { timeout: 2000 });
+    await user.keyboard("{Enter}");
+    const room = await screen.findByRole("region", { name: "Manali through a lens" });
+    expect(pulled.length).toBeGreaterThanOrEqual(6);
+    expect(within(room).getByRole("list", { name: "Conversation" }).children.length).toBeGreaterThan(3);
+    expect(within(room).getByText("Active threads")).toBeInTheDocument();
+
+    await user.type(within(room).getByRole("textbox", { name: /Say something/ }), "Can I join the Lamadugh walk?{Enter}");
+    expect(within(room).getByText("Can I join the Lamadugh walk?")).toBeInTheDocument();
+
+    await user.click(within(room).getByRole("button", { name: "Trail talk: Hampta and beyond" }));
+    expect(await screen.findByRole("region", { name: "Trail talk: Hampta and beyond" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Back to the universe" }));
+    await waitFor(() => expect(screen.queryByRole("region", { name: /Trail talk/ })).not.toBeInTheDocument());
+    expect(screen.getByRole("textbox", { name: "What's on your mind?" })).toHaveValue("people who love photography");
   });
 
   it("offers the rest of the site from the menu", async () => {
