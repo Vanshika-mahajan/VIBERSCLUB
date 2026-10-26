@@ -13,7 +13,7 @@ flowchart TD
     Onb --> Tabs
 
     subgraph Tabs["Main sections (bottom bar on phones, sidebar on wide screens)"]
-        Discover["Discover<br/>card stack, saved Vibers"]
+        Discover["Discover<br/>sphere, thought bar, saved Vibers"]
         Events["Events<br/>for you, all, my events, create"]
         Explore["Explore<br/>places, roadmaps, properties"]
         Chats["Chats<br/>requests, conversations"]
@@ -36,7 +36,7 @@ flowchart TD
 | --- | --- |
 | Entry | Welcome; Sign in; Email code; Name and birthday; Under-18 stop |
 | Onboarding | Travel status; Area; Dates and flexibility; Intents; Vibe composer with suggested chips; Interest picker; Photo |
-| Discover | Card stack; Card expanded (Viber profile); Mutual-like prompt; Connection request sheet; Saved Vibers; Empty state |
+| Discover | Sphere with thought bar and chips; Formation of matches; Narrow it down; Why these?; Profile panel (side panel on wide screens, bottom sheet on phones) with like, pass, save; List view; Calm mode; About dialog; Mutual-like prompt; Connection request sheet; Saved Vibers; Empty state. Design source: `docs/design/discovery-prototype.html` and `docs/design/DISCOVERY_DESIGN.md` |
 | Events | For you; All events with filters; Event detail; Register confirmation (paid: payment instructions and disclaimer); Waitlist state; Create event (details, time, place or property, capacity and price, interests confirm, preview); Edit event; Cancel event; My events (hosting, attending, past); Registrants; Send update; Rate event |
 | Explore | Explore home; Places list with filters; Place detail; Roadmaps list; Roadmap detail; Property page |
 | Chats | Requests inbox; Conversations list; Chat; Report message |

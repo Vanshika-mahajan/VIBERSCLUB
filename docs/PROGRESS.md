@@ -7,9 +7,31 @@
 - **M0a, backend skeleton** (branch `m0a-backend-skeleton`, pushed, no PR).
 - Docs updated for the website-first plan, ADR-0020 (branch `docs/web-first`, pushed, no PR).
 - **M0b, website skeleton** (local branch `m0b-web-skeleton`, not pushed).
+- **Discover design step** (local branch `design/discovery`, on top of M0b, not pushed): ARPIT's Discover design built in the website with sample Vibers. Decision: his look and flow, with like, pass, save and mutual connection; rooms in phase 2 (`docs/design/DISCOVERY_DESIGN.md`).
 
 ## Current milestone
-M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done. Next: M0c (CI and staging deploys).
+M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
+
+## Files created or modified in the Discover design step
+| File | Purpose |
+| --- | --- |
+| `docs/design/discovery-prototype.html`, `docs/design/DISCOVERY_DESIGN.md` | ARPIT's prototype, the fit review and the decision |
+| `apps/web/lib/taxonomy.ts` | 62 interests, intents and areas with synonyms |
+| `apps/web/features/discover/*` | Sphere engine, thought reader, ranking, sample adapter and data, screen, profile panel, styles, calm-mode hook |
+| `apps/web/app/discover/page.tsx` | Discover route now shows the screen |
+| `apps/web/next.config.ts` | Tailwind loader limited to `globals.css` (it was turning CSS modules into plain CSS) |
+| `apps/web/components/AppNav.tsx` | Fixed 56px phone bar height so Discover can fill the screen above it |
+| `apps/web/tests/unit/{interpret,rank,DiscoverScreen}.test.*`, `apps/web/e2e/discover.spec.ts` | Tests |
+| `docs/MVP_SPEC.md` (F4), `docs/UI_UX_SPECIFICATION.md`, `docs/API_SPECIFICATION.md` | Discover behaviour, screens and the new `POST /discovery/query` |
+
+## Tests executed (Discover design step, 2026-10-26, in the cloud workspace)
+| Check | Result |
+| --- | --- |
+| `pnpm test` (Vitest) | 34 passed: taxonomy (62 ids), thought reading (phrases, plurals, negation, "but", corrections, confidence, explanation), ranking (no overlap excluded, overlap order, intent and host fit, exclusion penalty, area-only, diversity, sample roster validity), screen (chips, formation, remove and bring back, Why these, profile with Like/Save/Escape and focus return, Pass removes, unreadable thought, list view), formation layout |
+| `pnpm e2e` (Playwright, Chromium) | 14 passed on phone (Pixel 7) and desktop: Discover thought → cards above the bar; profile like, save, pass; list view, calm mode, about dialog; navigation; plus the M0b tests |
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+
+**Not verified here:** sample photos (the workspace can't reach the Pexels photo CDN, so cards show initials; on a normal connection the portraits load); Safari and Firefox; real-device performance of the sphere (it lowers its own detail on slow devices).
 
 ## Files created or modified in M0b
 | File | Purpose |
@@ -69,6 +91,8 @@ M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/00
 Tests ran against Postgres 16.15 with pgvector 0.6.0 installed natively in the workspace. **Not verified here:** `docker-compose.yml` (Docker cannot run in this workspace). Please run `docker compose up -d db` once on your machine to confirm.
 
 ## Known issues
+- Discover runs on sample Vibers in the browser until M5 connects `POST /discovery/query`.
+- Formed cards become clickable once they land (about a second after the thought settles).
 - Icons are simple placeholders (white mountain on teal); swap in the real logo when you have one.
 - Not verified here: Safari/iOS and Firefox (e2e runs in Chromium only).
 - None in code otherwise. The workspace is temporary: local commits are lost if it is reclaimed before they are pushed.

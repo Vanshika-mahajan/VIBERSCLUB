@@ -21,7 +21,7 @@ export function AppNav() {
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`block px-3 py-3 text-sm md:rounded-lg ${
+                className={`flex h-14 items-center px-3 text-sm md:block md:h-auto md:py-3 md:rounded-lg ${
                   active ? "font-semibold text-foreground md:bg-zinc-100 md:dark:bg-zinc-900" : "text-zinc-500"
                 }`}
               >

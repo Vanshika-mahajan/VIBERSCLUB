@@ -58,6 +58,7 @@ Legend: **V** = verified Viber required; **H** = event host only; **M** = modera
 | Method and path | Purpose | Notes |
 | --- | --- | --- |
 | `GET /discovery/vibers?limit=10` | Next cards: profile preview, photos, shared interests, explanation `{text, signals[]}` | Never returns contact details or exact dates if hidden |
+| `POST /discovery/query` | `{text, corrections: {added[], removed[]}}` → `{thought: {chips, suggestions, confidence, explanation[]}, matches: [{viber preview, shared[], reasons[]}], pathways[]}` | Rules-first reading of the thought (synonyms, then LLM only when unsure); eligible Vibers only; no scores returned. Contract mirrors `apps/web/features/discover/types.ts` |
 | `POST /discovery/swipes` | `{target_id, action: like or pass or save}` | Returns `{mutual: bool}` |
 | `GET /discovery/saved` | Saved Vibers | |
 | `GET /vibers/{id}` | Public profile view | `404` if not eligible to view (blocked, suspended, paused and not connected) |

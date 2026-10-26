@@ -46,11 +46,11 @@ The MVP has 15 features. Section 16 lists what must not be built yet.
 
 ## F4. Viber discovery
 - **Problem:** find compatible people for this trip.
-- **Behaviour:** card stack; each card shows photos, name, area, shared interests, explanation; like, pass, save; mutual like prompts a connection request; discovery can be paused.
+- **Behaviour (design decided 2026-10-26, see `docs/design/DISCOVERY_DESIGN.md`):** a turning sphere of eligible Vibers. The person types a thought ("What's on your mind?"); it becomes interest and area chips they can remove or add; matching Vibers step out of the sphere with the interest they share; "Narrow it down" adds a common second interest; "Why these?" shows how the thought was read. Tapping a Viber opens their profile with "Why they're here", and like, pass, save. A mutual like prompts a connection request. A list view shows the same people as plain lists; calm mode and pause stop the motion. Without a thought, the default order follows the viewer's own vibe and dates. Rooms (group discussions) are phase 2.
 - **Backend:** eligibility SQL, scoring (AI_MATCHING_DESIGN section 7), explanations, batch cache, swipe upsert, mutual detection.
 - **Data:** `travel_plans`, `user_interests`, `profiles`, `blocks`, `swipes`, `connections`, `discovery_batches`, `embeddings` (from M10).
-- **Endpoints:** `GET /discovery/vibers`, `POST /discovery/swipes`, `GET /discovery/saved`, `GET /vibers/{id}`.
-- **Screens:** Discover (stack), Viber profile, Saved Vibers, Empty state ("No Vibers match your dates yet, see events instead").
+- **Endpoints:** `GET /discovery/vibers`, `POST /discovery/query`, `POST /discovery/swipes`, `GET /discovery/saved`, `GET /vibers/{id}`.
+- **Screens:** Discover (sphere, thought bar, list view), Viber profile panel, Saved Vibers, Empty state ("No Vibers match your dates yet, see events instead").
 - **Acceptance:** PRD J2.
 - **Tests:** unit tests per signal with hand-computed scores; eligibility tests for each filter (block either way, women-only both directions, paused, date windows, flexible dates, local vs visitor, passed within 30 days); explanation never uses hidden fields; batch invalidation.
 - **External:** none (embeddings from M10).
