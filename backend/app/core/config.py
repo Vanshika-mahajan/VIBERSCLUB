@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     # postgresql+asyncpg://postgres:postgres@localhost:5432/vibers
     database_url: str
 
+    # Comma-separated list of website origins allowed to call the API from a browser.
+    cors_allowed_origins: str = "http://localhost:3000"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [o.strip().rstrip("/") for o in self.cors_allowed_origins.split(",") if o.strip()]
+
     @field_validator("database_url")
     @classmethod
     def _require_asyncpg(cls, value: str) -> str:

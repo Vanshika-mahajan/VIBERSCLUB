@@ -17,3 +17,7 @@ __pycache__/
 node_modules/
 .expo/
 .next/
+test-results/
+playwright-report/
+*.tsbuildinfo
+next-env.d.ts

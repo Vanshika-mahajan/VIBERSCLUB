@@ -35,7 +35,7 @@ flowchart LR
 ---
 
 ## M0. Foundations
-- **Delivered in three steps:** M0a backend skeleton (done); M0b Next.js website skeleton calling `/healthz`; M0c CI workflow and staging deploys.
+- **Delivered in three steps:** M0a backend skeleton (done); M0b Next.js website skeleton calling `/healthz` (done); M0c CI workflow and staging deploys.
 - **Objective:** an empty but real website and API that build, test and deploy.
 - **Prerequisites:** blueprint approved; GitHub repo (exists); Render account (API); Vercel account (website); Sentry project.
 - **Affected:** `backend/` skeleton (done in M0a); `backend/app/core/` CORS settings; `apps/web/` (Next.js App Router, TypeScript, Tailwind, five empty sections with mobile bottom navigation, PWA manifest); `.github/workflows/ci.yml`; `.env.example` files.
