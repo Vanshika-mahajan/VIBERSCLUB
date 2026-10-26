@@ -1272,3 +1272,16 @@
     transition-duration: 0.01ms !important;
   }
 }
+.connect {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(79, 107, 255, 0.08);
+  border: 1px solid rgba(79, 107, 255, 0.25);
+  display: grid;
+}
+.connect p {
+  margin: 0;
+  color: var(--ink2);
+  font-weight: 600;
+}

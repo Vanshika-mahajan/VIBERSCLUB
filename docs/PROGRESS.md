@@ -9,8 +9,29 @@
 - **M0b, website skeleton** (local branch `m0b-web-skeleton`, not pushed).
 - **Discover design step** (local branch `design/discovery`, on top of M0b, not pushed): ARPIT's Discover design built in the website with sample Vibers. Decision: his look and flow, with like, pass, save and mutual connection; rooms in phase 2 (`docs/design/DISCOVERY_DESIGN.md`).
 
+- **Pitch demo** (local branch `design/discovery`, not pushed, 2026-10-26): the whole website is clickable with sample data, in the Discover look. Home, Events (filters, event page, join or waitlist, host form), Explore (places, day plans, save), Chats (requests, mutual-only threads, report, block), Profile (vibe with live chips, interests, intents, privacy, plans, reset). Discover likes connect to Chats. State lives in the browser (`apps/web/lib/demo/store.ts`); every action names the milestone that makes it real.
+
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
+
+## Files created or modified in the pitch demo
+| File | Why |
+|---|---|
+| `apps/web/lib/demo/{data,store,people,useToday}.ts` | Sample events, places, day plans, chats; the demo store (localStorage `vibers.demo.v1`) |
+| `apps/web/components/ui.tsx`, `apps/web/app/globals.css` | Shared look: cards, chips, buttons, avatars, toasts, Manrope |
+| `apps/web/features/{home,events,explore,chats,profile}/` and their `app/` routes | The pages; `/events/[id]` prerenders sample events |
+| `apps/web/features/discover/{adapter,DiscoverScreen,ProfilePanel}.tsx` | Swipes go to the store, blocked people are left out, a mutual like offers a connection request, "Use my vibe" |
+| `apps/web/components/AppNav.tsx`, `lib/nav.ts` | Logo, Explore in the sidebar, Chats request badge |
+| `apps/web/tests/unit/{demo-store,pages}.test.*`, `apps/web/e2e/demo.spec.ts` | Store rules, page behaviour, the full journey |
+
+## Tests executed (pitch demo, 2026-10-26, in the cloud workspace)
+| Command | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Clean |
+| `pnpm test` (Vitest) | 56 passed: sample data integrity, mutual likes, mutual-only messages, block, RSVP and waitlist, host validation, filters, profile vibe |
+| `pnpm e2e` (Playwright, phone and desktop) | 20 passed, incl. profile vibe → Discover → like → connect → chat → RSVP → reload, host an event, block |
+
+Not verified: sample photos (the photo CDN is unreachable from this workspace, so pages show initials and gradients).
 
 ## Files created or modified in the Discover design step
 | File | Purpose |
@@ -92,6 +113,7 @@ Tests ran against Postgres 16.15 with pgvector 0.6.0 installed natively in the w
 
 ## Known issues
 - Discover runs on sample Vibers in the browser until M5 connects `POST /discovery/query`.
+- The pitch demo keeps everything in one browser; nothing is shared between people until the matching milestone (M2 profiles, M5 discovery, M6 chats, M7 events, M8 places).
 - Formed cards become clickable once they land (about a second after the thought settles).
 - Icons are simple placeholders (white mountain on teal); swap in the real logo when you have one.
 - Not verified here: Safari/iOS and Firefox (e2e runs in Chromium only).

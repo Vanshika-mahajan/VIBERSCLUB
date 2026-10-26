@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("home shows API OK from the real API", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Vibers Club", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /find your people/, level: 1 })).toBeVisible();
   await expect(page.getByText("API OK")).toBeVisible();
 });
 

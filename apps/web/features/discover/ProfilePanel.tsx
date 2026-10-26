@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { areas, interestById } from "@/lib/taxonomy";
 import s from "./discover.module.css";
@@ -13,6 +14,9 @@ type Props = {
   match?: Match;
   liked: boolean;
   saved: boolean;
+  /** "mutual" = you both liked each other and can send a request; the rest is the connection state */
+  connection?: "mutual" | "requested" | "incoming" | "connected";
+  onConnect?: () => void;
   onClose: () => void;
   onLike: () => void;
   onPass: () => void;
@@ -21,7 +25,7 @@ type Props = {
 };
 
 /** A Viber's profile, side panel on wide screens and bottom sheet on phones. Visible fields only. */
-export function ProfilePanel({ viber: v, match, liked, saved, onClose, onLike, onPass, onSave, onAddInterest }: Props) {
+export function ProfilePanel({ viber: v, match, liked, saved, connection, onConnect, onClose, onLike, onPass, onSave, onAddInterest }: Props) {
   const ref = useRef<HTMLElement>(null);
   const [loaded, setLoaded] = useState<string | null>(null);
   useEffect(() => {
@@ -90,6 +94,26 @@ export function ProfilePanel({ viber: v, match, liked, saved, onClose, onLike, o
             ))}
           </ul>
         </>
+      )}
+
+      {connection && (
+        <div className={s.connect}>
+          {connection === "connected" ? (
+            <Link href={`/chats?with=${v.id}`} className={`${s.btn} ${s.grow}`}>
+              Open chat
+            </Link>
+          ) : connection === "requested" ? (
+            <p>Request sent. You can chat once {v.name.split(" ")[0]} accepts.</p>
+          ) : connection === "incoming" ? (
+            <Link href="/chats" className={`${s.btn} ${s.grow}`}>
+              {v.name.split(" ")[0]} wants to connect: answer in Chats
+            </Link>
+          ) : (
+            <button type="button" className={`${s.btn} ${s.grow}`} onClick={onConnect}>
+              It&apos;s mutual: send a connection request
+            </button>
+          )}
+        </div>
       )}
 
       <div className={s.acts}>

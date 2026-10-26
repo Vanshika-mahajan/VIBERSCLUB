@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import "@fontsource-variable/manrope";
 import { DiscoverScreen } from "@/features/discover/DiscoverScreen";
 
 export const metadata: Metadata = { title: "Discover Vibers" };

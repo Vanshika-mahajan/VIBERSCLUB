@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Placeholder } from "@/components/Placeholder";
+import { EventsScreen } from "@/features/events/EventsScreen";
 
 export const metadata: Metadata = { title: "Events" };
 
 export default function EventsPage() {
-  return <Placeholder title="Events" milestone="M7" />;
+  return <EventsScreen />;
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { likedMe } from "@/lib/demo/data";
+import { actions, useDemo } from "@/lib/demo/store";
 import { areas, hueOf, interestById } from "@/lib/taxonomy";
 import { createSampleAdapter, type DiscoveryAdapter } from "./adapter";
 import s from "./discover.module.css";
@@ -86,9 +88,16 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
   const [calm, setCalm] = useCalm();
   const [paused, setPaused] = useState(false);
   const [tip, setTip] = useState<{ it: SphereItem; x: number; y: number } | null>(null);
-  const [liked, setLiked] = useState<Set<string>>(new Set());
-  const [saved, setSaved] = useState<Set<string>>(new Set());
-  const [passed, setPassed] = useState<Set<string>>(new Set());
+  // likes, saves and passes live in the demo store, so Profile and Chats see them too
+  const likedList = useDemo((x) => x.liked);
+  const savedList = useDemo((x) => x.saved);
+  const passedList = useDemo((x) => x.passed);
+  const blocked = useDemo((x) => x.blocked);
+  const connections = useDemo((x) => x.connections);
+  const myVibe = useDemo((x) => x.me.vibe);
+  const liked = useMemo(() => new Set(likedList), [likedList]);
+  const saved = useMemo(() => new Set(savedList), [savedList]);
+  const passed = useMemo(() => new Set(passedList), [passedList]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const returnFocus = useRef<HTMLElement | null>(null);
 
@@ -104,7 +113,7 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
   /* ---------- universe and preferences ---------- */
   useEffect(() => {
     adapter.universe().then(setUniverse);
-  }, [adapter]);
+  }, [adapter, blocked]);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -276,26 +285,22 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
 
   async function like(v: Viber) {
     if (liked.has(v.id)) return;
-    setLiked((x) => new Set(x).add(v.id));
     const { mutual } = await adapter.swipe(v.id, "like");
     if (mutual) toast(`You and ${first(v)} like each other. You can send a connection request.`);
-    else toast(`You liked ${first(v)}. If they like you back, you can connect.${v.sample ? " (Sample Vibers can't like back.)" : ""}`);
+    else toast(`You liked ${first(v)}. If they like you back, you can connect.`);
+  }
+  function connect(v: Viber) {
+    actions.requestConnection(v.id);
+    toast(likedMe.includes(v.id) ? `${first(v)} accepted. Say hello in Chats.` : `Request sent to ${first(v)}.`);
   }
   function pass(v: Viber) {
-    setPassed((x) => new Set(x).add(v.id));
     void adapter.swipe(v.id, "pass");
     closePeek();
     toast(`Passed. ${first(v)} won't show up in your results for a while.`);
   }
   function save(v: Viber) {
     const on = !saved.has(v.id);
-    setSaved((x) => {
-      const n = new Set(x);
-      if (on) n.add(v.id);
-      else n.delete(v.id);
-      return n;
-    });
-    if (on) void adapter.swipe(v.id, "save");
+    void adapter.swipe(v.id, on ? "save" : "unsave");
     toast(on ? `Saved ${first(v)} for later.` : `Removed ${first(v)} from saved.`);
   }
 
@@ -551,6 +556,11 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
           )}
         </div>
         <div className={s.try} role="group" aria-label="Try one of these thoughts">
+          {myVibe.trim() && (
+            <button type="button" className={s.tr} onClick={() => typeText(myVibe.slice(0, 280))}>
+              Use my vibe
+            </button>
+          )}
           {TRY.map((x) => (
             <button key={x} type="button" className={s.tr} onClick={() => typeText(x)}>
               {x}
@@ -633,6 +643,8 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
           match={peekMatch}
           liked={liked.has(peekViber.id)}
           saved={saved.has(peekViber.id)}
+          connection={connections[peekViber.id] ?? (liked.has(peekViber.id) && likedMe.includes(peekViber.id) ? "mutual" : undefined)}
+          onConnect={() => connect(peekViber)}
           onClose={closePeek}
           onLike={() => like(peekViber)}
           onPass={() => pass(peekViber)}

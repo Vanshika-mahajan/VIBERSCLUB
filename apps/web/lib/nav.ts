@@ -6,6 +6,9 @@ export const navItems = [
   { href: "/profile", label: "Profile" },
 ] as const;
 
+/** in the sidebar only; on phones Explore is reached from Home and Events */
+export const moreItems = [{ href: "/explore", label: "Explore" }] as const;
+
 export function isActive(pathname: string, href: string): boolean {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }

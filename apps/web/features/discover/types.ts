@@ -65,4 +65,4 @@ export type DiscoveryResult = {
   pathways: Pathway[];
 };
 
-export type SwipeAction = "like" | "pass" | "save";
+export type SwipeAction = "like" | "pass" | "save" | "unsave";

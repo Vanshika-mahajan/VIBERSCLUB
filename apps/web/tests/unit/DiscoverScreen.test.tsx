@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { createSampleAdapter } from "@/features/discover/adapter";
 import { DiscoverScreen, formationSlots } from "@/features/discover/DiscoverScreen";
+import { actions, getState } from "@/lib/demo/store";
 
 // jsdom has no canvas; the sphere is covered by the browser tests
 vi.mock("@/features/discover/sphere", () => ({
@@ -126,5 +127,28 @@ describe("formationSlots", () => {
     const wide = formationSlots(7, 1200, 800);
     expect(wide[0].x).toBe(600); // slot 0 is the centre
     expect(wide[0].y).toBeLessThan(wide[6].y); // and the highest point of the arch
+  });
+
+  it("a mutual like offers a connection request, which opens a chat", async () => {
+    const user = userEvent.setup();
+    render(<DiscoverScreen adapter={createSampleAdapter()} />);
+    await act(async () => {});
+    await user.click(screen.getByRole("button", { name: "List view" }));
+    await user.click(within(screen.getByRole("region", { name: "Discover as a list" })).getByRole("button", { name: /Meera Kapoor/ }));
+    const panel = screen.getByRole("dialog", { name: /profile/ });
+    await user.click(within(panel).getByRole("button", { name: "Like" }));
+    expect(await screen.findByText(/You and Meera like each other/)).toBeInTheDocument();
+    await user.click(within(panel).getByRole("button", { name: /send a connection request/ }));
+    expect(getState().connections["meera-kapoor"]).toBe("connected");
+    expect(within(panel).getByRole("link", { name: "Open chat" })).toHaveAttribute("href", "/chats?with=meera-kapoor");
+  });
+
+  it("leaves out people you blocked, and offers your own vibe as a thought", async () => {
+    actions.block("tashi");
+    render(<DiscoverScreen adapter={createSampleAdapter()} />);
+    await act(async () => {});
+    expect(screen.getByRole("button", { name: "Use my vibe" })).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "List view" }));
+    expect(within(screen.getByRole("region", { name: "Discover as a list" })).getByText("39 Vibers")).toBeInTheDocument();
   });
 });

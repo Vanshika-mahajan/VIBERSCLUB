@@ -1,3 +1,4 @@
+import { actions, getState } from "@/lib/demo/store";
 import { interpret } from "./interpret";
 import { discover } from "./rank";
 import { sampleVibers, sampleWorld } from "./sample-data";
@@ -15,16 +16,24 @@ export interface DiscoveryAdapter {
   swipe(viberId: string, action: SwipeAction): Promise<{ mutual: boolean }>;
 }
 
+/** The demo adapter: sample people, with swipes recorded in the demo store (lib/demo/store.ts).
+ * Like the API will, it leaves out anyone you blocked, and a like is mutual when they already liked you. */
 export function createSampleAdapter(pool: Viber[] = sampleVibers, world: WorldCard[] = sampleWorld): DiscoveryAdapter {
+  const eligible = () => {
+    const blocked = getState().blocked;
+    return pool.filter((v) => !blocked.includes(v.id));
+  };
   return {
     async universe() {
-      return { vibers: pool, world };
+      return { vibers: eligible(), world };
     },
     async query(text, corrections, screen) {
-      return discover(interpret(text, corrections), pool, screen);
+      return discover(interpret(text, corrections), eligible(), screen);
     },
-    async swipe() {
-      // sample people never like back, so there is never a mutual match in the demo
+    async swipe(id, action) {
+      if (action === "like") return actions.like(id);
+      if (action === "pass") actions.pass(id);
+      else if (getState().saved.includes(id) !== (action === "save")) actions.toggleSave(id);
       return { mutual: false };
     },
   };
