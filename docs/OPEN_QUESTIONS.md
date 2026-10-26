@@ -8,7 +8,7 @@ Living list. When an item is resolved, move it into an ADR or the PRD and delete
 | --- | --- | --- |
 | Team and time | Team of 5, two technical; ARPIT leads most of the build | This file |
 | Python or TypeScript | Comfortable in Python | ADR-0003 |
-| Web or app | App | ADR-0002 |
+| Web or app | App (2026-10-25), then changed to website first (2026-10-26) | ADR-0002 superseded by ADR-0020 |
 | First audience | All traveller types; Indian and foreign (including Iran and other countries) | PRD section 3, ADR-0014 |
 | Supply partners | Yes, contacts with hostels/cafés exist | PRD H3 |
 | Paid events | Both free and paid; organizer collects in MVP | ADR-0009 |
@@ -26,7 +26,7 @@ Living list. When an item is resolved, move it into an ADR or the PRD and delete
 | A1 | Year-one scale is hundreds to low thousands of monthly users | Little changes below about 100k users |
 | A2 | Launch and pilot in a peak season | Off-season needs Planner features to carry the app |
 | A3 | "Recorded visit" means an attended event or a manual "I went here", never inferred from browsing | — |
-| A4 | Android is tested first, iOS before public launch | — |
+| A4 | Most Vibers use the website on a phone browser; it is tested at phone size first (Chrome on Android, Safari on iPhone), then desktop | — |
 
 ## Open questions
 
@@ -39,4 +39,5 @@ Living list. When an item is resolved, move it into an ADR or the PRD and delete
 | Q5 | LLM and embedding provider | Before the matching feature | Decided by a 50-example evaluation |
 | Q6 | Which 5 to 10 partner venues commit to month one? | Before pilot | — |
 | Q7 | Legal review: who and when? | Before public launch | — |
+| Q11 | Website host: Vercel (default) or Render? | M0c | Vercel; paid plan before commercial launch |
 | Q9 | Minimum scores the extraction eval must reach before M3 ships | M3 | Set after the first eval run, agreed with ARPIT |

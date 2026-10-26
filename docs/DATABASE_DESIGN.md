@@ -50,7 +50,6 @@ erDiagram
     users ||--o{ saved_roadmaps : ""
     users ||--o{ saved_properties : ""
     users ||--o{ notifications : receives
-    users ||--o{ push_tokens : ""
     users ||--o{ notification_preferences : ""
     users ||--o{ reports : files
     reports ||--o{ moderation_actions : ""
@@ -142,9 +141,8 @@ erDiagram
 
 | Table | Key columns | Notes |
 | --- | --- | --- |
-| `notifications` | `id`, `user_id`, `type` (fixed list), `actor_id`, `event_id`, `connection_id`, `conversation_id`, `title`, `body`, `read_at`, `push_sent_at` | Typed reference columns instead of a JSON payload |
-| `push_tokens` | `user_id`, `expo_token` (unique), `platform`, `last_seen_at` | Tokens that Expo reports as invalid are deleted |
-| `notification_preferences` | `user_id`, `type`, `push_enabled` | Missing row means the default for that type |
+| `notifications` | `id`, `user_id`, `type` (fixed list), `actor_id`, `event_id`, `connection_id`, `conversation_id`, `title`, `body`, `read_at`, `email_sent_at` | Typed reference columns instead of a JSON payload |
+| `notification_preferences` | `user_id`, `type`, `email_enabled` | Missing row means the default for that type. A `web_push_subscriptions` table is added only if web push is built |
 
 ### Moderation and audit
 

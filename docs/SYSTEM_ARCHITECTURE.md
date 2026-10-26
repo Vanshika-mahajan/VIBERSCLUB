@@ -4,7 +4,7 @@
 - **Last updated:** 2026-10-25
 - **Source of truth for:** components, module boundaries, data flows, background jobs and repository layout. Requirements live in [PRD.md](PRD.md), decisions in [adr/](adr/), tables in [DATABASE_DESIGN.md](DATABASE_DESIGN.md), endpoints in [API_SPECIFICATION.md](API_SPECIFICATION.md).
 
-The system is one Expo mobile app talking to one FastAPI service. A worker process from the same codebase handles background jobs. Everything is stored in one Postgres database on Supabase, which also provides sign-in and photo storage. Nothing talks to the database except our backend.
+The system is one mobile-first Next.js website talking to one FastAPI service ([ADR-0020](adr/0020-mobile-first-website-first.md)). A worker process from the same codebase handles background jobs. Everything is stored in one Postgres database on Supabase, which also provides sign-in and photo storage. Nothing talks to the database except our backend.
 
 ---
 
@@ -21,28 +21,27 @@ I checked the proposed architecture (Phase 0 plus ADR-0001 to ADR-0015) against 
 | Semantic matching | Yes | pgvector embedding of an English **canonical summary** (so different languages compare fairly) |
 | Date and location compatibility | Yes | Hard SQL filters plus scored overlap; named areas with a neighbour table |
 | Swipe discovery | Yes | `discovery` module; cached candidate batches |
-| Connections and messaging | **Gap fixed** | Supabase Realtime needs the app to talk to the database directly, which conflicts with ADR-0004. Replaced by REST plus push notifications plus polling while a chat is open ([ADR-0016](adr/0016-chat-over-rest-polling-and-push.md)) |
+| Connections and messaging | **Gap fixed** | Supabase Realtime needs the app to talk to the database directly, which conflicts with ADR-0004. Replaced by REST plus polling while a chat is open, with in-app and email notifications ([ADR-0016](adr/0016-chat-over-rest-polling-and-push.md)) |
 | Event creation and registration | Yes | `events` module; capacity enforced with a row lock in one transaction |
 | Business and accommodation profiles | **Changed** | No business accounts ([ADR-0015](adr/0015-everyone-is-a-viber.md)). Property pages are listings a Viber manages, in the `places` module |
 | Personalised roadmaps | Yes, curated only | MVP roadmaps are hand-made and ranked by interests; AI-built roadmaps are phase 2 |
 | Experience reviews | Yes | `reviews` module; only confirmed attendees can review |
 | Scheduled feedback requests | Yes | Worker job scheduled at event end plus 2 hours |
-| Notifications | **Gap fixed** | No push provider was named. Added Expo Push Service (free, works for Android and iOS), with in-app notification records |
-| Moderation and reporting | **Gap fixed** | ADR-0002 deferred the web admin, leaving no moderation interface. Moderators use a role-gated section inside the app ([ADR-0017](adr/0017-moderation-inside-the-app.md)) |
+| Notifications | **Gap fixed** | No delivery channel was named. In-app notifications plus transactional email (web push optional), since mobile browsers limit push ([ADR-0020](adr/0020-mobile-first-website-first.md)) |
+| Moderation and reporting | **Gap fixed** | No moderation interface existed. Moderators use role-gated `/mod` pages inside the website ([ADR-0017](adr/0017-moderation-inside-the-app.md)) |
 | Privacy and access controls | **Gap fixed** | Supabase exposes tables over its own REST API with the public key. Row-level security must be on with no policies for every table ([ADR-0018](adr/0018-lock-down-supabase-data-api.md)) |
 | Product metrics | **Gap fixed** | The PRD metrics had no collection mechanism. Added PostHog (free tier) for app events, and server-side counts from the database ([ADR-0019](adr/0019-product-analytics-with-posthog.md)) |
 
 **Removed as unnecessary for MVP**
 
-- Next.js web app (superseded by Expo, ADR-0002).
+- A native mobile app for now (ADR-0020: website first, Expo later).
 - Langfuse. AI calls are logged to our own `ai_calls` table and Sentry; Langfuse can be added when we iterate on prompts at volume.
 - PostGIS. Named areas plus venue coordinates are enough.
-- Transactional email service. Supabase Auth sends sign-in codes; it needs a custom SMTP sender for production volume, and that one sender is enough for MVP. Push covers all other notifications.
 
 **Conflicting assumptions resolved**
 
 1. The brief lists "business profiles". Resolved by ADR-0015: one account type; a property is a listing.
-2. Phase 0 named Next.js as the frontend and Supabase Realtime for chat. Both are superseded (ADR-0002, ADR-0016).
+2. Phase 0 named Supabase Realtime for chat; superseded by ADR-0016. The frontend went Next.js, then Expo (ADR-0002), then back to a Next.js website first (ADR-0020).
 3. "Verified Viber" depends on phone verification, but some foreign visitors cannot receive SMS. They can browse, swipe and RSVP, but not connect, message or host, until an alternative exists (OPEN_QUESTIONS Q2).
 4. Women-only discovery (ADR-0013) needs a gender field. It is optional, self-declared and used only for that filter.
 
@@ -52,12 +51,14 @@ I checked the proposed architecture (Phase 0 plus ADR-0001 to ADR-0015) against 
 
 ```mermaid
 flowchart TB
-    subgraph Phone["Viber's phone"]
-        App["Expo app (React Native, TypeScript)"]
+    subgraph Browser["Viber's phone or laptop browser"]
+        App["Next.js website (TypeScript, Tailwind)<br/>mobile-first, installable PWA"]
     end
 
+    WebHost["Web host (Vercel)<br/>serves the website"] --> App
+
     subgraph Supabase["Supabase (Mumbai region)"]
-        Auth["Supabase Auth<br/>Google, Apple, email code, phone OTP"]
+        Auth["Supabase Auth<br/>Google, email code, phone OTP"]
         DB[("PostgreSQL + pgvector<br/>all domain data, job queue")]
         Storage["Storage<br/>profile, event, property photos"]
     end
@@ -70,7 +71,7 @@ flowchart TB
     subgraph External["External services"]
         LLM["LLM API<br/>intent extraction"]
         Emb["Embedding API"]
-        Push["Expo Push Service"]
+        Email["Transactional email<br/>(Resend or Postmark)"]
         Sentry["Sentry"]
         PostHog["PostHog"]
     end
@@ -84,7 +85,7 @@ flowchart TB
     Worker --> DB
     Worker --> LLM
     Worker --> Emb
-    Worker --> Push
+    Worker --> Email
     API --> Sentry
     Worker --> Sentry
     App --> Sentry
@@ -92,14 +93,14 @@ flowchart TB
 
 | Component | Responsibility | Depends on |
 | --- | --- | --- |
-| Expo app | All user interfaces: onboarding, discovery, chat, events, explore, moderation (role-gated) | API, Supabase Auth, Storage (uploads only), PostHog, Sentry |
+| Next.js website | All user interfaces: onboarding, discovery, chat, events, explore, moderation (role-gated). No business logic and no database access | API, Supabase Auth, Storage (uploads only), PostHog, Sentry, web host |
 | Supabase Auth | Sign-in, issuing JWTs, phone verification | — |
 | FastAPI web service | Verify JWT, enforce every permission and business rule, read and write the database, enqueue jobs | Postgres, Storage (to sign URLs), Sentry |
-| Worker | Run background jobs: extraction, embeddings, notifications, reminders, feedback requests, deletion | Postgres, LLM, embeddings, Expo Push, Sentry |
+| Worker | Run background jobs: extraction, embeddings, notifications, reminders, feedback requests, deletion | Postgres, LLM, embeddings, email service, Sentry |
 | PostgreSQL + pgvector | All domain data, vectors, job queue, audit log | — |
 | Storage | Photo files; the database stores only their paths | — |
 | LLM and embedding APIs | Turn free text into structured intent; turn summaries into vectors | Provider chosen after evaluation |
-| Expo Push Service | Deliver push notifications to Android and iOS | Expo push tokens from the app |
+| Transactional email | Sign-in codes (as Supabase's SMTP sender), reminders, connection and feedback emails, unread-message digests | Verified sending domain |
 
 ---
 
@@ -120,7 +121,7 @@ flowchart LR
     events["events<br/>events, registrations"]
     places["places<br/>places, properties, roadmaps, saves"]
     reviews["reviews"]
-    notifications["notifications<br/>push, in-app, preferences"]
+    notifications["notifications<br/>in-app, email, preferences"]
     safety["trust_safety<br/>blocks, reports, rate limits"]
     moderation["moderation<br/>queue, actions, audit"]
 
@@ -166,7 +167,7 @@ flowchart LR
 | events | Create, edit, cancel, discovery ranking, registrations, waitlist, attendance, paid status, host updates | Capacity never exceeded; new hosts limited to 3 upcoming events |
 | places | Curated places, properties (listings managed by a Viber), roadmaps, saved items | Only curated data is shown; no AI-invented places |
 | reviews | Event reviews after attendance; averages shown at 3 or more reviews | Only confirmed attendees, never the host |
-| notifications | In-app notifications, push tokens, preferences, push delivery | Respect per-type opt-outs |
+| notifications | In-app notifications, preferences, email delivery (web push optional later) | Respect per-type opt-outs; batch message emails into digests |
 | trust_safety | Blocks, reports, rate limits, community-rules acceptance | Blocks hide both users everywhere |
 | moderation | Report queue, actions (hide, warn, suspend), audit log | Moderator role required; every action logged |
 
@@ -185,7 +186,7 @@ sequenceDiagram
     participant W as Worker
     participant L as LLM API
 
-    A->>S: Sign in (Google, Apple or email code)
+    A->>S: Sign in (Google or email code)
     S-->>A: JWT
     A->>API: POST /v1/me (date of birth, name) with JWT
     API->>DB: create users + profiles rows (reject if under 18)
@@ -211,13 +212,13 @@ If extraction fails or takes longer than 15 seconds, the app shows the manual in
 2. Discovery service reads a cached batch if it is still valid; otherwise it runs the eligibility query, scores candidates and caches the top 50 for 1 hour.
 3. App shows cards with explanations. Each swipe is `POST /v1/discovery/swipes`.
 4. A like on a Viber who already liked the user returns `mutual: true`, and the app suggests sending a connection request.
-5. `POST /v1/connections` checks verification, daily limit and blocks, then creates a pending request and enqueues a push to the recipient.
+5. `POST /v1/connections` checks verification, daily limit and blocks, then creates a pending request and enqueues a notification (in-app plus email) to the recipient.
 6. Accepting creates the conversation. Both users get a notification.
 
 ### 4.3 Messaging
 
-1. `POST /v1/conversations/{id}/messages` checks the connection is active and neither user has blocked the other, stores the message and enqueues a push.
-2. While a chat is open, the app polls `GET /v1/conversations/{id}/messages?after=<last id>` every 3 seconds. When the app is in the background, push notifications bring the user back.
+1. `POST /v1/conversations/{id}/messages` checks the connection is active and neither user has blocked the other, stores the message and updates the unread count; an unread-message digest email goes out if it stays unread for 30 minutes.
+2. While a chat is open, the app polls `GET /v1/conversations/{id}/messages?after=<last id>` every 3 seconds. When the user is away, the unread badge and the digest email bring them back.
 
 ### 4.4 Event registration
 
@@ -246,7 +247,8 @@ Library: **Procrastinate** (Postgres-backed, async, supports scheduled and perio
 | `extract_event_interests` | Event created or description edited | `event:{id}:{sha256(text)}:...` | 3 | Host's own chips are used |
 | `embed_profile` / `embed_event` | Extraction ready, or interests confirmed | `{entity}:{id}:{sha256(summary)}:{model}` | 3 | Ranking falls back to rules-only signals |
 | `process_photo` | Photo registered | `photo:{id}` | 3 | Photo stays hidden; user asked to re-upload |
-| `send_push` | Notification created | `notification:{id}` | 5 | Notification stays in the in-app list |
+| `send_email_notification` | Notification created (types that email) | `notification:{id}` | 5 | Notification stays in the in-app list |
+| `send_unread_digest` | Message unread for 30 minutes | `conversation:{id}:{user}:{hour}` | 3 | Logged |
 | `event_reminder` | Registration confirmed | `event:{id}:reminder:{24h or 2h}` | 3 | Logged |
 | `send_feedback_requests` | Event published (scheduled at end + 2 h) | `event:{id}:feedback` | 3 | Logged |
 | `promote_waitlist` | Registration cancelled | `event:{id}:seat:{registration_id}` | 3 | Host sees waitlist and can promote manually |
@@ -257,7 +259,7 @@ Library: **Procrastinate** (Postgres-backed, async, supports scheduled and perio
 Rules for every job:
 
 - A job re-reads current state before acting. For example, a reminder for a cancelled event does nothing.
-- A job may be run twice safely: writes are upserts keyed by the idempotency key, and pushes check `notifications.sent_at`.
+- A job may be run twice safely: writes are upserts keyed by the idempotency key, and emails check `notifications.email_sent_at`.
 - Jobs never call each other directly. They enqueue the next job.
 - Failed jobs stay in the queue tables with their error, visible to admins.
 
@@ -265,19 +267,19 @@ Rules for every job:
 
 ## 6. Repository structure
 
-A single repository (monorepo), so one pull request can change the API, the app and the docs together.
+A single repository (monorepo), so one pull request can change the API, the website and the docs together.
 
 ```
 vibersclub/
 ├── apps/
-│   └── mobile/                  # Expo app (TypeScript)
-│       ├── app/                 # Expo Router screens
+│   └── web/                     # Next.js website (TypeScript, Tailwind)
+│       ├── app/                 # App Router pages
 │       │   ├── (auth)/          # welcome, sign-in, onboarding
-│       │   ├── (tabs)/          # discover, events, explore, chats, profile
-│       │   └── moderation/      # role-gated
+│       │   ├── (main)/          # discover, events, explore, chats, profile
+│       │   └── mod/             # role-gated moderation
 │       ├── components/
-│       ├── lib/                 # API client wrapper, auth, push, analytics
-│       └── tests/
+│       ├── lib/                 # API client wrapper, auth, analytics
+│       └── tests/               # Vitest unit and component tests; e2e/ for Playwright
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI app factory
@@ -291,7 +293,7 @@ vibersclub/
 │   │   └── integration/         # against a real Postgres in Docker
 │   └── pyproject.toml           # managed with uv; ruff, mypy, pytest
 ├── packages/
-│   └── api-client/              # TypeScript client generated from OpenAPI
+│   └── api-client/              # TypeScript client generated from OpenAPI (reused by a future native app)
 ├── data/
 │   └── seed/                    # taxonomy.yaml, synonyms.yaml, areas.yaml, places.csv, roadmaps.yaml
 ├── eval/

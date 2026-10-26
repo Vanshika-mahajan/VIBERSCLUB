@@ -9,7 +9,7 @@
 | Topic | Rule |
 | --- | --- |
 | Base URL | `https://<api-host>/v1` |
-| Auth | `Authorization: Bearer <Supabase access token>` on every endpoint except `/healthz`. The API verifies the token against Supabase's signing keys (JWKS), then loads our `users` row |
+| Auth | `Authorization: Bearer <Supabase access token>` on every endpoint except `/healthz`. The website reads the token from its Supabase session. CORS allows only the website's origins. The API verifies the token against Supabase's signing keys (JWKS), then loads our `users` row |
 | Account state | Requests from `suspended` or `deletion_pending` users get `403 account_suspended` (except `GET /me` and `DELETE /me`) |
 | Verification | Endpoints marked **V** need a verified phone; otherwise `403 verification_required` |
 | Format | JSON, `snake_case`, UTC ISO 8601 timestamps, dates as `YYYY-MM-DD` |
@@ -49,8 +49,7 @@ Legend: **V** = verified Viber required; **H** = event host only; **M** = modera
 | `PUT /me/interests` | Replace confirmed interests (1 to 15 ids) | |
 | `POST /me/verification/sync` | Re-read phone verification from Supabase after the app completes phone OTP | |
 | `POST /me/community-rules` | Accept community rules (needed before hosting) | |
-| `GET /me/notification-preferences` / `PUT` | Per-type push on or off | |
-| `PUT /me/push-tokens` | Register or refresh an Expo push token | |
+| `GET /me/notification-preferences` / `PUT` | Per-type email on or off | |
 | `DELETE /me` | Request account deletion (7-day grace period, then `delete_account` job) | |
 | `GET /me/export` | Request a data export (emailed link in phase 2; MVP returns JSON) | |
 
@@ -100,7 +99,7 @@ Legend: **V** = verified Viber required; **H** = event host only; **M** = modera
 | `DELETE /events/{id}/registrations/me` | Cancel own registration; promotes waitlist | |
 | `GET /events/{id}/registrations` **H** | Registrant list (name, photo, status, payment, attendance) | |
 | `PATCH /events/{id}/registrations/{rid}` **H** | `{payment_status?, attendance?}` | |
-| `POST /events/{id}/updates` **H** | Send a short update to registrants (in-app plus push) | Daily limit per event |
+| `POST /events/{id}/updates` **H** | Send a short update to registrants (in-app plus email) | Daily limit per event |
 | `GET /me/events?role=hosting or attending&when=upcoming or past` | Own events | |
 
 ### Reviews

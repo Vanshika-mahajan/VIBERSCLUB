@@ -1,4 +1,4 @@
-# ADR-0005: Supabase Auth with Google, Apple, email OTP and phone OTP
+# ADR-0005: Supabase Auth with Google, email OTP and phone OTP
 
 - **Status:** Accepted
 - **Date:** 2026-10-25
@@ -14,7 +14,7 @@ Users are both Indian and foreign (including visitors from Iran and elsewhere). 
 
 ## Decision
 Option 2 on Supabase Auth:
-- Sign in with Google, Sign in with Apple (required by Apple when offering Google), or email one-time code.
+- Sign in with Google or an email one-time code. Sign in with Apple is added when a native iOS app exists (ADR-0020).
 - **Verified Viber** = signed in plus a verified phone number (Indian or international) **or**, for users who cannot receive SMS, a later alternative such as ID verification. Verification is required to send connection requests, message, and host events. Browsing does not require it.
 - FastAPI verifies the Supabase JWT on every request and maps it to our own `users` row.
 

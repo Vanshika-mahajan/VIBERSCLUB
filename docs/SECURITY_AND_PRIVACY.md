@@ -25,10 +25,13 @@
 
 ## 3. Authentication and sessions
 
-- [ ] Supabase Auth handles sign-in; tokens are short-lived JWTs refreshed by the Supabase client. Store tokens in Expo SecureStore, never AsyncStorage.
+- [ ] Supabase Auth handles sign-in; tokens are short-lived JWTs refreshed by the Supabase client. The website keeps the session in cookies through Supabase's server-side helpers, not in hand-written localStorage code.
 - [ ] The API verifies every JWT's signature (JWKS), expiry, issuer and audience, and rejects tokens for users whose status is suspended.
 - [ ] Phone verification status is read from Supabase server-side (`/me/verification/sync`), never trusted from the app.
-- [ ] Sign-in with Apple is offered on iOS (App Store rule when Google sign-in is offered).
+- [ ] Website security headers: a Content Security Policy that allows scripts only from our own origin and named services, `X-Frame-Options: DENY`, HTTPS only (HSTS).
+- [ ] CORS on the API allows only the website's origins; tokens are sent as `Authorization` headers, so cross-site form posts cannot act as the user.
+- [ ] No `dangerouslySetInnerHTML` with user content; React escapes text by default.
+- [ ] Only `NEXT_PUBLIC_` variables reach the browser, and none of them is a secret.
 
 ## 4. Authorization
 

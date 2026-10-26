@@ -10,7 +10,7 @@ Phase 0 suggested Supabase Realtime for chat. Realtime delivers database changes
 ## Options considered
 1. **Supabase Realtime.** Instant delivery; but splits authorization between the API and database policies.
 2. **Own WebSocket endpoint in FastAPI.** Instant; but needs sticky connections and more operational care.
-3. **REST plus push plus polling.** Messages sent and read through the API; push notifications when the app is in the background; the open chat polls every 3 seconds.
+3. **REST plus notifications plus polling.** Messages sent and read through the API; the open chat polls every 3 seconds; when the user is away, an in-app unread badge and an email digest bring them back (web push optional, ADR-0020).
 
 ## Decision
 Option 3 for MVP.

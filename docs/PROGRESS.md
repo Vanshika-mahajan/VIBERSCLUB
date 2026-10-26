@@ -3,11 +3,12 @@
 **Last updated:** 2026-10-25
 
 ## Completed milestones
+- Docs updated for the website-first plan (local branch `docs/web-first`, not pushed).
 - Phase 0 to 2: discovery, PRD, blueprint, ADR-0001 to ADR-0019 (all Accepted; ADR-0013 pending user validation).
 - **M0a, backend skeleton** (local branch `m0a-backend-skeleton`, not pushed).
 
 ## Current milestone
-M0 Foundations. Next step: M0b (Expo app skeleton), then M0c (CI and staging deploy).
+M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). Next step: M0b (Next.js website skeleton), then M0c (CI and staging deploys).
 
 ## Files created or modified in M0a
 | File | Purpose |
@@ -42,10 +43,10 @@ Tests ran against Postgres 16.15 with pgvector 0.6.0 installed natively in the w
 
 ## Missing credentials or configuration
 - None needed for M0a (local database only).
-- Needed for M0c: Render account (API hosting), Expo account (app builds). Needed for M1: Supabase dev project, Google OAuth client. Details will be given when each is needed.
+- Needed for M0c: Render account (API hosting), Vercel account (website hosting). Needed for M1: Supabase dev project, Google OAuth client. Details will be given when each is needed.
 
 ## Unresolved decisions
 - OPEN_QUESTIONS Q1 to Q7 and Q9 (none block M0).
 
 ## Next recommended action
-Review M0a, then approve M0b (Expo app with five empty tabs that shows the `/healthz` result), or ask me to push M0a.
+Confirm the website-first doc changes, then approve M0b (Next.js website with five empty sections that shows the `/healthz` result). Ask me to push M0a and the doc changes whenever you want them on GitHub.

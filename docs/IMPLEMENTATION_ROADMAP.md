@@ -35,23 +35,23 @@ flowchart LR
 ---
 
 ## M0. Foundations
-- **Delivered in three steps:** M0a backend skeleton; M0b Expo app skeleton calling `/healthz`; M0c CI workflow and staging deploy.
-- **Objective:** an empty but real app and API that build, test and deploy.
-- **Prerequisites:** blueprint approved; GitHub repo (exists); Expo account; API host account; Sentry project.
-- **Affected:** `backend/` skeleton (`app/main.py`, `app/core/config.py`, `app/core/db.py`, `app/core/errors.py`), `backend/migrations/`, `docker-compose.yml`, `apps/mobile/` (Expo Router skeleton with 5 empty tabs), `.github/workflows/ci.yml`, `.env.example` files.
-- **Tasks:** FastAPI app factory with `/healthz`; settings via pydantic-settings; SQLAlchemy async engine; Alembic initialised with an empty first migration creating the `app` schema and extensions; Problem JSON error handler; Docker Postgres with pgvector; Expo app with tabs and a screen calling `/healthz`; CI for both; staging deploy of the API.
-- **Tests:** `/healthz` returns 200 and checks the database; migration round-trip; app renders tabs (Jest).
-- **Local verification:** `docker compose up -d db` → `uv run alembic upgrade head` → `uv run uvicorn app.main:app` → `curl localhost:8000/healthz`; `pnpm --filter mobile start` and open on a phone; the Home tab shows "API OK".
-- **Acceptance:** CI green on a pull request; staging `/healthz` reachable over HTTPS.
-- **Failure modes:** pgvector missing in the image (use `pgvector/pgvector:pg16`); phone can't reach local API (use the machine's LAN IP or a tunnel); Expo SDK version mismatch.
+- **Delivered in three steps:** M0a backend skeleton (done); M0b Next.js website skeleton calling `/healthz`; M0c CI workflow and staging deploys.
+- **Objective:** an empty but real website and API that build, test and deploy.
+- **Prerequisites:** blueprint approved; GitHub repo (exists); Render account (API); Vercel account (website); Sentry project.
+- **Affected:** `backend/` skeleton (done in M0a); `backend/app/core/` CORS settings; `apps/web/` (Next.js App Router, TypeScript, Tailwind, five empty sections with mobile bottom navigation, PWA manifest); `.github/workflows/ci.yml`; `.env.example` files.
+- **Tasks (M0b):** create the Next.js app with pnpm; Tailwind; layout with bottom navigation on phones and a sidebar on wide screens; a home page that calls `/healthz` and shows "API OK" or a clear error; `NEXT_PUBLIC_API_URL` setting; CORS on the API for the website's origin; web app manifest and icons; Vitest and Playwright set up.
+- **Tests:** API: `/healthz`, migration round-trip, CORS allows the configured origin and rejects others. Website: component test for the health status (ok, error, loading); Playwright test at phone size that the home page shows "API OK" against a running API.
+- **Local verification:** `docker compose up -d db` → backend running on port 8000 → `pnpm --filter web dev` → open http://localhost:3000 on the laptop and on a phone on the same Wi-Fi (via the laptop's network address); the home page shows "API OK".
+- **Acceptance:** CI green on a pull request; staging website loads over HTTPS and shows "API OK" from the staging API.
+- **Failure modes:** pgvector missing in the image (use `pgvector/pgvector:pg16`); CORS error in the browser console (origin missing from `CORS_ALLOWED_ORIGINS`); phone can't reach the laptop (firewall, or use a tunnel).
 
 ## M1. Sign-in and users
 - **Objective:** a person can sign in and gets a `users` row; suspended users are blocked.
-- **Prerequisites:** M0; Supabase dev project; Google OAuth client; Apple sign-in (can follow within M1 for iOS).
-- **Affected:** `app/core/auth.py`, `modules/identity/`, migration for `users` and `profiles`, app `(auth)/` screens, `lib/auth.ts`.
-- **Tasks:** JWKS verification with caching; current-user dependency; `POST /me`, `GET /me`; age check; Supabase client in the app with SecureStore; welcome, sign-in, birthday screens; test JWT signer for integration tests.
+- **Prerequisites:** M0; Supabase dev project; Google OAuth client; email service as Supabase's SMTP sender for sign-in codes.
+- **Affected:** `app/core/auth.py`, `modules/identity/`, migration for `users` and `profiles`, website `(auth)/` pages, `lib/auth.ts`.
+- **Tasks:** JWKS verification with caching; current-user dependency; `POST /me`, `GET /me`; age check; Supabase client in the website with cookie sessions (`@supabase/ssr`); welcome, sign-in, birthday screens; test JWT signer for integration tests.
 - **Tests:** token valid, expired, wrong audience, wrong key; under-18 rejected; `POST /me` idempotent; suspended user 403.
-- **Local verification:** sign in on a phone with Google; the Profile tab shows your name from `GET /me`.
+- **Local verification:** sign in with Google on the local website; the Profile page shows your name from `GET /me`.
 - **Acceptance:** PRD J1 sign-in and 18+ criteria.
 - **Failure modes:** redirect URI misconfigured for OAuth; clock skew on token expiry (allow 60 s leeway).
 
@@ -63,7 +63,7 @@ flowchart LR
 - **Tests:** plan validation; interest ids must exist; photo registration failures; profile response never includes email or phone.
 - **Local verification:** fresh account → onboarding with skips → profile shows plan, interests, photo.
 - **Acceptance:** PRD J1 except AI extraction.
-- **Failure modes:** large photos on slow networks (resize in the app before upload); seed loader run twice (must be idempotent).
+- **Failure modes:** large photos on slow networks (resize in the browser before upload); seed loader run twice (must be idempotent).
 
 ## M3. Vibe extraction
 - **Objective:** free text becomes suggested interests within about 10 seconds, with a fallback.
@@ -96,10 +96,10 @@ flowchart LR
 
 ## M6. Messaging
 - **Objective:** connected Vibers can chat.
-- **Prerequisites:** M5; Expo push setup (can be finished in M8; chat works without push).
+- **Prerequisites:** M5 (email digests for unread messages arrive in M8; chat works without them).
 - **Affected:** `modules/messaging/`, migrations; Chats and Chat screens.
 - **Tests:** MVP_SPEC F6.
-- **Local verification:** two devices exchange messages; block mid-chat stops sending.
+- **Local verification:** two browsers (or a laptop and a phone) exchange messages; block mid-chat stops sending.
 - **Acceptance:** PRD J3 messaging criteria.
 - **Failure modes:** battery drain from polling (poll only while chat is open and app is in the foreground).
 
@@ -115,11 +115,12 @@ flowchart LR
 ## M8. Notifications, reminders and reviews
 - **Objective:** time-sensitive moments reach people; attendees can review.
 - **Prerequisites:** M6, M7.
-- **Affected:** `modules/notifications/`, `modules/reviews/`, worker jobs `send_push`, `event_reminder`, `send_feedback_requests`, `promote_waitlist`; notification and review screens.
-- **Tests:** MVP_SPEC F11 and F12; each job run twice gives one push.
-- **Local verification:** create an event starting in 26 hours with a frozen-clock dev command that fast-forwards jobs; receive reminder and feedback pushes on a device.
+- **Affected:** `modules/notifications/`, `modules/reviews/`, worker jobs `send_email_notification`, `send_unread_digest`, `event_reminder`, `send_feedback_requests`, `promote_waitlist`; notification and review screens.
+- **Tests:** MVP_SPEC F11 and F12; each job run twice sends one email.
+- **Local verification:** create an event starting in 26 hours with a frozen-clock dev command that fast-forwards jobs; receive reminder and feedback emails (in a local mail catcher) and in-app notifications.
 - **Acceptance:** PRD J4 reminders, J6.
-- **Failure modes:** duplicate pushes (idempotency key); invalid tokens (cleanup).
+- **Failure modes:** duplicate emails (idempotency key); bounces and spam-folder delivery (verified domain with SPF and DKIM).
+- **Optional:** web push for browsers that support it, only after email works.
 
 ## M9. Explore
 - **Objective:** curated places and roadmaps, with saves.
@@ -151,10 +152,10 @@ flowchart LR
 ## M12. Pilot and pitch readiness
 - **Objective:** a polished, measurable build in testers' hands.
 - **Prerequisites:** M9, M10 (or a decision to skip semantics), M11; partner venues (track T4); legal review (track T5) before public launch.
-- **Affected:** analytics (`lib/analytics.ts`), demo seed, EAS build profiles, store listings, Maestro flows, PROGRESS.md.
-- **Tasks:** PostHog events for every PRD metric; metrics queries; demo script; TestFlight and Play internal testing; Maestro end-to-end flows; performance pass on a low-end Android phone over 4G.
+- **Affected:** analytics (`lib/analytics.ts`), demo seed, production website deploy and domain, Playwright journeys, PROGRESS.md.
+- **Tasks:** PostHog events for every PRD metric; metrics queries; demo script; production deploy on our own domain; Playwright journeys for J1 to J9; performance pass on a low-end Android phone's browser over 4G (Lighthouse mobile score recorded).
 - **Acceptance:** PRD section 9; all journeys J1 to J9 pass on staging with real devices.
-- **Failure modes:** store review rejection (prepare privacy labels, account deletion in-app, Apple sign-in; all already in scope).
+- **Failure modes:** slow first load on mountain networks (keep pages light, cache static assets, measure on 4G).
 
 ---
 
@@ -167,5 +168,5 @@ flowchart LR
 | T3 Curated places and roadmaps | Teammate who knows Manali | `places.csv` (100 to 200 rows), `roadmaps.yaml` (3 to 5) | M9 |
 | T4 Partner venues and concierge test | ARPIT | 5 to 10 committed venues; concierge results (PRD H1, H2) | M12 |
 | T5 Legal review | ARPIT with a lawyer | Answers to SECURITY_AND_PRIVACY section 10 | Public launch |
-| T6 Visual design | Designer or teammate | Brand, colours, key screens | M2 |
+| T6 Visual design | Designer or teammate | Brand, colours, key screens (phone first, then desktop) | M2 |
 | T7 Women travellers interviews | Teammate | 5 interviews on women-only discovery (ADR-0013) | M4 |

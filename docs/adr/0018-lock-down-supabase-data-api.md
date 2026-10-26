@@ -5,7 +5,7 @@
 - **Deciders:** ARPIT (approved the Phase 2 blueprint, PR #2)
 
 ## Context
-Supabase automatically offers a REST and GraphQL API over the `public` schema, usable with the public (anon) key that ships inside the app. If our tables were exposed there, anyone could read them, bypassing every rule in the backend.
+Supabase automatically offers a REST and GraphQL API over the `public` schema, usable with the public (anon) key that ships inside the website's JavaScript. If our tables were exposed there, anyone could read them, bypassing every rule in the backend.
 
 ## Decision
 - All application tables live in a dedicated `app` schema that is not exposed to the Data API.

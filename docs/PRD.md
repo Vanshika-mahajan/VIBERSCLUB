@@ -7,7 +7,7 @@
 
 ## 1. Summary
 
-Vibers Club is a mobile app for Manali that turns a traveller's own description of the trip they want into matches with compatible people, real events and places, and lets them meet safely. The MVP proves one loop:
+Vibers Club is a mobile-first website for Manali (a native app comes later, [ADR-0020](adr/0020-mobile-first-website-first.md)) that turns a traveller's own description of the trip they want into matches with compatible people, real events and places, and lets them meet safely. The MVP proves one loop:
 
 > Express intent → see relevant Vibers and events → connect or RSVP → meet in real life → leave feedback.
 
@@ -40,7 +40,7 @@ Audience mix: Indian and international travellers, including visitors from Iran 
 
 | Area | What ships |
 | --- | --- |
-| Accounts | Sign in with Google, Apple or email code; optional phone verification to become a Verified Viber ([ADR-0005](adr/0005-supabase-auth-sign-in-methods.md)) |
+| Accounts | Sign in with Google or email code; optional phone verification to become a Verified Viber ([ADR-0005](adr/0005-supabase-auth-sign-in-methods.md)) |
 | Onboarding | Progressive: travel status, area, rough dates, interests (chips or free-text vibe). Only status is mandatory |
 | Profile | Name, photo(s), short bio, vibe text, confirmed interests, travel plan, visibility settings, optional gender for women-only discovery |
 | Vibe Intelligence | Free text → extracted interests, intent, area and dates, shown back as editable chips ([ADR-0011](adr/0011-controlled-taxonomy-and-validated-llm-extraction.md)) |
@@ -51,7 +51,7 @@ Audience mix: Indian and international travellers, including visitors from Iran 
 | Properties (optional) | A Viber can add a property they run (hotel, hostel, homestay, cottage, café, activity provider) with photos, area, amenities and interests, and link events to it. Other Vibers can view it, see its upcoming events and save it; booking links out to the property's own channel |
 | Explore (curated) | 100 to 200 hand-curated places with area, category, interests; 3 to 5 ready-made roadmaps; save places and roadmaps |
 | Feedback | After an attended event: rating plus short review, only for registered attendees |
-| Notifications | Push and in-app: connection request and acceptance, new message, event reminder, event changed or cancelled, feedback request. Per-type opt-out |
+| Notifications | In-app and email: connection request and acceptance, unread messages (digest email), event reminder, event changed or cancelled, feedback request. Per-type opt-out |
 | Safety | Block, report (user, message, event, review), women-only discovery ([ADR-0013](adr/0013-women-only-discovery-option.md)), area-level location only ([ADR-0006](adr/0006-location-privacy-named-areas.md)), rate limits |
 | Moderation | Admin queue of reports; hide content; suspend user; every action audit-logged |
 | Account control | Edit or delete account and data; export on request |
@@ -69,7 +69,7 @@ Audience mix: Indian and international travellers, including visitors from Iran 
 | AI-generated or editable custom roadmaps | 2 | Needs a reliable places dataset first; never invent places or times |
 | Place reviews, travel stories | 2 | Moderation capacity |
 | Vibe Circles, group chat | 2 | Group moderation is harder than 1:1 |
-| Web admin console and public event share pages | 2 (admin may start as a minimal internal tool) | [ADR-0002](adr/0002-mobile-app-with-expo.md) |
+| Native mobile app (Android, iOS) and public event share pages | 2 | Website first ([ADR-0020](adr/0020-mobile-first-website-first.md)) |
 | Live map, achievements, challenges, "worth the hype?" insights, business analytics | Future | Need demand evidence, scale, or a separate safety design |
 | Accommodation booking | Not planned | Link out to existing platforms |
 | Other destinations | Not planned | Manali only until the loop works |
@@ -81,7 +81,7 @@ Each criterion is testable. "Eligible" always means: not blocked in either direc
 ### J1. Join and express intent
 A new user gets from install to a first relevant recommendation in under 2 minutes.
 
-- [ ] User can sign in with Google, Apple or an email code.
+- [ ] User can sign in with Google or an email code.
 - [ ] Only travel status (planning, here now, local) is mandatory; every other step can be skipped and completed later.
 - [ ] User can type a free-text vibe in any language; within 10 seconds the app shows extracted interests as chips.
 - [ ] User can remove or add chips; saved interests are exactly what the user confirmed.
@@ -109,7 +109,7 @@ A new user gets from install to a first relevant recommendation in under 2 minut
 - [ ] RSVP to a free event confirms immediately if seats remain; otherwise the user joins the waitlist.
 - [ ] RSVP to a paid event creates a pending registration and shows the host's payment instructions and a clear note that Vibers Club does not handle payment or refunds.
 - [ ] Confirmed registrations never exceed capacity, including under simultaneous RSVPs.
-- [ ] Reminder notification 24 hours and 2 hours before the start (each can be switched off).
+- [ ] Reminder (in-app and email) 24 hours and 2 hours before the start (each can be switched off).
 - [ ] User can cancel their RSVP; the first waitlisted user is offered the seat.
 
 ### J5. Host an event
@@ -196,7 +196,7 @@ The MVP doubles as the investor demo, so:
 - Seed data: realistic (clearly labelled test) profiles, 15 to 30 real or partner events, and the curated places dataset.
 - A scripted 3-minute path: sign up with a free-text vibe, see extracted interests, get matched with a "why you match" reason, connect, RSVP to a paid event, receive a reminder.
 - Analytics events for every metric in section 7 from day one, so the pitch can show real pilot numbers.
-- Android and iOS builds installable via TestFlight and Play internal testing.
+- A public staging URL that works well in a phone browser and can be installed to the home screen.
 
 ## 10. Non-functional requirements
 

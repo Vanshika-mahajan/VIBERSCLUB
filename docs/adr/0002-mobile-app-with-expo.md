@@ -1,6 +1,6 @@
 # ADR-0002: Native mobile app built with React Native and Expo
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0020](0020-mobile-first-website-first.md) on 2026-10-26 (website first; native app later)
 - **Date:** 2026-10-25
 - **Deciders:** ARPIT (chose "app" over mobile web)
 

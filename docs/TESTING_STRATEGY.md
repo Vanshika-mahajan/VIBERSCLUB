@@ -15,8 +15,8 @@ Most of the risk in Vibers Club sits in the backend rules: who can see whom, cap
 | AI adapter | pytest with a fake LLM adapter returning recorded fixtures (valid, invalid, hostile, timeout) | Pipeline behaviour, never real model quality | Every push |
 | AI evaluation | `eval/run_eval.py` against real providers | Extraction F1, intent and area accuracy, matching AUC and NDCG | Manually, and required before changing model, prompt, taxonomy or weights |
 | Migrations | `alembic upgrade head` then `downgrade -1` then `upgrade head` on an empty database; plus upgrade against a copy of seeded data | Every migration reversible and applies cleanly | Every push |
-| App unit and component | Jest + React Native Testing Library | Form validation, state handling, rendering of API error codes, analytics has no PII | Every push |
-| App end to end | Maestro flows on an Android emulator against staging | Sign-in with a test account, onboarding, swipe, connect, chat, RSVP | Before each release build (from M12) |
+| Website unit and component | Vitest + React Testing Library | Form validation, state handling, rendering of API error codes, analytics has no PII | Every push |
+| Website end to end | Playwright in Chromium with a phone-sized viewport (and one desktop run), against a local stack or staging | The required journey below, then connect, chat, RSVP | Every pull request once the journey exists (from M4) |
 | Contract | Regenerate the TypeScript client from OpenAPI in CI and fail if the committed client differs | App and API agree | Every push |
 
 ## Required end-to-end journey
@@ -25,7 +25,7 @@ The minimum journey every release must pass (ARPIT, 2026-10-25):
 
 > Sign up → complete onboarding → select interests → write a vibe (in the MVP, the profile vibe is the "post"; real posts are phase 2) → the vibe's intent is extracted → discover relevant Vibers.
 
-It is first covered as a backend API test (from M4, using a fake LLM adapter), then as a Maestro flow on a device (M12). Connections, events and other features are added to the journey as their milestones land.
+It is first covered as a backend API test (from M4, using a fake LLM adapter), then as a Playwright test in a real browser. Connections, events and other features are added to the journey as their milestones land.
 
 ## Rules
 
@@ -45,7 +45,7 @@ It is first covered as a backend API test (from M4, using a fake LLM adapter), t
 ## CI pipeline (GitHub Actions)
 
 1. Backend: `uv sync`, `ruff check`, `ruff format --check`, `mypy`, `pytest` (with a Postgres + pgvector service container), migration round-trip.
-2. Mobile: `pnpm install`, `eslint`, `tsc --noEmit`, `jest`.
+2. Website: `pnpm install`, `eslint`, `tsc --noEmit`, `vitest`, `next build`; Playwright end to end.
 3. Contract: regenerate API client and diff.
 4. Security: gitleaks, `pip-audit`, `pnpm audit --audit-level high`.
 

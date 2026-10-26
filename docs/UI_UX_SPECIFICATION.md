@@ -7,12 +7,12 @@
 
 ```mermaid
 flowchart TD
-    Welcome["Welcome"] --> SignIn["Sign in: Google, Apple, email code"]
+    Welcome["Welcome"] --> SignIn["Sign in: Google or email code"]
     SignIn --> Basics["Name and birthday"]
     Basics --> Onb["Onboarding steps (skippable after status):<br/>status, area, dates, intents, vibe, photo, interests"]
     Onb --> Tabs
 
-    subgraph Tabs["Bottom tabs"]
+    subgraph Tabs["Main sections (bottom bar on phones, sidebar on wide screens)"]
         Discover["Discover<br/>card stack, saved Vibers"]
         Events["Events<br/>for you, all, my events, create"]
         Explore["Explore<br/>places, roadmaps, properties"]
@@ -48,8 +48,8 @@ flowchart TD
 
 - **Two minutes to value.** Only travel status is mandatory; every other onboarding step shows "Skip".
 - **Explain every match** in one line on the card.
-- **Ask for push permission after a meaningful moment** (first like, first RSVP), not on first launch.
+- **Mobile first:** design every page for a 360 px wide phone screen first, then widen. Offer "Add to Home Screen" after a meaningful moment (first like, first RSVP), not on first visit.
 - **Safety in reach:** Block and Report in the overflow menu of every profile, chat, event, review and property.
 - **Patchy networks:** show cached lists, queue chat sends, and show clear retry states.
 - **Honest data:** places and roadmaps show "Curated by Vibers Club"; paid events show "Pay the host directly; Vibers Club does not handle payments or refunds".
-- **Accessibility:** minimum 44 pt touch targets; text scales with system font size; colour is never the only signal.
+- **Accessibility:** minimum 44 px touch targets; text scales with browser zoom; colour is never the only signal; keyboard navigation works on desktop.

@@ -14,10 +14,10 @@ To add one, copy `0000-template.md`, take the next number, and add a line to the
 | ADR | Decision | Status |
 | --- | --- | --- |
 | [0001](0001-record-decisions-in-adrs.md) | Record decisions as ADRs in this repo | Accepted |
-| [0002](0002-mobile-app-with-expo.md) | Native mobile app built with React Native and Expo | Accepted |
+| [0002](0002-mobile-app-with-expo.md) | Native mobile app built with React Native and Expo | Superseded by 0020 |
 | [0003](0003-python-fastapi-modular-monolith.md) | Python FastAPI modular monolith for the backend | Accepted |
 | [0004](0004-postgres-pgvector-on-supabase.md) | PostgreSQL with pgvector, hosted on Supabase | Accepted |
-| [0005](0005-supabase-auth-sign-in-methods.md) | Supabase Auth with Google, Apple, email OTP and phone OTP | Accepted |
+| [0005](0005-supabase-auth-sign-in-methods.md) | Supabase Auth with Google, email OTP and phone OTP | Accepted |
 | [0006](0006-location-privacy-named-areas.md) | Users are placed by named area, never live GPS | Accepted |
 | [0007](0007-messaging-mutual-connections-only.md) | Messaging only between mutual connections | Accepted |
 | [0008](0008-any-verified-viber-can-host-events.md) | Any verified Viber can host events, under community rules | Accepted |
@@ -32,3 +32,4 @@ To add one, copy `0000-template.md`, take the next number, and add a line to the
 | [0017](0017-moderation-inside-the-app.md) | Moderation tools inside the app, role-gated | Accepted |
 | [0018](0018-lock-down-supabase-data-api.md) | Lock down Supabase's Data API; the backend is the only data path | Accepted |
 | [0019](0019-product-analytics-with-posthog.md) | Product analytics with PostHog, without personal data | Accepted |
+| [0020](0020-mobile-first-website-first.md) | Build a mobile-first website first; native app later | Accepted |

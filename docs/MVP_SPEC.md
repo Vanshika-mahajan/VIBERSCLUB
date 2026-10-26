@@ -10,14 +10,14 @@ The MVP has 15 features. Section 16 lists what must not be built yet.
 
 ## F1. Sign-in and account creation
 - **Problem:** joining must be quick for Indian and foreign travellers.
-- **Behaviour:** welcome screen; sign in with Google, Apple (iOS) or an email code; enter name and date of birth; under-18s are stopped.
+- **Behaviour:** welcome screen; sign in with Google or an email code; enter name and date of birth; under-18s are stopped.
 - **Backend:** verify Supabase JWT (JWKS, cached); `POST /me` creates `users` and `profiles`; reject under 18; suspended check on every request.
 - **Data:** `users`, `profiles`.
 - **Endpoints:** `POST /me`, `GET /me`.
 - **Screens:** Welcome, Sign in, Email code, Name and birthday.
 - **Acceptance:** PRD J1 (sign-in, 18+).
 - **Tests:** unit for age calculation across time zones and birthdays; integration for JWT valid, expired, wrong audience, wrong signature; `POST /me` idempotent; suspended user gets 403.
-- **External:** Supabase Auth, Google and Apple developer accounts, SMTP sender for email codes.
+- **External:** Supabase Auth, Google OAuth client, email service as SMTP sender for sign-in codes.
 - **Failures:** email code not received (resend after 30 s, then suggest Google); JWKS fetch fails (use cached keys, alert); a second `POST /me` returns the existing user.
 
 ## F2. Onboarding, profile and travel plan
@@ -65,20 +65,20 @@ The MVP has 15 features. Section 16 lists what must not be built yet.
 - **Screens:** Request sheet, Requests inbox, Connections list.
 - **Acceptance:** PRD J3.
 - **Tests:** unverified user blocked; duplicate request returns 409; reverse request while one is pending auto-accepts; limit reached returns 429; blocked pair cannot request; only addressee can accept.
-- **External:** Expo Push.
-- **Failures:** concurrent requests from both sides (unique pair row; second becomes accept); push failure (in-app notification remains).
+- **External:** email service.
+- **Failures:** concurrent requests from both sides (unique pair row; second becomes accept); email failure (in-app notification remains).
 
 ## F6. Messaging
 - **Problem:** connected Vibers need to plan the meetup.
-- **Behaviour:** 1:1 text chat; unread counts; new message push; polling every 3 s while open.
-- **Backend:** connection and block check on every send; store message; enqueue push; read markers.
+- **Behaviour:** 1:1 text chat; unread counts and badge; polling every 3 s while open; an email digest if a message stays unread for 30 minutes.
+- **Backend:** connection and block check on every send; store message; schedule unread digest; read markers.
 - **Data:** `conversations`, `messages`, `conversation_reads`.
 - **Endpoints:** `GET /conversations`, `GET /conversations/{id}/messages`, `POST /conversations/{id}/messages`, `POST /conversations/{id}/read`.
 - **Screens:** Chats list, Chat.
 - **Acceptance:** PRD J3 (messages only between connections, block from chat).
 - **Tests:** non-participant gets 404; after block, send gets 403; pagination with `after`; message length limits; unread counts.
-- **External:** Expo Push.
-- **Failures:** offline send (app keeps it as "sending", retries with the same Idempotency-Key); polling while backgrounded is stopped to save battery.
+- **External:** email service (digests).
+- **Failures:** offline send (app keeps it as "sending", retries with the same Idempotency-Key); polling stops when the tab is hidden, to save battery and data.
 
 ## F7. Blocks and reports
 - **Problem:** users must be able to stop and flag bad behaviour instantly.
@@ -101,7 +101,7 @@ The MVP has 15 features. Section 16 lists what must not be built yet.
 - **Screens:** Events list, Recommended, Event detail, Create event (multi-step), Edit event, My events (hosting and attending), Registrant list, Send update.
 - **Acceptance:** PRD J4, J5.
 - **Tests:** 20 concurrent registrations for 5 seats give exactly 5 confirmed; waitlist order; cancellation promotes the next; paid events create `pending` payment; capacity cannot be reduced below confirmed; host cannot register; min age enforced; editing time notifies registrants; Asia/Kolkata display.
-- **External:** Expo Push, LLM (interest suggestions).
+- **External:** email service, LLM (interest suggestions).
 - **Failures:** host deletes account with upcoming events (events cancelled, registrants notified); event in the past cannot be registered; duplicate taps (Idempotency-Key).
 
 ## F9. Properties (listings)
@@ -130,15 +130,15 @@ The MVP has 15 features. Section 16 lists what must not be built yet.
 
 ## F11. Notifications and reminders
 - **Problem:** time-sensitive moments (requests, messages, reminders) need to reach people.
-- **Behaviour:** push plus in-app list; per-type opt-out.
-- **Backend:** notification records; `send_push` job; Expo receipts handling; invalid token cleanup; reminders at 24 h and 2 h.
-- **Data:** `notifications`, `push_tokens`, `notification_preferences`.
-- **Endpoints:** notifications, push tokens, preferences.
-- **Screens:** Notifications, Notification settings, OS permission prompt (after the first meaningful action, not at launch).
+- **Behaviour:** in-app list with unread badge, plus email for time-sensitive types; per-type opt-out. Web push is optional and only after email works.
+- **Backend:** notification records; `send_email_notification` and `send_unread_digest` jobs; bounce handling; reminders at 24 h and 2 h.
+- **Data:** `notifications`, `notification_preferences`.
+- **Endpoints:** notifications, preferences.
+- **Screens:** Notifications, Notification settings.
 - **Acceptance:** PRD J4 (reminders), J3, J6.
-- **Tests:** opt-out respected; job idempotent (no duplicate push); reminder for cancelled event not sent; invalid token removed.
-- **External:** Expo Push Service.
-- **Failures:** push permission denied (in-app list only); Expo outage (retries, then in-app only).
+- **Tests:** opt-out respected; job idempotent (no duplicate email); reminder for cancelled event not sent; digest sent once per window.
+- **External:** transactional email service.
+- **Failures:** email bounces (mark address, show a banner to fix it); email provider outage (retries, then in-app only).
 
 ## F12. Feedback and reviews
 - **Problem:** build trust data from real experiences only.
@@ -149,7 +149,7 @@ The MVP has 15 features. Section 16 lists what must not be built yet.
 - **Screens:** Rate event, Event reviews.
 - **Acceptance:** PRD J6.
 - **Tests:** non-attendee 403; host 403; duplicate review 409; average hidden below 3.
-- **External:** Expo Push.
+- **External:** email service.
 - **Failures:** host marks everyone no-show to block reviews (registrants with `unknown` attendance can still review; abuse is reportable).
 
 ## F13. Moderation
@@ -182,7 +182,7 @@ The MVP has 15 features. Section 16 lists what must not be built yet.
 - **Backend:** server-side metric queries for connections, registrations, reviews; app sends screen and action events to PostHog with the internal user id only (no names, emails or text).
 - **Data:** PostHog; database counts.
 - **Screens:** none.
-- **Tests:** an event schema list in `apps/mobile/lib/analytics.ts` with unit tests that no PII field is sent.
+- **Tests:** an event schema list in `apps/web/lib/analytics.ts` with unit tests that no PII field is sent.
 - **External:** PostHog.
 - **Failures:** PostHog unavailable (events dropped, app unaffected).
 
@@ -198,7 +198,7 @@ The MVP has 15 features. Section 16 lists what must not be built yet.
 | Place reviews and travel stories | Moderation capacity |
 | Group chat and Vibe Circles | Harder moderation |
 | Live map or any live location | Safety (ADR-0006) |
-| Web app, web admin, public share pages | ADR-0002 |
+| Native mobile app (Expo), web push as the main channel, public event share pages | ADR-0020 |
 | Business accounts or staff access to properties | ADR-0015 |
 | Promoted or featured placement | Needs labelling and pricing rules |
 | Achievements, challenges, "worth the hype?" | Engagement before retention is proven |
