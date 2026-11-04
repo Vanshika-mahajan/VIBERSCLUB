@@ -14,6 +14,18 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the first page, milestone 2 (2026-11-04)
+- `/` is now the cinematic first page (`app/page.tsx` → `features/journey/JourneyScreen.tsx`); the universe moved to `/universe` (`app/universe/page.tsx`), Home in the nav and the brand links point there, and the nav hides on both.
+- `features/journey/useJourney.ts`: phases (idle → opening → cosmos → manali → orbit → settled) and the thought.
+- `features/journey/scenes/DoorScene.tsx`: layered meadow, door (with sun shadow and light at the seam), pollen, front grass; idle motion and mouse parallax with GSAP; portrait phones use ARPIT's portrait photo with the door layer measured onto it.
+- `features/journey/scenes/ThoughtInput.tsx`: labelled underline field, hint on empty submit, gold underline and arrow nudge on send, locks after.
+- `features/journey/journey.module.css`, `public/journey/` (meadow, meadow-portrait, door, grass as WebP). Source images in project files `journey/source`.
+- Tests: `tests/unit/journey.test.tsx`, `e2e/journey.spec.ts`; `e2e/universe.spec.ts` now opens `/universe`.
+
+## Tests executed (first page milestone 2, 2026-11-04, in the cloud workspace)
+- Vitest: 73 passed. Typecheck and lint clean.
+- Playwright (phone and desktop): journey, universe, discover, demo and motion specs, 34 passed.
+
 ## Files created or modified in frontend motion, step 1 (2026-11-04)
 - Libraries (exact versions): `gsap` 3.15.0 with `@gsap/react` 2.1.2 (ScrollTrigger, SplitText), `lenis` 1.3.27, `vanta` 0.5.24 with `three` 0.186.1.
 - `apps/web/lib/motion/gsap.ts`: registers GSAP plugins once. `lib/motion/useReducedMotion.ts`: the device's reduced-motion setting.

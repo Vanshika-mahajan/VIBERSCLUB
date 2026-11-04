@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
   // sample portraits come from a photo CDN; keep tests independent of the network
   await page.route("**/images.pexels.com/**", (r) => r.abort());
-  await page.goto("/");
+  await page.goto("/universe");
 });
 
 test("home is one full-screen universe with the thought bar at its centre", async ({ page }) => {

@@ -320,7 +320,7 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
       </div>
 
       <header className={s.top}>
-        <Link href="/" className={s.brand} onClick={reset} aria-label="Vibers Club home">
+        <Link href="/universe" className={s.brand} onClick={reset} aria-label="Vibers Club home">
           <span className={s.mark} aria-hidden="true">
             <i />
             <i />

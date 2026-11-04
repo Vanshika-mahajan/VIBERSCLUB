@@ -1,0 +1,383 @@
+/* The first page. Full screen over the app layout, no navigation.
+   Scene one keeps the photo's own palette: meadow greens, door pink, golden-hour light. */
+
+.journey {
+  --ivory: #fbf7ee;
+  --ivory-soft: rgba(251, 247, 238, 0.78);
+  --night-green: #0f2418;
+  --gold: var(--color-gold);
+  --forest: var(--color-brand);
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  background: #7fae5a; /* meadow green while the photo loads */
+  color: var(--ivory);
+}
+
+/* ---------- scene: the meadow is a stage that covers the screen at the photo's own ratio ---------- */
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+/* Wider than the screen by 64px (or taller by 36px) so parallax never shows an edge.
+   Every layer is placed in % of this stage, so the door stays where the photo expects it. */
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(calc(100vw + 64px), calc((100svh + 36px) * 1672 / 941));
+  aspect-ratio: 1672 / 941;
+  transform: translate(-50%, -50%);
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+}
+
+.cover {
+  object-fit: cover;
+}
+.fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.contain {
+  object-fit: contain;
+}
+
+/* warm low sun from the left, as in the photo */
+.sun {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 55% at 18% 34%, rgba(255, 214, 150, 0.32), transparent 70%);
+  mix-blend-mode: soft-light;
+}
+
+/* The door: measured from the composed photo. Centre at 49.4% across, base at 76.9% down. */
+.door {
+  position: absolute;
+  left: calc(49.4% - 6.95%);
+  top: calc(76.9% - 37.7%);
+  width: 13.9%;
+  height: 37.7%;
+}
+
+/* contact shadow and the long shadow the low sun throws to the right */
+.doorShadow {
+  position: absolute;
+  left: 4%;
+  right: -60%;
+  bottom: -2.5%;
+  height: 7%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(20, 38, 16, 0.55), transparent);
+  transform: skewX(-40deg);
+  transform-origin: left center;
+  filter: blur(4px);
+}
+
+/* light leaking through the seam on the latch side: the first hint that something is behind */
+.seam {
+  position: absolute;
+  left: 83.4%;
+  top: 10%;
+  width: 0.6%;
+  height: 83%;
+  border-radius: 2px;
+  background: linear-gradient(#fff6d8, #ffd27a 60%, #ffb35c);
+  box-shadow:
+    0 0 6px 1px rgba(255, 214, 140, 0.9),
+    0 0 22px 6px rgba(255, 190, 110, 0.35);
+  opacity: 0.4;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+.door img {
+  z-index: 0;
+}
+
+.mote {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff3c7;
+  box-shadow: 0 0 6px 2px rgba(255, 230, 160, 0.6);
+  opacity: 0;
+}
+
+/* front grass: the bottom of the stage, swaying from its roots */
+.grass {
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: -1%;
+  aspect-ratio: 1774 / 447;
+  transform-origin: 50% 100%;
+}
+
+/* readability: a soft night-green shade under the input, a little light under the brand */
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(15, 36, 24, 0.78) 0%, rgba(15, 36, 24, 0.42) 22%, transparent 42%),
+    linear-gradient(to bottom, rgba(18, 52, 70, 0.22), transparent 18%);
+}
+
+/* ---------- interface ---------- */
+
+.top {
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(18px, 4vw, 48px);
+}
+
+.brand {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  text-shadow: 0 1px 12px rgba(18, 52, 70, 0.45);
+}
+
+.skipLink {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ivory);
+  padding: 8px 2px;
+  text-decoration: underline;
+  text-decoration-color: rgba(251, 247, 238, 0.45);
+  text-underline-offset: 5px;
+  text-shadow: 0 1px 12px rgba(18, 52, 70, 0.45);
+}
+.skipLink:hover {
+  text-decoration-color: var(--gold);
+}
+
+/* the headline floats in the sky, above the door */
+.copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: clamp(72px, 14svh, 150px);
+  padding: 0 20px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  font-size: clamp(2.3rem, min(5.4vw, 7.4svh), 4.6rem);
+  text-align: center;
+  color: var(--forest);
+  text-shadow: 0 1px 30px rgba(255, 252, 240, 0.55);
+}
+.line {
+  display: block !important;
+  padding: 0 0.06em 0.08em; /* room for italic overhang inside SplitText's clip */
+}
+
+/* the thought rests on the meadow, below the door */
+.ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(28px, calc(env(safe-area-inset-bottom) + 18px));
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.thought {
+  width: min(620px, 100%);
+}
+
+.ask {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  font-weight: 500;
+  color: var(--ivory);
+  text-shadow: 0 1px 16px rgba(10, 28, 18, 0.6);
+}
+
+.field {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 2px 12px;
+  border: 0;
+  border-bottom: 1px solid rgba(251, 247, 238, 0.55);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ivory);
+  font: inherit;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  font-weight: 600;
+  text-shadow: 0 1px 12px rgba(10, 28, 18, 0.55);
+  outline: none;
+  caret-color: var(--gold);
+}
+.input::placeholder {
+  color: var(--ivory-soft);
+  font-weight: 500;
+}
+
+/* gold underline: grows from the left on focus, fills fully once the thought is sent */
+.underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--gold);
+  box-shadow: 0 0 14px rgba(231, 188, 105, 0.7);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* focus: the gold line runs the full width and the question turns gold (an underline field, so no box) */
+.input:focus-visible + .underline {
+  transform: scaleX(1);
+}
+.thought:has(.input:focus-visible) .ask {
+  color: var(--gold);
+}
+.thought[data-locked] .underline {
+  transform: scaleX(1);
+  transition-duration: 0.8s;
+}
+.input[aria-invalid="true"] {
+  border-bottom-color: #ffc9a8;
+}
+
+.actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.hint {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 0.82rem;
+  color: #ffe2cf;
+  text-shadow: 0 1px 10px rgba(10, 28, 18, 0.7);
+}
+
+.cta {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 2px;
+  border: 0;
+  background: none;
+  color: var(--ivory);
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-shadow: 0 1px 12px rgba(10, 28, 18, 0.6);
+}
+.cta:hover .arrow {
+  transform: translateX(4px);
+}
+.cta:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+.cta:disabled {
+  cursor: default;
+  color: var(--gold);
+}
+.arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+/* Short laptop screens: a larger stage lifted a little, so the thought never touches the door's base */
+@media (min-aspect-ratio: 4/3) and (max-height: 820px) {
+  .stage {
+    width: max(calc(100vw + 64px), calc(116svh * 1672 / 941));
+    transform: translate(-50%, -56%);
+  }
+  .copy {
+    top: clamp(56px, 10svh, 110px);
+  }
+}
+
+/* Tall phones: ARPIT's portrait photo at its own ratio, and the door layer measured onto its baked-in door
+   (frame 34.1% from the left, 33.0% from the top, 30.9% wide, 26.6% tall). Keep in step with PORTRAIT in DoorScene. */
+@media (max-aspect-ratio: 2/3) {
+  .stage {
+    width: max(calc(100vw + 64px), calc((100svh + 36px) * 941 / 1672));
+    aspect-ratio: 941 / 1672;
+  }
+  .door {
+    left: 34.13%;
+    top: 33.02%;
+    width: 30.88%;
+    height: 26.56%;
+  }
+  .grass {
+    left: -40%;
+    right: -40%;
+  }
+  .copy {
+    top: clamp(58px, 9svh, 100px);
+  }
+  .headline {
+    font-size: clamp(1.75rem, 8.6vw, 2.4rem);
+  }
+  .input {
+    font-size: 0.94rem;
+  }
+}
+
+/* phones: the door sits a little higher; the thought takes the full width under it */
+@media (max-width: 640px) {
+  .actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .cta {
+    justify-content: flex-end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .underline,
+  .arrow {
+    transition: none;
+  }
+}
