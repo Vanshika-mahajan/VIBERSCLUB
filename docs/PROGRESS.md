@@ -14,6 +14,18 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the restructure, Phase 1: navigation (2026-11-04)
+ARPIT's restructure brief, six phases with approval after each. Plan: https://claude.ai/artifact/2rjm2AcyDcs4482w88S5xY. Phase 1 approved and built:
+- `components/AppNav.tsx`, `components/reactbits/PillNav.*`: a bottom pill bar on every screen size with Home, Discover and Explore; the sidebar is gone. `components/ProfileMenu.tsx`: avatar at the top right with Your profile, Chats (request count) and Events.
+- Home (`features/club/ClubHome.tsx`, `features/home/HomeSections.tsx`): the OptionWheel and tabs are gone; the hero is followed by what was Today plus the post composer. `/today` redirects to `/home` (`next.config.ts`); old `?tab=` links go to their new pages (`features/club/MovedTabs.tsx`).
+- Discover: the sphere is now the first screen of the page (no longer fixed), with Community below; the Manali dive lands on `/discover?vibe=`.
+- Explore (`features/explore/ExploreHub.tsx`): two sections, Explore (places with kind and area filters, day plans, posts like yours) and Itinerary (`?section=itinerary`).
+- Events: `/events` uses the club Events list (one-tap join; now hides blocked hosts).
+- No longer used, kept until deletion is approved: `features/events/EventsScreen.tsx`, `features/explore/ExploreScreen.tsx`, `components/reactbits/OptionWheel.*`.
+
+## Tests executed (restructure Phase 1, 2026-11-04, in the cloud workspace)
+Vitest 84 passed. E2E 74 of 76 passed; the two "API OK" checks need the API running. Typecheck and ESLint clean.
+
 ## Files created or modified in the dark luxury pass (2026-11-04)
 ARPIT asked for: no black screen after Enter, a premium dark Winewood Whisper theme (layered Black Cherry, forest accents, warm neutrals, editorial type) and five React Bits components.
 - `journey.module.css`: the CSS still stays under the 3D canvas until the stars, so a dropped canvas frame shows the meadow, never black.

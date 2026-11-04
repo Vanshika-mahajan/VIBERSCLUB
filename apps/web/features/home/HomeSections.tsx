@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore, type ReactNode } from "react";
 import CircularCarousel from "@/components/reactbits/CircularCarousel";
 import { portrait } from "@/features/club/shared";
 import { HealthStatus } from "@/components/HealthStatus";
@@ -16,7 +16,11 @@ import { areas, interestById } from "@/lib/taxonomy";
 
 const noop = () => () => {};
 
-export function HomeScreen() {
+/**
+ * What used to be the Today page, now the body of Home under the hero: your vibe and requests, a quick
+ * post, Vibers like you, what's on this week, day plans and the system status.
+ */
+export function HomeSections({ post }: { post?: ReactNode }) {
   const me = useDemo((s) => s.me);
   const hosted = useDemo((s) => s.hosted);
   const connections = useDemo((s) => s.connections);
@@ -52,15 +56,8 @@ export function HomeScreen() {
   }, [me.interests, hosted]);
 
   return (
-    <div>
-      <header className="space-y-2">
-        <p className="kicker">Vibers Club · {areas[me.area].label}</p>
-        <h1 className="display text-4xl md:text-5xl">
-          Hi {me.name}, find your <span className="accent-word">people</span> in Manali.
-        </h1>
-      </header>
-
-      <div className="mt-6 grid gap-4 md:grid-cols-[1.4fr_1fr]">
+    <div className="pt-10">
+      <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
         <section className="card p-5" aria-labelledby="vibe-title">
           <p className="kicker" id="vibe-title">
             Your vibe
@@ -95,6 +92,8 @@ export function HomeScreen() {
           </Link>
         </section>
       </div>
+
+      {post && <div id="post" className="mt-10 scroll-mt-6">{post}</div>}
 
       <Section title="Vibers like you" action={<Link href="/discover" className="link text-sm">Discover</Link>}>
         {/* relevant profiles on a slowly turning ring: drag to spin, click one to bring it to the front */}

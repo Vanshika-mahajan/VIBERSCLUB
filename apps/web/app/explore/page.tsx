@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
-import { ExploreScreen } from "@/features/explore/ExploreScreen";
+import { Suspense } from "react";
+import { ExploreHub } from "@/features/explore/ExploreHub";
 
 export const metadata: Metadata = { title: "Explore Manali" };
 
 export default function ExplorePage() {
-  return <ExploreScreen />;
+  // the open section is read from the URL, which needs a Suspense boundary for static rendering
+  return (
+    <Suspense>
+      <ExploreHub />
+    </Suspense>
+  );
 }

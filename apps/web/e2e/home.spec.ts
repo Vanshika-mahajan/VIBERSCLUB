@@ -1,34 +1,47 @@
 import { expect, test } from "@playwright/test";
 
-test("today shows API OK from the real API", async ({ page }) => {
-  await page.goto("/today");
-  await expect(page.getByRole("heading", { name: /find your people/, level: 1 })).toBeVisible();
+test("home shows API OK from the real API", async ({ page }) => {
+  await page.goto("/home");
+  await expect(page.getByRole("heading", { name: /your Manali has people/, level: 1 })).toBeVisible();
   await expect(page.getByText("API OK")).toBeVisible();
 });
 
-test("navigation reaches every section", async ({ page, isMobile }) => {
-  await page.goto("/today");
+test("the pill bar has Home, Discover and Explore, and follows the page", async ({ page }) => {
+  await page.goto("/home");
   const nav = page.getByRole("navigation", { name: "Main" });
-  const box = await nav.boundingBox();
+  await expect(nav.getByRole("link")).toHaveText(["Home", "Discover", "Explore"]);
+  // at the foot of the screen, clear of the edge
+  const box = (await nav.boundingBox())!;
   const viewport = page.viewportSize()!;
-  if (isMobile) {
-    // Bottom bar: pinned to the bottom edge of the screen.
-    expect(Math.round(box!.y + box!.height)).toBe(viewport.height);
-  } else {
-    // Sidebar: on the left, full height.
-    expect(box!.x).toBe(0);
-    expect(box!.height).toBeGreaterThan(viewport.height * 0.9);
-  }
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+  expect(box.y + box.height).toBeGreaterThan(viewport.height - 60);
   for (const [label, heading] of [
     ["Discover", "Discover Vibers"],
-    ["Events", "Events"],
-    ["Chats", "Chats"],
-    ["Profile", "Your profile"],
-  ]) {
+    ["Explore", "Explore Manali"],
+    ["Home", /your Manali has people/],
+  ] as const) {
     await nav.getByRole("link", { name: label }).click();
-    await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeAttached();
     await expect(nav.getByRole("link", { name: label })).toHaveAttribute("aria-current", "page");
   }
+});
+
+test("the profile menu at the top right reaches profile, chats and events", async ({ page }) => {
+  for (const [label, heading] of [
+    ["Your profile", "Your profile"],
+    ["Chats", "Chats"],
+    ["Events", "Events"],
+  ]) {
+    await page.goto("/home");
+    const avatar = page.getByRole("button", { name: /Your profile and chats/ });
+    await avatar.click();
+    await expect(avatar).toHaveAttribute("aria-expanded", "true");
+    await page.getByRole("link", { name: new RegExp(`^${label}`) }).click();
+    await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
+  }
+  await page.getByRole("button", { name: /Your profile and chats/ }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: /Your profile and chats/ })).toHaveAttribute("aria-expanded", "false");
 });
 
 test("serves an installable manifest", async ({ request }) => {

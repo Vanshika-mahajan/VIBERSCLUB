@@ -20,9 +20,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="flex min-h-full flex-col md:flex-row">
+      <body className="flex min-h-full flex-col">
         <AppNav />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-28 md:px-10 md:pt-10 md:pb-12">
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-[72px] pb-32 md:px-10 md:pt-10">
           {children}
         </main>
         <Toaster />

@@ -33,9 +33,9 @@ const ANNOUNCE: Partial<Record<Phase, string>> = {
   arrive: "Welcome to Vibers Club. Here are Vibers who share your vibe.",
 };
 
-/** where the journey lands: the club home's Community tab, ranked by the thought */
+/** where the journey lands: Discover, with the Vibers ranked by the thought */
 export const arrivalHref = (thought: string) =>
-  `/home?tab=community${thought ? `&vibe=${encodeURIComponent(thought)}` : ""}`;
+  `/discover${thought ? `?vibe=${encodeURIComponent(thought)}` : ""}`;
 
 /**
  * The first page. The director (useJourney) owns the phase; each scene's timeline is built when

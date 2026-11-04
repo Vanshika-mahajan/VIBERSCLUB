@@ -158,7 +158,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
               {vibe ? (
                 <>
                   Picked for &ldquo;{vibe}&rdquo;.{" "}
-                  <Link href="/home?tab=community" className={s.inline}>
+                  <Link href="/discover" className={s.inline}>
                     Use my profile instead
                   </Link>
                 </>
@@ -242,7 +242,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
               are into the same things.
             </p>
             <Link
-              href="/home?tab=post"
+              href="/home#post"
               className={s.btn}
               style={{ marginTop: 10 }}
             >

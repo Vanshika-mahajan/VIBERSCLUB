@@ -150,6 +150,6 @@ describe("UniverseScreen", () => {
     render(<UniverseScreen adapter={createSampleAdapter()} />);
     await user.click(screen.getByRole("button", { name: "Menu" }));
     const nav = screen.getByRole("navigation", { name: "Main" });
-    for (const name of ["Today", "Discover", "Events", "Chats", "Profile"]) expect(nav).toContainElement(screen.getByRole("link", { name }));
+    for (const name of ["Home", "Discover", "Events", "Chats", "Profile"]) expect(nav).toContainElement(screen.getByRole("link", { name }));
   });
 });

@@ -30,6 +30,7 @@ type Filter = (typeof FILTERS)[number]["id"];
 export function Events() {
   const hosted = useDemo((st) => st.hosted);
   const rsvps = useDemo((st) => st.rsvps);
+  const blocked = useDemo((st) => st.blocked);
   const thought = useMyThought();
   const today = useToday();
   const [filter, setFilter] = useState<Filter>("all");
@@ -38,6 +39,7 @@ export function Events() {
     const mine = new Set(thought.interests);
     const fit = (ids: string[]) => ids.filter((i) => mine.has(i)).length;
     return allEvents(hosted)
+      .filter((e) => !blocked.includes(e.hostId))
       .filter((e) => {
         if (filter === "you") return fit(e.interests) > 0;
         if (filter === "today") return e.dayOffset === 0;
@@ -52,7 +54,7 @@ export function Events() {
           a.dayOffset - b.dayOffset ||
           a.time.localeCompare(b.time),
       );
-  }, [hosted, rsvps, filter, thought]);
+  }, [hosted, rsvps, blocked, filter, thought]);
 
   return (
     <section aria-labelledby="events-title">

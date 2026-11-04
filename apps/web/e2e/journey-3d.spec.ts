@@ -54,7 +54,7 @@ test("Escape skips the 3D journey to the Vibers in Community", async ({
   await expect(stage).toHaveAttribute("data-phase", "opening");
   await page.keyboard.press("Escape");
   // a 0.4 s fast-forward through the door, then straight home; slow frames stretch it here
-  await expect(page).toHaveURL(/\/home\?tab=community&vibe=/, {
+  await expect(page).toHaveURL(/\/discover\?vibe=/, {
     timeout: 45000,
   });
 });
@@ -89,8 +89,9 @@ test("Enter the app opens the club home", async ({ page }) => {
   await page.route("**/images.pexels.com/**", (r) => r.abort());
   await page.goto("/");
   await page.getByRole("link", { name: "Enter the app" }).click();
-  await expect(page).toHaveURL(/\/home$/);
-  await expect(
-    page.getByRole("listbox", { name: "Vibers Club sections" }),
-  ).toBeVisible();
+  // software WebGL keeps the main thread busy, so the page change can take a while here
+  await expect(page).toHaveURL(/\/home$/, { timeout: 30000 });
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "your Manali has people in it",
+  );
 });

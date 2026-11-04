@@ -25,7 +25,7 @@ const TRY = ["I want to explore Manali with people who love photography", "Trek 
 // category hues keep their old ids; on screen they read forest, terracotta and gold
 const HUE_COLOR = { blue: "#2F4736", violet: "#6B3543", cyan: "#B88792" } as const;
 const MENU = [
-  { href: "/today", label: "Today" },
+  { href: "/home", label: "Home" },
   { href: "/discover", label: "Discover" },
   { href: "/events", label: "Events" },
   { href: "/chats", label: "Chats" },

@@ -5,41 +5,34 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/images.pexels.com/**", (r) => r.abort());
 });
 
-test("the club home has five sections on a wheel and the open one lives in the URL", async ({
+test("home is one page: the hero, then what used to be Today", async ({
   page,
 }) => {
   await page.goto("/home");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "your Manali has people in it",
   );
-  const wheel = page.getByRole("listbox", { name: "Vibers Club sections" });
-  await expect(wheel.getByRole("option")).toHaveText([
-    "Events",
-    "Community",
-    "Explore",
-    "My itinerary",
-    "Post",
-  ]);
-  await expect(wheel.getByRole("option", { name: "Events" })).toHaveAttribute(
-    "aria-selected",
-    "true",
-  );
-  await wheel.getByRole("option", { name: "Explore" }).click();
-  await expect(page).toHaveURL(/tab=explore/);
-  await expect(
-    page.getByRole("heading", { name: "Places to visit" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Posts like yours" }),
-  ).toBeVisible();
-  // the keyboard turns the wheel too
-  await wheel.focus();
-  await page.keyboard.press("ArrowDown");
-  await expect(page).toHaveURL(/tab=itinerary/);
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  for (const name of [
+    "Vibers like you",
+    "Happening this week",
+    "Explore Manali",
+  ])
+    await expect(page.getByRole("heading", { name, level: 2 })).toBeVisible();
+  await expect(page.getByLabel("Your post")).toBeVisible();
+});
+
+test("old Home tab links land on their new pages", async ({ page }) => {
+  await page.goto("/home?tab=community");
+  await expect(page).toHaveURL(/\/discover$/);
+  await page.goto("/home?tab=itinerary");
+  await expect(page).toHaveURL(/\/explore\?section=itinerary$/);
+  await page.goto("/today");
+  await expect(page).toHaveURL(/\/home$/);
 });
 
 test("community: like, pass and save for later", async ({ page }) => {
-  await page.goto("/home?tab=community");
+  await page.goto("/discover#community");
   // the Viber in front is named on the gallery (or the card stack without WebGL2)
   const front = page.locator(
     '[aria-roledescription="profile gallery"], [aria-roledescription="card stack"]',
@@ -58,7 +51,7 @@ test("community: like, pass and save for later", async ({ page }) => {
 });
 
 test("events: join and leave", async ({ page }) => {
-  await page.goto("/home?tab=events");
+  await page.goto("/events");
   await page.getByRole("button", { name: "Join", exact: true }).first().click();
   await expect(
     page.getByRole("button", { name: /Going ✓/ }).first(),
@@ -71,7 +64,9 @@ test("events: join and leave", async ({ page }) => {
 });
 
 test("itinerary: use a Vibers Club plan, then add a stop", async ({ page }) => {
-  await page.goto("/home?tab=itinerary");
+  await page.goto("/explore");
+  await page.getByRole("button", { name: "Itinerary" }).click();
+  await expect(page).toHaveURL(/section=itinerary/);
   await page.getByRole("button", { name: "Use this plan" }).first().click();
   await expect(
     page
@@ -88,7 +83,7 @@ test("itinerary: use a Vibers Club plan, then add a stop", async ({ page }) => {
 test("post: keywords appear while typing and find matching Vibers", async ({
   page,
 }) => {
-  await page.goto("/home?tab=post");
+  await page.goto("/home#post");
   await page
     .getByLabel("Your post")
     .fill("Sunrise trek on Saturday, then cafes in Old Manali");

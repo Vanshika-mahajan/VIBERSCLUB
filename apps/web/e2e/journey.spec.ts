@@ -112,7 +112,7 @@ test.describe("the door opens", () => {
     expect(clip === "none" || /inset\(0px( 0px)*\)/.test(clip)).toBe(true);
   });
 
-  test("Escape jumps straight to the Vibers in Community", async ({ page }) => {
+  test("Escape jumps straight to the Vibers on Discover", async ({ page }) => {
     await page.route("**/images.pexels.com/**", (r) => r.abort());
     await page.goto("/");
     await page
@@ -121,7 +121,7 @@ test.describe("the door opens", () => {
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
     await page.keyboard.press("Escape");
-    await expect(page).toHaveURL(/\/home\?tab=community&vibe=Hidden/, {
+    await expect(page).toHaveURL(/\/discover\?vibe=Hidden/, {
       timeout: 8000,
     });
   });
@@ -148,12 +148,12 @@ test.describe("door with reduced motion", () => {
       .first()
       .evaluate((el) => getComputedStyle(el).transform);
     expect(leaf).toBe("none");
-    await expect(page).toHaveURL(/\/home\?tab=community/, { timeout: 8000 });
+    await expect(page).toHaveURL(/\/discover/, { timeout: 8000 });
   });
 });
 
 test.describe("after Manali", () => {
-  test("Skip lands in Community, ranked by the thought", async ({ page }) => {
+  test("Skip lands on Discover, Community ranked by the thought", async ({ page }) => {
     await page.route("**/images.pexels.com/**", (r) => r.abort());
     await page.goto("/");
     await page
@@ -161,12 +161,9 @@ test.describe("after Manali", () => {
       .fill("Looking for people who love mountain adventures");
     await page.keyboard.press("Enter");
     await page.getByRole("button", { name: /Skip intro/ }).click();
-    await expect(page).toHaveURL(/\/home\?tab=community&vibe=/, {
+    await expect(page).toHaveURL(/\/discover\?vibe=/, {
       timeout: 8000,
     });
-    await expect(
-      page.getByRole("option", { name: "Community" }),
-    ).toHaveAttribute("aria-selected", "true");
     await expect(
       page.getByText(
         "Picked for “Looking for people who love mountain adventures”.",
@@ -193,9 +190,9 @@ test.describe("after Manali", () => {
         timeout: 20000,
       });
     await expect(page.getByText("Manali, India")).toBeAttached();
-    // no cards orbit or line up on the way: the people are in Community
+    // no cards orbit or line up on the way: the people are on Discover
     await expect(page.getByRole("article")).toHaveCount(0);
-    await expect(page).toHaveURL(/\/home\?tab=community/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/discover/, { timeout: 10000 });
   });
 });
 

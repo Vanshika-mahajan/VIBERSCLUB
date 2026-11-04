@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("a thought brings matching Vibers out of the sphere", async ({ page }) => {
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.getByRole("img", { name: /turning sphere/ })).toBeVisible();
   await page.getByRole("textbox", { name: "What's on your mind?" }).fill("Looking for people to trek Hampta this weekend");
   await page.keyboard.press("Enter");
 
@@ -55,6 +55,6 @@ test("list view, calm mode and the about dialog", async ({ page }) => {
 
 test("the main navigation stays reachable", async ({ page }) => {
   const nav = page.getByRole("navigation", { name: "Main" });
-  await nav.getByRole("link", { name: "Events" }).click();
-  await expect(page.getByRole("heading", { name: "Events", level: 1 })).toBeVisible();
+  await nav.getByRole("link", { name: "Explore" }).click();
+  await expect(page.getByRole("heading", { name: "Explore Manali", level: 1 })).toBeVisible();
 });

@@ -26,7 +26,7 @@
     var(--paper);
 }
 
-/* ---------- hero: a photograph of the valley at dusk, the club on a wheel beside it ---------- */
+/* ---------- hero: a photograph of the valley at dusk ---------- */
 
 .hero {
   position: relative;
@@ -75,12 +75,6 @@
       rgba(31, 12, 17, 0.15) 75%
     ),
     linear-gradient(0deg, rgba(31, 12, 17, 0.85) 0%, transparent 45%);
-}
-.heroGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(200px, 260px);
-  gap: clamp(20px, 4vw, 48px);
-  align-items: center;
 }
 .heroInner {
   position: relative;
@@ -173,34 +167,6 @@
   color: var(--color-muted);
 }
 
-/* ---------- the wheel: the club sections ---------- */
-
-.wheel {
-  position: relative;
-  height: 280px;
-  border-left: 1px solid var(--line2);
-}
-.wheelInner {
-  font-family: var(--font-display);
-  font-style: italic;
-}
-.wheelInner:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 4px;
-  border-radius: 12px;
-}
-/* a small mark on the rule, level with the option in the middle */
-.wheel::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: -4px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--color-rose);
-  transform: translateY(-50%);
-}
 .stat:focus-visible,
 .btn:focus-visible,
 .ghost:focus-visible,
@@ -215,19 +181,6 @@
   scroll-margin-top: 16px;
 }
 @media (max-width: 760px) {
-  .heroGrid {
-    grid-template-columns: 1fr;
-  }
-  .wheel {
-    height: 190px;
-    border-left: 0;
-    border-top: 1px solid var(--line2);
-  }
-  .wheel::after {
-    top: -4px;
-    left: 50%;
-    transform: none;
-  }
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1200,4 +1153,39 @@
   .ghost {
     transition: none;
   }
+}
+
+/* two halves of a page (Explore and Itinerary), as one quiet capsule */
+.segment {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--color-recess);
+}
+.segment button {
+  padding: 9px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--soft);
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+.segment button:hover {
+  color: var(--ink);
+}
+.segment button[aria-pressed="true"] {
+  background: var(--color-brand);
+  color: var(--color-ink);
+}
+.segment button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }

@@ -2,61 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useDemo } from "@/lib/demo/store";
-import { isActive, moreItems, navItems } from "@/lib/nav";
+import PillNav from "@/components/reactbits/PillNav";
+import { ProfileMenu } from "@/components/ProfileMenu";
+import { activeNav, isFullScreen, navItems } from "@/lib/nav";
 
-function Mark() {
-  return (
-    <span className="relative block h-9 w-9 overflow-hidden rounded-xl bg-brand shadow-soft" aria-hidden="true">
-      <i className="absolute inset-[7px] rotate-[-30deg] rounded-full border-[1.5px] border-accent-wash border-r-transparent" />
-      <i className="absolute inset-[12px] rotate-[30deg] rounded-full border-[1.5px] border-mist-deep border-l-transparent" />
-    </span>
-  );
-}
+const items = navItems.map((i) => ({ label: i.label, href: i.href }));
 
-/** Bottom bar on phones, sidebar from the md breakpoint up. */
+/**
+ * The pill bar at the foot of every screen (Home, Discover, Explore) and the profile menu at the top
+ * right. The current page lights its pill; pages outside the three leave all three unlit.
+ */
 export function AppNav() {
   const pathname = usePathname();
-  const connections = useDemo((s) => s.connections);
-  const requests = Object.values(connections).filter((c) => c === "incoming").length;
-  // The first page and the universe are full screen, with their own menus
-  if (pathname === "/" || pathname === "/universe") return null;
-  const link = (href: string, label: string, sidebarOnly = false) => {
-    const active = isActive(pathname, href);
-    return (
-      <li key={href} className={sidebarOnly ? "hidden md:block" : ""}>
-        <Link
-          href={href}
-          aria-current={active ? "page" : undefined}
-          className={`relative flex h-14 items-center px-3 text-sm md:h-auto md:rounded-xl md:px-4 md:py-3 ${
-            active
-              ? "font-extrabold text-brand-ink before:absolute before:inset-x-3 before:top-0 before:h-0.5 before:rounded-full before:bg-rose md:bg-accent-wash/70 md:before:hidden"
-              : "font-semibold text-muted hover:text-brand-ink md:hover:bg-sand"
-          }`}
-        >
-          {label}
-          {href === "/chats" && requests > 0 && (
-            <span className="ml-1.5 inline-grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[0.68rem] font-extrabold text-ink" aria-label={`${requests} new requests`}>
-              {requests}
-            </span>
-          )}
-        </Link>
-      </li>
-    );
-  };
+  if (isFullScreen(pathname)) return null;
   return (
-    <nav
-      aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:sticky md:top-0 md:h-screen md:w-56 md:shrink-0 md:border-t-0 md:border-r md:bg-canvas md:pb-0"
-    >
-      <Link href="/home" className="hidden items-center gap-2.5 px-5 py-6 md:flex">
-        <Mark />
-        <span className="display text-xl text-brand-ink">Vibers Club</span>
-      </Link>
-      <ul className="flex justify-around md:flex-col md:gap-1 md:px-3">
-        {navItems.map((i) => link(i.href, i.label))}
-        {moreItems.map((i) => link(i.href, i.label, true))}
-      </ul>
-    </nav>
+    <>
+      <ProfileMenu />
+      <div className="vc-pillbar">
+        <PillNav
+          items={items}
+          linkComponent={Link}
+          activeHref={activeNav(pathname) ?? ""}
+          theme="winewood"
+          layout="joined"
+          indicator="pill"
+          hoverEffect="glide"
+          placement="bottom"
+          intro={false}
+          ariaLabel="Main"
+        />
+      </div>
+    </>
   );
 }

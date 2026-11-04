@@ -5,7 +5,7 @@ import ScrollStack, {
   ScrollStackItem,
 } from "@/components/reactbits/ScrollStack";
 import { interpret } from "@/features/discover/interpret";
-import { areas, interestById } from "@/lib/taxonomy";
+import { areas, interestById, type AreaId } from "@/lib/taxonomy";
 import { places, type PlaceKind } from "@/lib/demo/data";
 import { actions, useDemo } from "@/lib/demo/store";
 import { viberById } from "@/lib/demo/people";
@@ -31,6 +31,8 @@ const KINDS: (PlaceKind | "all" | "saved")[] = [
   "hot spring",
   "market",
 ];
+/** the areas that have places, in the order they first appear */
+const AREAS = [...new Set(places.map((p) => p.area))];
 const kindLabel = (k: string) =>
   k === "all"
     ? "All places"
@@ -44,14 +46,17 @@ export function Explore() {
   const thought = useMyThought();
   const allPosts = useAllPosts();
   const [kind, setKind] = useState<(typeof KINDS)[number]>("all");
+  const [area, setArea] = useState<AreaId | "all">("all");
 
-  const shown = places.filter((p) =>
-    kind === "all"
-      ? true
-      : kind === "saved"
-        ? savedPlaces.includes(p.id)
-        : p.kind === kind,
-  );
+  const shown = places
+    .filter((p) =>
+      kind === "all"
+        ? true
+        : kind === "saved"
+          ? savedPlaces.includes(p.id)
+          : p.kind === kind,
+    )
+    .filter((p) => area === "all" || p.area === area);
 
   // posts that share the most keywords with my vibe and my own posts (mine are left out)
   const similar = useMemo(() => {
@@ -113,14 +118,34 @@ export function Explore() {
             </button>
           ))}
         </div>
+        <div
+          className={s.chips}
+          role="group"
+          aria-label="Filter places by area"
+          style={{ marginBottom: 18 }}
+        >
+          {(["all", ...AREAS] as const).map((a) => (
+            <button
+              key={a}
+              type="button"
+              className={s.chip}
+              aria-pressed={area === a}
+              onClick={() => setArea(a)}
+            >
+              {a === "all" ? "All areas" : areas[a].label}
+            </button>
+          ))}
+        </div>
         {shown.length === 0 ? (
           <div className={s.empty}>
-            Tap the heart on a place to keep it here.
+            {kind === "saved" && area === "all"
+              ? "Tap the heart on a place to keep it here."
+              : "No places match. Try another area or kind."}
           </div>
         ) : (
           // the places pile up as you scroll: each one settles on the last, like pages of a travel journal
           <ScrollStack
-            key={kind}
+            key={`${kind}-${area}`}
             className={s.stack}
             useWindowScroll
             smoothScroll={false}
