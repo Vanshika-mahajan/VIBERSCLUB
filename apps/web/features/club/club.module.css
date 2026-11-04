@@ -1379,7 +1379,7 @@
 .ovNote {
   margin: 16px 0 0;
   font-size: 0.76rem;
-  color: var(--color-silver);
+  color: var(--color-muted);
 }
 @keyframes ovGrow {
   from {
@@ -1661,7 +1661,8 @@
   color: var(--color-ink2);
 }
 .inline2::placeholder {
-  color: var(--color-silver);
+  color: var(--color-muted);
+  opacity: 0.75;
 }
 .inline2:focus {
   outline: none;

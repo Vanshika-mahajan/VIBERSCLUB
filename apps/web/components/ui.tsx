@@ -41,7 +41,7 @@ export function Cover({ src, className = "", children }: { src?: string; classNa
 }
 
 export function SampleBadge() {
-  return <span className="inline-flex h-5 items-center rounded-full bg-mist px-2 text-[0.62rem] font-extrabold tracking-[0.08em] text-moss uppercase">Sample</span>;
+  return <span className="inline-flex h-5 items-center rounded-full bg-mist px-2 text-[0.62rem] font-extrabold tracking-[0.08em] text-on-forest uppercase">Sample</span>;
 }
 
 export function PageHeader({ kicker, title, children }: { kicker?: string; title: ReactNode; children?: ReactNode }) {

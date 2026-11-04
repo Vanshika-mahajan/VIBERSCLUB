@@ -44,7 +44,8 @@ export function ChatsScreen() {
 
       {tab === "chats" ? (
         chats.length ? (
-          <ul className="card divide-y divide-line" role="tabpanel">
+          <div role="tabpanel">
+          <ul className="card divide-y divide-line">
             {chats.map((id) => {
               const v = viberById[id];
               const last = (messages[id] ?? none).at(-1);
@@ -62,6 +63,7 @@ export function ChatsScreen() {
               );
             })}
           </ul>
+          </div>
         ) : (
           <Empty>
             No chats yet. <Link href="/discover" className="link">Find your people</Link>, and when you both like each other you can connect.

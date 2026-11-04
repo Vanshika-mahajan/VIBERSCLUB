@@ -14,6 +14,18 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Restructure Phase 6: testing and refinement (2026-11-04)
+- New `e2e/sweep.spec.ts` checks every page (/, /home, /discover, /explore and its Itinerary section, /profile, /chats, a chat, /events, an event, /events/new, a full profile, /universe) on a phone, at tablet width and on a desktop. Each page must load with a heading, have no sideways scroll, log no console errors, and pass an axe accessibility scan (WCAG 2.1 A and AA, serious and critical). `SWEEP_SHOTS=1` also saves a screenshot of each page to `.sweep/` (git-ignored) for a look-and-feel review. Adds `@axe-core/playwright` 4.10.2 (dev).
+- Fixed:
+  - The door headline's split letters put `aria-label` on spans, which isn't allowed. `SplitText` now leaves naming to the parent when it renders a span.
+  - The chat list's `role="tabpanel"` was on the `<ul>`, which hid the list from screen readers. It now sits on a wrapper.
+  - The "Sample" tag had dark green on dark green and is now readable.
+  - The full profile's footnote and the builder's placeholders were too faint.
+- Not covered: Safari and Firefox can't be tested in this workspace (Chromium only), so check them on a Mac. The two "API OK" checks need the backend running.
+
+## Tests executed (restructure Phase 6, 2026-11-04, in the cloud workspace)
+Vitest 91 passed. E2E 115 passed, 1 skipped (drag and drop on phones, which use menus), 2 failed (the "API OK" checks, which need the API). Typecheck and ESLint clean.
+
 ## Files created or modified in the restructure, Phase 5: Sound (2026-11-04)
 - `lib/sound.ts`: one sound engine and the `useSound()` hook. Tones are made in the browser with the Web Audio API (no audio files): soft sine and triangle notes through a warm low-pass. Ten sounds: tap, nav, open, close, select, deselect, post, connect, add, remove. Nothing plays until the person has tapped or typed; one sound at a time (a new one fades the last); the same sound twice within 70 ms plays once. Volume and on/off are kept in this browser (`vc-sound`); off by default for people whose device asks for reduced motion.
 - `components/SoundEffects.tsx` (in the layout) plays sounds by convention: `data-sound="name"` on anything clicked, pill bar links (nav), toggles with `aria-pressed` (select/deselect: interests, saves, likes, chips), things with `aria-expanded` (open/close: the profile menu), submit buttons and `.btn` (tap), and every `<dialog>` opening or closing (profile overview, albums). `data-sound="none"` opts out.

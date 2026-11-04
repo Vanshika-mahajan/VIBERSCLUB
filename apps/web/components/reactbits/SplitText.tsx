@@ -358,6 +358,9 @@ const SplitText = ({
         wordsClass: 'split-word',
         charsClass: 'split-char',
         reduceWhiteSpace: false,
+        // Vibers Club: a span cannot carry aria-label, so split spans leave naming to their parent
+        // (the journey's h1 has the whole line as its label)
+        aria: tag === 'span' ? 'none' : 'auto',
         onSplit: (self: GSAPSplitText) => {
           pieces = [self[unit], self.chars, self.words, self.lines].find(list => list.length) || [];
           movers = (mask && self.masks?.length === pieces.length ? self.masks : pieces) as HTMLElement[];
