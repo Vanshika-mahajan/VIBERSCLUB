@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
+import { ItineraryBuilder } from "./ItineraryBuilder";
+import { interestById } from "@/lib/taxonomy";
 import AccordionGallery from "@/components/reactbits/AccordionGallery";
 import {
   clubTemplates,
@@ -18,6 +20,14 @@ const placeName = (id: string) => places.find((p) => p.id === id)?.name ?? id;
 const placePhoto = (id: string) =>
   places.find((p) => p.id === id)?.photoUrl?.replace(/w=\d+/, "w=1100");
 const templates = [...clubTemplates, ...viberTemplates];
+
+/** what you would do on a plan: the activities written on its stops, else what its places are known for */
+export function activitiesOf(p: Plan, max = 5): string[] {
+  const stops = p.days.flatMap((d) => d.stops);
+  const written = stops.map((st) => st.activity?.trim()).filter((a): a is string => !!a);
+  const known = stops.flatMap((st) => places.find((x) => x.id === st.placeId)?.interests.slice(0, 1) ?? []).map((id) => interestById[id]?.label ?? id);
+  return [...new Set([...written, ...known])].slice(0, max);
+}
 const noop = () => () => {};
 
 /** My itinerary: build my own day by day, or start from a plan by Vibers Club or another Viber. */
@@ -36,7 +46,7 @@ export function Itinerary() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 44 }}>
-      <TemplateGallery onUse={use} />
+      <TemplateGallery onUse={use} mine={mine.filter((i) => i.visibility === "public")} />
       <div className={s.itinGrid}>
         <section
           aria-labelledby="mine-title"
@@ -73,7 +83,7 @@ export function Itinerary() {
           )}
 
           {open ? (
-            <PlanEditor plan={open} />
+            <ItineraryBuilder plan={open} />
           ) : (
             <div className={s.empty}>
               <p className={s.h3} style={{ color: "var(--ink)" }}>
@@ -138,7 +148,8 @@ export function Itinerary() {
  * Plans to start from, by Vibers Club and by other Vibers, as a row of photographs: hover, tap or
  * focus one to open it, and its details and "Use this plan" appear below.
  */
-function TemplateGallery({ onUse }: { onUse: (p: Plan) => void }) {
+function TemplateGallery({ onUse, mine }: { onUse: (p: Plan) => void; mine: Plan[] }) {
+  const all = useMemo(() => [...mine, ...templates], [mine]);
   const mounted = useSyncExternalStore(
     noop,
     () => true,
@@ -147,7 +158,7 @@ function TemplateGallery({ onUse }: { onUse: (p: Plan) => void }) {
   const [index, setIndex] = useState(0);
   const items = useMemo(
     () =>
-      templates.map((p) => {
+      all.map((p) => {
         const first = p.days[0]?.stops[0]?.placeId ?? "";
         return {
           image: placePhoto(first) || (mounted ? landscape(p.title) : ""),
@@ -156,9 +167,10 @@ function TemplateGallery({ onUse }: { onUse: (p: Plan) => void }) {
           alt: `${p.title}: ${placeName(first)}`,
         };
       }),
-    [mounted],
+    [mounted, all],
   );
-  const p = templates[index] ?? templates[0];
+  const p = all[index] ?? all[0];
+  const mineShown = p.by === "me";
   const author = viberById[p.by];
   const stops = p.days.flatMap((d) => d.stops);
   return (
@@ -166,11 +178,11 @@ function TemplateGallery({ onUse }: { onUse: (p: Plan) => void }) {
       <div className={s.sectionHead}>
         <div>
           <h2 id="templates-title" className={s.h2}>
-            Start from a plan
+            Public itineraries
           </h2>
           <p className={`${s.muted} ${s.small}`} style={{ margin: "4px 0 0" }}>
-            Ways to spend a few days, by Vibers Club and by Vibers who have done
-            them.
+            Ways to spend a few days, shared by Vibers Club and by Vibers who have done
+            them. Copy one and make it yours.
           </p>
         </div>
       </div>
@@ -178,7 +190,7 @@ function TemplateGallery({ onUse }: { onUse: (p: Plan) => void }) {
         <AccordionGallery
           items={items}
           defaultIndex={0}
-          ariaLabel="Itinerary templates"
+          ariaLabel="Public itineraries, as photos"
           onChange={setIndex}
           height={380}
           gap={10}
@@ -210,154 +222,45 @@ function TemplateGallery({ onUse }: { onUse: (p: Plan) => void }) {
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3 className={s.templateTitle}>{p.title}</h3>
             <p className={`${s.muted} ${s.small}`}>
-              {author ? `by ${firstName(author)}` : "by Vibers Club"} ·{" "}
+              {mineShown ? "by you" : author ? `by ${firstName(author)}` : "by Vibers Club"} ·{" "}
               {p.days.length} {p.days.length === 1 ? "day" : "days"} ·{" "}
               {stops.length} stops
             </p>
           </div>
+          <span className={s.visTag}>{p.visibility === "private" ? "Private" : "Public"}</span>
           {p.sample && <SampleTag />}
         </div>
-        <p className={s.templateSummary}>{p.summary}</p>
-        <p className={s.templateStops}>
-          {stops.map((st) => placeName(st.placeId)).join(" → ")}
-        </p>
+        {p.summary && <p className={s.templateSummary}>{p.summary}</p>}
+        <dl className={s.planFacts}>
+          {p.travelStyle && (
+            <div>
+              <dt>Travel style</dt>
+              <dd>{p.travelStyle}</dd>
+            </div>
+          )}
+          <div>
+            <dt>Places</dt>
+            <dd className={s.templateStops}>{stops.length ? stops.map((st) => placeName(st.placeId)).join(" → ") : "None yet"}</dd>
+          </div>
+          {activitiesOf(p).length > 0 && (
+            <div>
+              <dt>Activities</dt>
+              <dd className={s.chips}>
+                {activitiesOf(p).map((a) => (
+                  <span key={a} className={s.chip}>
+                    {a}
+                  </span>
+                ))}
+              </dd>
+            </div>
+          )}
+        </dl>
         <div>
           <button type="button" className={s.btn} onClick={() => onUse(p)}>
-            Use this plan
+            {mineShown ? "Make a copy" : "Use this plan"}
           </button>
         </div>
       </article>
     </section>
-  );
-}
-
-function PlanEditor({ plan }: { plan: Plan }) {
-  return (
-    <div className={`${s.card} ${s.timeline}`}>
-      <div className={s.row}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 className={s.h3} style={{ fontSize: "1.2rem" }}>
-            {plan.title}
-          </h3>
-          {plan.summary && (
-            <p
-              className={`${s.muted} ${s.small}`}
-              style={{ margin: "2px 0 0" }}
-            >
-              {plan.summary}
-            </p>
-          )}
-        </div>
-        <button
-          type="button"
-          className={s.round}
-          style={{ width: 38, height: 38 }}
-          aria-label={`Delete ${plan.title}`}
-          onClick={() => {
-            actions.deleteItinerary(plan.id);
-            toast(`"${plan.title}" deleted.`);
-          }}
-        >
-          <Icon name="trash" size={16} />
-        </button>
-      </div>
-      {plan.days.map((d, i) => (
-        <div key={d.id} className={s.day}>
-          <p className={s.dayLabel}>Day {i + 1}</p>
-          {d.stops.length === 0 && (
-            <p
-              className={`${s.muted} ${s.small}`}
-              style={{ margin: "0 0 6px" }}
-            >
-              Nothing planned yet.
-            </p>
-          )}
-          {d.stops.map((st) => (
-            <div key={st.id} className={s.stop}>
-              <span className={s.time}>{st.time}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p className={s.miniName} style={{ margin: 0 }}>
-                  {placeName(st.placeId)}
-                </p>
-                {st.note && (
-                  <p className={`${s.muted} ${s.small}`} style={{ margin: 0 }}>
-                    {st.note}
-                  </p>
-                )}
-              </div>
-              <button
-                type="button"
-                className={s.round}
-                style={{ width: 32, height: 32, boxShadow: "none" }}
-                aria-label={`Remove ${placeName(st.placeId)} from day ${i + 1}`}
-                onClick={() => actions.removeStop(plan.id, d.id, st.id)}
-              >
-                <Icon name="x" size={14} />
-              </button>
-            </div>
-          ))}
-          <AddStop planId={plan.id} dayId={d.id} day={i + 1} />
-        </div>
-      ))}
-      {plan.days.length < 14 && (
-        <div>
-          <button
-            type="button"
-            className={s.ghost}
-            onClick={() => actions.addDay(plan.id)}
-          >
-            <Icon name="plus" size={16} /> Add a day
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AddStop({
-  planId,
-  dayId,
-  day,
-}: {
-  planId: string;
-  dayId: string;
-  day: number;
-}) {
-  const [place, setPlace] = useState("");
-  const [time, setTime] = useState("10:00");
-  return (
-    <form
-      className={s.addStop}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!place) return;
-        actions.addStop(planId, dayId, place, time);
-        setPlace("");
-      }}
-    >
-      <select
-        className={s.select}
-        aria-label={`Place to add on day ${day}`}
-        value={place}
-        onChange={(e) => setPlace(e.target.value)}
-      >
-        <option value="">Add a place…</option>
-        {places.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name}
-          </option>
-        ))}
-      </select>
-      <input
-        className={s.field}
-        type="time"
-        aria-label={`Time on day ${day}`}
-        value={time}
-        onChange={(e) => setTime(e.target.value)}
-      />
-      <button type="submit" className={s.btn} disabled={!place}>
-        Add
-      </button>
-    </form>
   );
 }

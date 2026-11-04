@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { Itinerary, Post } from "./club";
+import type { Itinerary, Post, Stop } from "./club";
 import {
   likedMe,
   seedConnections,
@@ -252,6 +252,8 @@ export const actions = {
           id,
           by: "me",
           sample: false,
+          // a copy is mine and starts private, whoever shared the original
+          visibility: "private",
           title: title || from.title,
           days: from.days.map((d, i) => ({
             id: `${id}-d${i}`,
@@ -264,6 +266,7 @@ export const actions = {
           summary: "",
           by: "me",
           sample: false,
+          visibility: "private",
           days: Array.from(
             { length: Math.min(Math.max(days, 1), 14) },
             (_, i) => ({ id: `${id}-d${i}`, stops: [] }),
@@ -317,6 +320,87 @@ export const actions = {
                     },
               ),
             },
+      ),
+    }));
+  },
+  /** title, description, dates, style, notes or visibility */
+  updateItinerary(
+    id: string,
+    patch: Partial<Pick<Itinerary, "title" | "summary" | "startDate" | "travelStyle" | "notes" | "visibility">>,
+  ) {
+    set((s) => ({ ...s, itineraries: s.itineraries.map((it) => (it.id === id ? { ...it, ...patch } : it)) }));
+  },
+  updateStop(itineraryId: string, dayId: string, stopId: string, patch: Partial<Omit<Stop, "id">>) {
+    set((s) => ({
+      ...s,
+      itineraries: s.itineraries.map((it) =>
+        it.id !== itineraryId
+          ? it
+          : {
+              ...it,
+              days: it.days.map((d) =>
+                d.id !== dayId ? d : { ...d, stops: d.stops.map((x) => (x.id === stopId ? { ...x, ...patch } : x)) },
+              ),
+            },
+      ),
+    }));
+  },
+  /** a place dropped on a day: added at `index` (the end when left out), not re-sorted by time */
+  insertStop(itineraryId: string, dayId: string, placeId: string, index?: number) {
+    set((s) => ({
+      ...s,
+      itineraries: s.itineraries.map((it) =>
+        it.id !== itineraryId
+          ? it
+          : {
+              ...it,
+              days: it.days.map((d) => {
+                if (d.id !== dayId) return d;
+                const stops = [...d.stops];
+                const at = index === undefined ? stops.length : Math.max(0, Math.min(index, stops.length));
+                const before = stops[at - 1]?.time;
+                // an hour and a half after the stop before it, or ten in the morning
+                const time = before
+                  ? (() => {
+                      const [h, m] = before.split(":").map(Number);
+                      const t = Math.min(h * 60 + m + 90, 23 * 60);
+                      return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+                    })()
+                  : "10:00";
+                stops.splice(at, 0, { id: crypto.randomUUID(), placeId, time, note: "" });
+                return { ...d, stops };
+              }),
+            },
+      ),
+    }));
+  },
+  /** reorder within a day, or move to another day, at `index` there */
+  moveStop(itineraryId: string, stopId: string, toDayId: string, index: number) {
+    set((s) => ({
+      ...s,
+      itineraries: s.itineraries.map((it) => {
+        if (it.id !== itineraryId) return it;
+        const stop = it.days.flatMap((d) => d.stops).find((x) => x.id === stopId);
+        if (!stop) return it;
+        const days = it.days.map((d) => ({ ...d, stops: d.stops.filter((x) => x.id !== stopId) }));
+        return {
+          ...it,
+          days: days.map((d) => {
+            if (d.id !== toDayId) return d;
+            const stops = [...d.stops];
+            stops.splice(Math.max(0, Math.min(index, stops.length)), 0, stop);
+            return { ...d, stops };
+          }),
+        };
+      }),
+    }));
+  },
+  /** a day and what was on it; the last day stays */
+  removeDay(itineraryId: string, dayId: string) {
+    set((s) => ({
+      ...s,
+      itineraries: s.itineraries.map((it) =>
+        it.id === itineraryId && it.days.length > 1 ? { ...it, days: it.days.filter((d) => d.id !== dayId) } : it,
       ),
     }));
   },

@@ -14,6 +14,16 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the restructure, Phase 4: Itinerary in Explore (2026-11-04)
+- Data (`lib/demo/club.ts`): an itinerary now has `visibility` (public or private), an optional `startDate` (otherwise it is just a duration), `travelStyle`, `notes`, and each stop an `activity`. Sample plans are public; mine, and copies, start private.
+- Store (`lib/demo/store.ts`): `updateItinerary`, `updateStop`, `insertStop` (a dropped place lands where it was dropped; its time is 90 minutes after the stop before it, or 10:00), `moveStop` (reorder or move to another day), `removeDay` (the last day stays).
+- `features/club/ItineraryBuilder.tsx`: the builder (title, description, first day, duration, travel style, Private/Public, notes, days), with a "Places from Explore" tray. Desktop: drag a place onto a day, drag stops to reorder or onto another day; a highlight and a drop line show where it lands. Phones and keyboards: each place has an "Add…" day menu, each stop has earlier/later buttons, a "Day…" menu and remove. `AddToPlan` puts a place from an Explore card into any plan and day, or a new plan.
+- `features/club/Itinerary.tsx`: "Public itineraries" (sample plans plus mine that I made public) with creator, days, stops, travel style, places and activities; "Use this plan" copies one. The old PlanEditor and AddStop are replaced by the builder.
+- Backend needed later: `GET /itineraries?visibility=public`, `GET /me/itineraries`, `POST /itineraries`, `PATCH /itineraries/:id`, `DELETE /itineraries/:id` (the model above, owner only for writes).
+
+## Tests executed (restructure Phase 4, 2026-11-04, in the cloud workspace)
+Vitest 86 passed (new: visibility and details, insert/move/remove). E2E 87 passed, 1 skipped (drag and drop is desktop only), and the two "API OK" checks failed as usual (need the API running). New: use a public plan, edit, go public, add by menu; drag places onto days, reorder, move, remove; add a place to a plan from Explore. Typecheck and ESLint clean.
+
 ## Files created or modified in the restructure, Phase 3: Profile (2026-11-04)
 - IGNITE THE VIBE (`features/club/PostTab.tsx`, now on the profile at `#ignite`): post a Thread or a Photo with a caption; same posting and keyword matching as before. Photos are shrunk in the browser (`lib/demo/photos.ts`). Home links to it instead of holding its own composer. The vibe line editor stays, as "Your vibe line".
 - "Interests" heading is now "WHAT'S YOUR VIBE?" (contents unchanged).

@@ -101,21 +101,76 @@ test("events: join and leave", async ({ page }) => {
   await expect(page.getByRole("button", { name: /Going ✓/ })).toHaveCount(0);
 });
 
-test("itinerary: use a Vibers Club plan, then add a stop", async ({ page }) => {
+test("itinerary: use a public plan, edit it, go public, add a place by menu", async ({ page }) => {
   await page.goto("/explore");
   await page.getByRole("button", { name: "Itinerary" }).click();
   await expect(page).toHaveURL(/section=itinerary/);
+  const detail = page.locator("article").filter({ has: page.getByRole("button", { name: "Use this plan" }) });
+  await expect(detail.getByText("Travel style")).toBeVisible();
+  await expect(detail.getByText("Activities")).toBeVisible();
   await page.getByRole("button", { name: "Use this plan" }).first().click();
-  await expect(
-    page
-      .getByRole("heading", { name: "Your first two days", level: 3 })
-      .first(),
-  ).toBeVisible();
-  await page
-    .getByRole("combobox", { name: "Place to add on day 1" })
-    .selectOption("solang");
-  await page.getByRole("button", { name: "Add", exact: true }).first().click();
-  await expect(page.getByText("Solang meadows").first()).toBeVisible();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Your first two days");
+
+  // a copy starts private; make it public and it joins the public itineraries, by you
+  const who = page.getByRole("group", { name: "Who can see it" });
+  await expect(who.getByRole("button", { name: "Private" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByLabel("Title", { exact: true }).fill("Manali with Ana");
+  await page.getByLabel("Travel style").selectOption("Adventure");
+  await who.getByRole("button", { name: "Public" }).click();
+  await expect(page.getByText(/Public: other Vibers can find/)).toBeVisible();
+  await expect(page.getByRole("region", { name: "Public itineraries", exact: true })).toContainText("Manali with Ana");
+
+  // the touch way: pick the day from the place's menu
+  await page.getByRole("combobox", { name: "Add Solang meadows to a day" }).selectOption({ label: "Day 2" });
+  const day2 = page.getByRole("region", { name: "Day 2" });
+  await expect(day2.getByText("Solang meadows")).toBeVisible();
+  await day2.getByRole("textbox", { name: "Activity at Solang meadows" }).fill("Paragliding");
+
+  // and it all survives a reload
+  await page.reload();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Manali with Ana");
+  await expect(page.getByRole("region", { name: "Day 2" }).getByRole("textbox", { name: "Activity at Solang meadows" })).toHaveValue("Paragliding");
+});
+
+test("itinerary: drag places onto days, reorder, move to another day, remove", async ({ page, isMobile }) => {
+  test.skip(isMobile, "phones use the menus instead of drag and drop");
+  await page.goto("/explore?section=itinerary");
+  await page.getByLabel("Create your own").fill("Drag test");
+  await page.getByLabel("Days", { exact: true }).fill("2");
+  await page.getByRole("button", { name: "Create" }).click();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Drag test");
+
+  const tray = page.getByRole("complementary", { name: "Places from Explore" });
+  const day1 = page.getByRole("region", { name: "Day 1" });
+  const day2 = page.getByRole("region", { name: "Day 2" });
+  // a person drags to a day they can see; the places tray stays beside it
+  await day1.scrollIntoViewIfNeeded();
+  await tray.getByRole("listitem").filter({ hasText: "Jogini falls" }).dragTo(day1);
+  await tray.getByRole("listitem").filter({ hasText: "Hadimba Devi temple" }).dragTo(day1);
+  await expect(day1.getByText("Jogini falls")).toBeVisible();
+  await expect(day1.getByText("Hadimba Devi temple")).toBeVisible();
+
+  // reorder with the buttons, then move one to day 2 by dragging
+  // dropped on the middle of the day, the temple landed above the falls; swap them back
+  const rows = day1.locator("[data-stop-row]");
+  await expect(rows.first()).toContainText("Hadimba Devi temple");
+  await day1.getByRole("button", { name: "Move Hadimba Devi temple later" }).click();
+  await expect(rows.first()).toContainText("Jogini falls");
+  await day2.scrollIntoViewIfNeeded();
+  await day1.locator("[data-stop-row]").filter({ hasText: "Jogini falls" }).dragTo(day2);
+  await expect(day2.getByText("Jogini falls")).toBeVisible();
+  await expect(day1.getByText("Jogini falls")).toHaveCount(0);
+
+  await day2.getByRole("button", { name: "Remove Jogini falls from day 2" }).click();
+  await expect(day2.getByText(/Drag a place here/)).toBeVisible();
+});
+
+test("explore: add a place to a plan from its card", async ({ page }) => {
+  await page.goto("/explore");
+  await page.getByRole("combobox", { name: "Add Jogini falls to a plan" }).selectOption("new");
+  await expect(page.getByText(/Jogini falls is day 1 of a new plan/)).toBeVisible();
+  await page.getByRole("button", { name: "Itinerary" }).click();
+  await expect(page.getByRole("region", { name: "Day 1" }).getByText("Jogini falls")).toBeVisible();
 });
 
 test("post: keywords appear while typing and find matching Vibers", async ({

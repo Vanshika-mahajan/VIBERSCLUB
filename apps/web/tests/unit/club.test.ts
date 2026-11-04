@@ -80,4 +80,43 @@ describe("itineraries", () => {
     actions.deleteItinerary(it.id);
     expect(getState().itineraries).toEqual([]);
   });
+
+  it("starts private and edits the plan's details", () => {
+    const it = actions.createItinerary("Trip", 2);
+    expect(it.visibility).toBe("private");
+    expect(actions.createItinerary("", 0, clubTemplates[0]).visibility).toBe("private");
+    expect(clubTemplates[0].visibility).toBe("public");
+    actions.updateItinerary(it.id, { visibility: "public", travelStyle: "Slow travel", startDate: "2026-11-20", notes: "Pack warm" });
+    expect(getState().itineraries.find((x) => x.id === it.id)).toMatchObject({
+      visibility: "public",
+      travelStyle: "Slow travel",
+      startDate: "2026-11-20",
+      notes: "Pack warm",
+    });
+  });
+
+  it("drops places where they land, and moves stops between days", () => {
+    const it = actions.createItinerary("Trip", 2);
+    const [d1, d2] = it.days.map((d) => d.id);
+    actions.insertStop(it.id, d1, "jogini");
+    actions.insertStop(it.id, d1, "hadimba");
+    actions.insertStop(it.id, d1, "solang", 0);
+    const day1 = () => getState().itineraries[0].days[0].stops;
+    expect(day1().map((x) => x.placeId)).toEqual(["solang", "jogini", "hadimba"]);
+    // a stop after another is an hour and a half later
+    expect(day1()[2].time).toBe("11:30");
+    actions.updateStop(it.id, d1, day1()[0].id, { activity: "Paragliding", time: "09:00" });
+    expect(day1()[0]).toMatchObject({ activity: "Paragliding", time: "09:00" });
+    // reorder within the day, then move one to day 2
+    actions.moveStop(it.id, day1()[0].id, d1, 2);
+    expect(day1().map((x) => x.placeId)).toEqual(["jogini", "hadimba", "solang"]);
+    actions.moveStop(it.id, day1()[1].id, d2, 0);
+    expect(day1().map((x) => x.placeId)).toEqual(["jogini", "solang"]);
+    expect(getState().itineraries[0].days[1].stops.map((x) => x.placeId)).toEqual(["hadimba"]);
+    // remove a day with what was on it, but never the last one
+    actions.removeDay(it.id, d2);
+    expect(getState().itineraries[0].days).toHaveLength(1);
+    actions.removeDay(it.id, d1);
+    expect(getState().itineraries[0].days).toHaveLength(1);
+  });
 });

@@ -102,16 +102,34 @@ export const samplePosts: Post[] = [
   },
 ];
 
-export type Stop = { id: string; placeId: string; time: string; note: string };
+/** a place on a day: when, what you'll do there, and a note */
+export type Stop = { id: string; placeId: string; time: string; note: string; activity?: string };
 export type ItineraryDay = { id: string; stops: Stop[] };
+export type Visibility = "public" | "private";
+export const TRAVEL_STYLES = [
+  "Easy pace",
+  "Slow travel",
+  "Early riser",
+  "On foot",
+  "Adventure",
+  "Food and culture",
+  "Workation",
+] as const;
 export type Itinerary = {
   id: string;
   title: string;
+  /** the description */
   summary: string;
   /** "club" = made by Vibers Club; a Viber's id; or "me" */
   by: string;
   days: ItineraryDay[];
   sample: boolean;
+  /** public plans can be found and copied by other Vibers; mine start private */
+  visibility?: Visibility;
+  /** the first day, yyyy-mm-dd, when the dates are known (otherwise the plan is just a duration) */
+  startDate?: string;
+  travelStyle?: string;
+  notes?: string;
 };
 
 const plan = (
@@ -119,12 +137,15 @@ const plan = (
   title: string,
   summary: string,
   by: string,
+  travelStyle: string,
   days: [string, string, string][][],
 ): Itinerary => ({
   id,
   title,
   summary,
   by,
+  travelStyle,
+  visibility: "public",
   sample: true,
   days: days.map((stops, d) => ({
     id: `${id}-d${d + 1}`,
@@ -144,6 +165,7 @@ export const clubTemplates: Itinerary[] = [
     "Your first two days",
     "The essentials, at an easy pace: temples, cafés and the hot springs.",
     "club",
+    "Easy pace",
     [
       [
         ["hadimba", "08:30", "Before the crowds"],
@@ -162,6 +184,7 @@ export const clubTemplates: Itinerary[] = [
     "The slow valley",
     "Three unhurried days down the Kullu valley.",
     "club",
+    "Slow travel",
     [
       [
         ["naggar-castle", "10:00", "Castle and museum"],
@@ -183,6 +206,7 @@ export const viberTemplates: Itinerary[] = [
     "Sunrise chaser's weekend",
     "Up early both days, rewarded both days.",
     "jiya-kohli",
+    "Early riser",
     [
       [
         ["jogini", "05:30", "Falls at first light"],
@@ -199,6 +223,7 @@ export const viberTemplates: Itinerary[] = [
     "Old Manali on foot",
     "Lanes, cafés and the people who run them.",
     "nima-sherpa",
+    "On foot",
     [
       [
         ["manu-temple", "10:00", "Temple and the carved balconies"],
@@ -212,6 +237,7 @@ export const viberTemplates: Itinerary[] = [
     "Heritage and siddu",
     "A local's day of old stone and good food.",
     "harish-negi",
+    "Food and culture",
     [
       [
         ["naggar-castle", "09:30", "Castle terrace"],

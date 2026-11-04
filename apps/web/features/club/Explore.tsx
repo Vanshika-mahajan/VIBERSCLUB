@@ -18,6 +18,7 @@ import {
   useAllPosts,
   useMyThought,
 } from "./shared";
+import { AddToPlan } from "./ItineraryBuilder";
 import s from "./club.module.css";
 
 const KINDS: (PlaceKind | "all" | "saved")[] = [
@@ -198,6 +199,7 @@ export function Explore() {
                       >
                         <Icon name="heart" size={16} /> {on ? "Saved" : "Save"}
                       </button>
+                      <AddToPlan placeId={p.id} name={p.name} />
                     </div>
                   </div>
                 </ScrollStackItem>
