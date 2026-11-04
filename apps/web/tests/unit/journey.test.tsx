@@ -8,10 +8,21 @@ const stage = () => document.querySelector("[data-phase]")!;
 describe("JourneyScreen, scene one", () => {
   it("asks the question with a labelled field and the brand", () => {
     render(<JourneyScreen />);
-    expect(screen.getByRole("heading", { level: 1, name: "Every journey begins with a thought." })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Every journey begins with a thought.",
+      }),
+    ).toBeInTheDocument();
     const field = screen.getByLabelText("What’s on your mind?");
-    expect(field).toHaveAttribute("placeholder", "Tell us what kind of experience you're looking for…");
-    expect(screen.getByRole("link", { name: "Enter the app" })).toHaveAttribute("href", "/universe");
+    expect(field).toHaveAttribute(
+      "placeholder",
+      "Tell us what kind of experience you're looking for…",
+    );
+    expect(screen.getByRole("link", { name: "Enter the app" })).toHaveAttribute(
+      "href",
+      "/home",
+    );
     expect(stage()).toHaveAttribute("data-phase", "idle");
   });
 
@@ -20,7 +31,10 @@ describe("JourneyScreen, scene one", () => {
     render(<JourneyScreen />);
     await user.click(screen.getByRole("button", { name: /find your vibe/ }));
     expect(screen.getByText(/Write a few words first/)).toBeInTheDocument();
-    expect(screen.getByLabelText("What’s on your mind?")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("What’s on your mind?")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
     expect(stage()).toHaveAttribute("data-phase", "idle");
   });
 
@@ -32,6 +46,8 @@ describe("JourneyScreen, scene one", () => {
     expect(stage()).toHaveAttribute("data-phase", "opening");
     expect(field).toHaveValue("  Hidden cafés in   Old Manali ");
     expect(field).toHaveAttribute("readonly");
-    expect(screen.getByRole("button", { name: /find your vibe/ })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /find your vibe/ }),
+    ).toBeDisabled();
   });
 });

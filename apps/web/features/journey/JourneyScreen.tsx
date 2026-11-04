@@ -190,7 +190,7 @@ export function JourneyScreen() {
           >
             {mode === "day" ? <MoonIcon /> : <SunIcon />}
           </button>
-          <Link href="/universe" className={s.skipLink}>
+          <Link href="/home" className={s.skipLink}>
             Enter the app
           </Link>
         </div>

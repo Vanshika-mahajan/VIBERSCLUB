@@ -93,7 +93,7 @@ export function Discovery({ ref, cards, settled, world3d }: Props) {
 
       <Link
         ref={more}
-        href="/universe"
+        href="/home?tab=community"
         className={s.more}
         tabIndex={settled ? 0 : -1}
       >

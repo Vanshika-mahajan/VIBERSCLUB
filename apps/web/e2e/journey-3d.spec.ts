@@ -83,11 +83,12 @@ test("reduced motion keeps the still CSS version, even when 3D is asked for", as
   await context.close();
 });
 
-// the universe draws with WebGL too, so this lives here
-test("Enter the app opens the universe", async ({ page }) => {
+test("Enter the app opens the club home", async ({ page }) => {
   await page.route("**/images.pexels.com/**", (r) => r.abort());
   await page.goto("/");
   await page.getByRole("link", { name: "Enter the app" }).click();
-  await expect(page).toHaveURL(/\/universe$/);
-  await expect(page.locator("canvas").first()).toBeVisible();
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(
+    page.getByRole("tablist", { name: "Vibers Club" }),
+  ).toBeVisible();
 });

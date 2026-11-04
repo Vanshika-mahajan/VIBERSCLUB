@@ -203,7 +203,7 @@ test.describe("the Vibers", () => {
     await expect(dialog).toBeHidden();
     await expect(
       page.getByRole("link", { name: /Explore more Vibers/ }),
-    ).toHaveAttribute("href", "/universe");
+    ).toHaveAttribute("href", "/home?tab=community");
   });
 
   test("the whole journey plays through to the row on its own", async ({

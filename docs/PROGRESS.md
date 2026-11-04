@@ -14,6 +14,21 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the club home (2026-11-04)
+ARPIT asked for the Vibers Club home in his palette (Olive Petal #A3A380, Golden Clover #D7CE93, Arctic Daisy #EFEBCE, Rose Blush #D8A48F, Peach Blossom #BB8588) with tabs for Events, Community (swipe to like, pass or save for later), Explore (places and similar posts), My itinerary (your own, or a template by Vibers Club or another Viber) and Post (keywords in a post find matching Vibers).
+- `app/home/page.tsx`, `features/club/ClubHome.tsx` (new): hero with greeting, four counts that jump to their tab and soft ridges in the palette; a sticky tab bar (arrow keys work); the open tab is in the URL (`/home?tab=community`).
+- `features/club/Community.tsx`: a card stack. Drag right or press the heart (or →) to like, left (←) to pass, up (↑) or the bookmark to save for later. Ranked from your vibe, interests and posts; a mutual like opens "It's a vibe" with Say hi. Side lists: saved for later, and who you liked.
+- `features/club/Events.tsx`: filters (all, for you, today, this week, free, going), join or waitlist, leave, host an event.
+- `features/club/Explore.tsx`: places by kind with save, and "Posts like yours" ranked by shared keywords.
+- `features/club/Itinerary.tsx`: day-by-day plans with add or remove stops and days; create your own; "Use this plan" copies a Vibers Club or Viber template.
+- `features/club/PostTab.tsx`: composer with an optional place tag; keywords appear while typing and matching Vibers update live; your posts.
+- `lib/demo/club.ts` (new): sample posts and templates. `lib/demo/store.ts`: posts and itineraries with their actions. `app/globals.css`: palette tokens.
+- Links: Home in the nav, "Enter the app" and the journey's "Explore more Vibers" now open `/home`. `/universe` still works.
+- Fixed while building: an apostrophe inside a comment in the `@theme` block made Tailwind drop the tokens after it.
+
+## Tests executed (club home, 2026-11-04, in the cloud workspace)
+Vitest 84 passed (new `tests/unit/club.test.ts`). E2E: new `e2e/club.spec.ts` (tabs and URL, swipe, join and leave, use a template and add a stop, post keywords and matches) plus journey: 32 passed. The two "API OK" checks fail here because the real API isn't running in this workspace. Typecheck, ESLint and Prettier clean. Reviewed on desktop (1440) and phone (iPhone 13).
+
 ## Files created or modified in the first page, Earth orb and day or night (2026-11-04)
 ARPIT asked for the globe in the style of ThreeUI's Energy Orb while still reading as Earth, for it to be there already (seen through the door) and slow from a fast spin, for a day and night choice on the door page, and for everything to look high definition.
 - `world/planet.ts`: Earth in the Energy Orb style (shader ported from ThreeUI, MIT): indigo seas, periwinkle continents from a 4096 x 2048 Natural Earth mask (`public/journey/earth-land.png`), a light along the coasts, violet smoke as cloud, a thin atmosphere and a glint on the seas. The dotted continents and flight arcs are gone.

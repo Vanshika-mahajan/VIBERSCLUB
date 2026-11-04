@@ -38,6 +38,19 @@
   --color-danger-hover: #961d13;
   --color-focus: #b5532f;
 
+  /* the club home palette: Olive Petal, Golden Clover, Arctic Daisy, Rose Blush, Peach Blossom (with darker partners for text) */
+  --color-olive: #a3a380;
+  --color-olive-deep: #5c5c3d;
+  --color-olive-ink: #3d3d27;
+  --color-clover: #d7ce93;
+  --color-clover-wash: #ece6c0;
+  --color-daisy: #efebce;
+  --color-daisy-soft: #f7f4e3;
+  --color-blush: #d8a48f;
+  --color-blush-wash: #f2dcd2;
+  --color-peach: #bb8588;
+  --color-peach-ink: #7d4a4e;
+
   --font-sans: "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
   /* shadows are tinted with the forest green, never blue-grey */

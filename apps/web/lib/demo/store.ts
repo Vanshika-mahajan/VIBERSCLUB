@@ -1,7 +1,16 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { likedMe, seedConnections, seedMe, seedMessages, type ChatMessage, type DemoEvent, type Me } from "./data";
+import type { Itinerary, Post } from "./club";
+import {
+  likedMe,
+  seedConnections,
+  seedMe,
+  seedMessages,
+  type ChatMessage,
+  type DemoEvent,
+  type Me,
+} from "./data";
 
 /**
  * The pitch demo's state: one small store shared by every page and kept in this browser
@@ -23,6 +32,9 @@ export type DemoState = {
   rsvps: Record<string, "going" | "waitlist">;
   savedPlaces: string[];
   hosted: DemoEvent[];
+  /** the club home: what I posted (its keywords find matching Vibers) and my itineraries */
+  posts: Post[];
+  itineraries: Itinerary[];
 };
 
 export const initialState = (): DemoState => ({
@@ -38,6 +50,8 @@ export const initialState = (): DemoState => ({
   rsvps: {},
   savedPlaces: [],
   hosted: [],
+  posts: [],
+  itineraries: [],
 });
 
 const KEY = "vibers.demo.v1";
@@ -111,10 +125,19 @@ export const actions = {
   /** a connection request; only allowed after a mutual like (the API enforces this in M5) */
   requestConnection(id: string) {
     // sample Vibers who liked you accept straight away in the demo
-    set((s) => ({ ...s, connections: { ...s.connections, [id]: likedMe.includes(id) ? "connected" : "requested" } }));
+    set((s) => ({
+      ...s,
+      connections: {
+        ...s.connections,
+        [id]: likedMe.includes(id) ? "connected" : "requested",
+      },
+    }));
   },
   acceptConnection(id: string) {
-    set((s) => ({ ...s, connections: { ...s.connections, [id]: "connected" } }));
+    set((s) => ({
+      ...s,
+      connections: { ...s.connections, [id]: "connected" },
+    }));
   },
   declineConnection(id: string) {
     set((s) => {
@@ -129,7 +152,13 @@ export const actions = {
     if (!clean || getState().connections[id] !== "connected") return false;
     set((s) => ({
       ...s,
-      messages: { ...s.messages, [id]: [...(s.messages[id] ?? []), { id: crypto.randomUUID(), from: "me", text: clean, minutesAgo: 0 }] },
+      messages: {
+        ...s.messages,
+        [id]: [
+          ...(s.messages[id] ?? []),
+          { id: crypto.randomUUID(), from: "me", text: clean, minutesAgo: 0 },
+        ],
+      },
     }));
     return true;
   },
@@ -138,7 +167,13 @@ export const actions = {
     set((s) => {
       const c = { ...s.connections };
       delete c[id];
-      return { ...s, blocked: add(s.blocked, id), connections: c, liked: drop(s.liked, id), saved: drop(s.saved, id) };
+      return {
+        ...s,
+        blocked: add(s.blocked, id),
+        connections: c,
+        liked: drop(s.liked, id),
+        saved: drop(s.saved, id),
+      };
     });
   },
   unblock(id: string) {
@@ -149,7 +184,8 @@ export const actions = {
   },
   /** join if there is a seat, otherwise join the waitlist */
   rsvp(event: DemoEvent): "going" | "waitlist" {
-    const status = event.goingIds.length < event.capacity ? "going" : "waitlist";
+    const status =
+      event.goingIds.length < event.capacity ? "going" : "waitlist";
     set((s) => ({ ...s, rsvps: { ...s.rsvps, [event.id]: status } }));
     return status;
   },
@@ -162,11 +198,129 @@ export const actions = {
   },
   toggleSavePlace(id: string): boolean {
     const on = !getState().savedPlaces.includes(id);
-    set((s) => ({ ...s, savedPlaces: on ? add(s.savedPlaces, id) : drop(s.savedPlaces, id) }));
+    set((s) => ({
+      ...s,
+      savedPlaces: on ? add(s.savedPlaces, id) : drop(s.savedPlaces, id),
+    }));
     return on;
   },
   host(event: DemoEvent) {
-    set((s) => ({ ...s, hosted: [event, ...s.hosted], rsvps: { ...s.rsvps, [event.id]: "going" } }));
+    set((s) => ({
+      ...s,
+      hosted: [event, ...s.hosted],
+      rsvps: { ...s.rsvps, [event.id]: "going" },
+    }));
+  },
+  post(text: string, placeId?: string): Post | null {
+    const clean = text.trim().slice(0, 1000);
+    if (!clean) return null;
+    const p: Post = {
+      id: crypto.randomUUID(),
+      authorId: "me",
+      text: clean,
+      placeId,
+      minutesAgo: 0,
+      sample: false,
+    };
+    set((s) => ({ ...s, posts: [p, ...s.posts] }));
+    return p;
+  },
+  deletePost(id: string) {
+    set((s) => ({ ...s, posts: s.posts.filter((p) => p.id !== id) }));
+  },
+  /** a new itinerary of empty days, or a copy of a template (Vibers Club's or another Viber's) */
+  createItinerary(title: string, days: number, from?: Itinerary): Itinerary {
+    const id = crypto.randomUUID();
+    const it: Itinerary = from
+      ? {
+          ...structuredClone(from),
+          id,
+          by: "me",
+          sample: false,
+          title: title || from.title,
+          days: from.days.map((d, i) => ({
+            id: `${id}-d${i}`,
+            stops: d.stops.map((st) => ({ ...st, id: crypto.randomUUID() })),
+          })),
+        }
+      : {
+          id,
+          title: title.trim() || "My Manali trip",
+          summary: "",
+          by: "me",
+          sample: false,
+          days: Array.from(
+            { length: Math.min(Math.max(days, 1), 14) },
+            (_, i) => ({ id: `${id}-d${i}`, stops: [] }),
+          ),
+        };
+    set((s) => ({ ...s, itineraries: [it, ...s.itineraries] }));
+    return it;
+  },
+  deleteItinerary(id: string) {
+    set((s) => ({
+      ...s,
+      itineraries: s.itineraries.filter((i) => i.id !== id),
+    }));
+  },
+  addDay(itineraryId: string) {
+    set((s) => ({
+      ...s,
+      itineraries: s.itineraries.map((it) =>
+        it.id === itineraryId && it.days.length < 14
+          ? {
+              ...it,
+              days: [...it.days, { id: crypto.randomUUID(), stops: [] }],
+            }
+          : it,
+      ),
+    }));
+  },
+  addStop(
+    itineraryId: string,
+    dayId: string,
+    placeId: string,
+    time: string,
+    note = "",
+  ) {
+    set((s) => ({
+      ...s,
+      itineraries: s.itineraries.map((it) =>
+        it.id !== itineraryId
+          ? it
+          : {
+              ...it,
+              days: it.days.map((d) =>
+                d.id !== dayId
+                  ? d
+                  : {
+                      ...d,
+                      stops: [
+                        ...d.stops,
+                        { id: crypto.randomUUID(), placeId, time, note },
+                      ].sort((a, b) => a.time.localeCompare(b.time)),
+                    },
+              ),
+            },
+      ),
+    }));
+  },
+  removeStop(itineraryId: string, dayId: string, stopId: string) {
+    set((s) => ({
+      ...s,
+      itineraries: s.itineraries.map((it) =>
+        it.id !== itineraryId
+          ? it
+          : {
+              ...it,
+              days: it.days.map((d) =>
+                d.id !== dayId
+                  ? d
+                  : { ...d, stops: d.stops.filter((x) => x.id !== stopId) },
+              ),
+            },
+      ),
+    }));
   },
   updateMe(patch: Partial<Me>) {
     set((s) => ({ ...s, me: { ...s.me, ...patch } }));

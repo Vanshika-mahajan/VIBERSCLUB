@@ -49,7 +49,7 @@ export function AppNav() {
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:sticky md:top-0 md:h-screen md:w-56 md:shrink-0 md:border-t-0 md:border-r md:bg-canvas md:pb-0"
     >
-      <Link href="/universe" className="hidden items-center gap-2.5 px-5 py-6 md:flex">
+      <Link href="/home" className="hidden items-center gap-2.5 px-5 py-6 md:flex">
         <Mark />
         <span className="display text-xl text-brand">Vibers Club</span>
       </Link>
