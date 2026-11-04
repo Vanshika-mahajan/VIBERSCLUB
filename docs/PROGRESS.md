@@ -14,6 +14,19 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the first page, Earth orb and day or night (2026-11-04)
+ARPIT asked for the globe in the style of ThreeUI's Energy Orb while still reading as Earth, for it to be there already (seen through the door) and slow from a fast spin, for a day and night choice on the door page, and for everything to look high definition.
+- `world/planet.ts`: Earth in the Energy Orb style (shader ported from ThreeUI, MIT): indigo seas, periwinkle continents from a 4096 x 2048 Natural Earth mask (`public/journey/earth-land.png`), a light along the coasts, violet smoke as cloud, a thin atmosphere and a glint on the seas. The dotted continents and flight arcs are gone.
+- `timelines/world.ts`, `timelines/discovery.ts`: the orb is in place behind the door from the start and turns about once a second; in the cosmos it slows at the same speed until Manali faces us (power3.out).
+- `world/cosmos.ts`: a darker indigo sky with lavender stars, like the orb's.
+- `world/nightland.ts`: a `day` uniform turns the night into a warm, hazy day (the Landscape look): pale sun, beige sky, olive grass, mountains in haze. Fixed: the ground mesh faced down and was culled, so the sky showed between the grass blades.
+- `useDayNight.ts` (new), `JourneyScreen.tsx`, `journey.module.css`: a sun or moon button beside "Enter the app"; follows the system setting until chosen, then remembered in the browser; the 3D world fades between the two over 1.6 s.
+- `world/engine.ts`: pixel ratio up to 2 and 4x multisampling on both render targets.
+- `public/journey/day.webp`, `day-portrait.webp` (new), `night*.webp`, `planet.webp`, `valley.webp`: stills for the CSS version, rendered by the engine.
+
+## Tests executed (Earth orb and day or night, 2026-11-04, in the cloud workspace)
+Vitest 79 passed. Journey e2e 28 passed (new: day or night follows the system, switches and is remembered). Typecheck, ESLint and Prettier clean.
+
 ## Files created or modified in the first page, night opening (2026-11-04)
 ARPIT asked for the opening page in the look of ThreeUI's Temple Night and Landscape, keeping his door (no torii gate).
 - `features/journey/world/nightland.ts` (new): the opening world built in code. A red moon with seas and craters, a near-black hazy sky, three mountain ranges fading into mist, rolling ground with two grassy mounds framing the view, instanced grass blades in the wind, a stone path, red maples (branches plus maple-leaf points), four stone lanterns with red halos and real light on the ground, red leaves falling and pale sparks around the door. Everything sinks into the dark as we leave (the `dusk` param).

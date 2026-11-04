@@ -31,33 +31,44 @@ export type DoorSceneHandle = {
 /** Tall phone screens get the portrait night still (the live door sits where the 3D camera puts it). */
 export const PORTRAIT = "(max-aspect-ratio: 2/3)";
 
-function Meadow() {
+function Still({ name, className }: { name: string; className: string }) {
   const {
     props: { srcSet: portrait },
   } = getImageProps({
-    src: "/journey/night-portrait.webp",
+    src: `/journey/${name}-portrait.webp`,
     width: 941,
     height: 1672,
     alt: "",
     sizes: "calc(100vw + 64px)",
   });
   const { props } = getImageProps({
-    src: "/journey/night.webp",
+    src: `/journey/${name}.webp`,
     width: 1672,
     height: 941,
     alt: "",
     sizes: "max(100vw, 178svh)",
   });
   return (
-    <picture>
+    <picture className={className}>
       <source media={PORTRAIT} srcSet={portrait} sizes="calc(100vw + 64px)" />
       <img
         {...props}
         alt=""
-        fetchPriority="high"
+        fetchPriority={name === "night" ? "high" : "low"}
+        loading={name === "night" ? "eager" : "lazy"}
         className={`${s.cover} ${s.fill}`}
       />
     </picture>
+  );
+}
+
+/** The place, as still images rendered by the 3D engine: night by default, day when chosen. */
+function Meadow() {
+  return (
+    <>
+      <Still name="night" className={s.nightStill} />
+      <Still name="day" className={s.dayStill} />
+    </>
   );
 }
 

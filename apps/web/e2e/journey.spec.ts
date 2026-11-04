@@ -35,6 +35,25 @@ test("the first page: door, question, and a thought sent with the keyboard", asy
   );
 });
 
+test("day or night: follows the system, switches, and remembers the choice", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/");
+  const stage = page.locator("[data-phase]");
+  await expect(stage).toHaveAttribute("data-mode", "night");
+  await page.getByRole("button", { name: "Switch to day" }).click();
+  await expect(stage).toHaveAttribute("data-mode", "day");
+  // the day still is what the CSS version shows now
+  await expect(page.locator("picture[class*=dayStill] img")).toBeVisible();
+  await expect(page.locator("picture[class*=nightStill] img")).toBeHidden();
+  await page.reload();
+  await expect(stage).toHaveAttribute("data-mode", "day");
+  await expect(
+    page.getByRole("button", { name: "Switch to night" }),
+  ).toBeVisible();
+});
+
 test("the meadow is alive: the grass sways", async ({ page }) => {
   await page.goto("/");
   const grass = page.locator("[data-layer=grass]");

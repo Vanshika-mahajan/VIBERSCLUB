@@ -1,10 +1,10 @@
 import * as THREE from "three";
 
 /**
- * The globe, in the style ARPIT chose: a dark sphere whose continents are drawn in glowing cyan dots,
- * a bright cyan rim, and flight paths arcing across it toward Manali, with pulses travelling along
- * them. The coastlines come from Natural Earth (public domain), rasterised into
- * /journey/earth-land.png (equirectangular, white = land). Around Manali the surface becomes a
+ * The globe: Earth, in the look of ThreeUI's "Energy Orb" (MIT, Meng To). Deep indigo seas,
+ * continents in periwinkle with a light along every coast, and the orb's violet smoke drifting over
+ * them as cloud. The coastlines come from Natural Earth (public domain), rasterised at 4096 x 2048
+ * into /journey/earth-land.png (equirectangular, white = land). Around Manali the surface becomes a
  * holographic map of the valley: contour lines, the glowing Beas and the warm lights of villages.
  */
 
@@ -22,29 +22,6 @@ export function toDir(lat: number, lon: number) {
   );
 }
 const manaliDir = toDir(MANALI.lat, MANALI.lon);
-
-/** where the flight paths start: they all arc toward Manali */
-const CITIES: [number, number][] = [
-  [28.61, 77.21], // Delhi
-  [19.08, 72.88], // Mumbai
-  [12.97, 77.59], // Bengaluru
-  [22.57, 88.36], // Kolkata
-  [51.51, -0.13], // London
-  [52.52, 13.4], // Berlin
-  [48.86, 2.35], // Paris
-  [32.09, 34.78], // Tel Aviv
-  [35.69, 51.39], // Tehran
-  [25.2, 55.27], // Dubai
-  [55.76, 37.62], // Moscow
-  [1.35, 103.82], // Singapore
-  [35.68, 139.69], // Tokyo
-  [-33.87, 151.21], // Sydney
-  [40.71, -74.01], // New York
-  [37.77, -122.42], // San Francisco
-  [-23.55, -46.63], // São Paulo
-  [-33.92, 18.42], // Cape Town
-  [27.72, 85.32], // Kathmandu
-];
 
 // Simplex noise in 3D: Stefan Gustavson and Ashima Arts (MIT).
 const NOISE = /* glsl */ `
@@ -117,7 +94,41 @@ const SPHERE_VERT = /* glsl */ `
   }
 `;
 
-// The body of the globe: nearly black, lit faintly on one side, with a cyan rim; the valley near Manali.
+// The orb, after ThreeUI's Energy Orb shader (MIT), with ARPIT's settings: smoke scale 1.86, smoke
+// strength 1.06, hue -15°, saturation 0.78, brightness 1.19, no outer glow.
+const ORB = /* glsl */ `
+  float vhash(vec3 p) { p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+  float vnoise(vec3 x) {
+    vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(mix(vhash(i), vhash(i + vec3(1, 0, 0)), f.x), mix(vhash(i + vec3(0, 1, 0)), vhash(i + vec3(1, 1, 0)), f.x), f.y),
+               mix(mix(vhash(i + vec3(0, 0, 1)), vhash(i + vec3(1, 0, 1)), f.x), mix(vhash(i + vec3(0, 1, 1)), vhash(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+  }
+  float vfbm(vec3 p) { float v = 0.0; float a = 0.5; for (int i = 0; i < 5; i++) { v += a * vnoise(p); p = p * 2.03 + vec3(1.7); a *= 0.5; } return v; }
+  vec3 grade(vec3 c, float hue, float sat) {
+    float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+    c = mix(vec3(l), c, sat);
+    vec3 axis = normalize(vec3(1.0));
+    return max(vec3(0.0), c * cos(hue) + cross(axis, c) * sin(hue) + axis * dot(axis, c) * (1.0 - cos(hue)));
+  }
+  // Earth under the orb's smoke. land: 0 sea … 1 land; coast: a thin band along the shore
+  vec3 orb(vec3 sp, float t, float land, float coast) {
+    const float scale = 1.86;
+    float f1 = vfbm(sp * (2.6 * scale) + vec3(0.0, t * 0.012, 0.0));
+    float f2 = vfbm(sp * (4.5 * scale) - vec3(t * 0.008, 0.0, t * 0.005) + f1 * 1.8);
+    float veil = smoothstep(0.38, 0.8, f2);
+    float detail = vfbm(sp * 16.0) * 0.7 + vfbm(sp * 44.0) * 0.3;
+    // seas: the orb's deep indigo, a little smoke in them
+    vec3 sea = mix(vec3(0.03, 0.018, 0.1), vec3(0.1, 0.07, 0.3), f1 * 0.9);
+    // land: periwinkle, textured like terrain seen from orbit
+    vec3 ground = mix(vec3(0.2, 0.17, 0.52), vec3(0.42, 0.4, 0.86), smoothstep(0.3, 0.7, detail));
+    vec3 col = mix(sea, ground, land);
+    col += vec3(0.55, 0.55, 1.0) * coast * 0.55;
+    // the smoke drifts over everything as cloud, thinner than the orb's so the continents read
+    col = mix(col, vec3(0.7, 0.68, 1.0), clamp(veil * 0.62, 0.0, 1.0));
+    return grade(col, radians(-15.0), 0.78) * 1.19;
+  }
+`;
+
 const SPHERE_FRAG = /* glsl */ `
   uniform float uManali;
   uniform float uTime;
@@ -130,22 +141,37 @@ const SPHERE_FRAG = /* glsl */ `
   varying vec3 vNormal;
   varying vec3 vWorld;
   ${NOISE}
+  ${ORB}
 
   void main() {
     vec3 p = vPos;
     vec3 n = normalize(vNormal);
     vec3 view = normalize(cameraPosition - vWorld);
     float facing = max(dot(n, view), 0.0);
-    float lit = 0.35 + 0.65 * smoothstep(-0.4, 0.9, dot(n, uLight));
 
-    // the ocean: deep blue-black, a faint glow toward the limb
-    vec3 col = vec3(0.003, 0.008, 0.016) + vec3(0.006, 0.03, 0.06) * pow(1.0 - facing, 3.0) * lit;
-    // land, softly, under the dots
-    vec2 uv = vec2(atan(p.x, p.z) / 6.2831853 + 0.5, 0.5 - asin(clamp(p.y, -1.0, 1.0)) / 3.1415927);
-    float land = texture2D(uLand, uv).r;
-    col += vec3(0.004, 0.018, 0.03) * land * lit;
+    // the land mask, without a seam where longitude wraps (pick whichever u is continuous here)
+    float lon = atan(p.x, p.z) / 6.2831853;
+    float v = 0.5 - asin(clamp(p.y, -1.0, 1.0)) / 3.1415927;
+    // two equivalent u's (the texture repeats): each breaks at a different meridian
+    float uA = lon + 0.5;
+    float uB = fract(lon) + 0.5;
+    vec2 uv = vec2(fwidth(uA) <= fwidth(uB) ? uA : uB, v);
+    float mask = texture2D(uLand, uv).r;
+    float land = smoothstep(0.35, 0.65, mask);
+    float coast = 1.0 - smoothstep(0.0, 0.32, abs(mask - 0.5));
 
-    // the valley around Manali, as a holographic map
+    // the orb's colours are display colours; the renderer works in linear light
+    vec3 col = pow(orb(p, uTime, land, coast), vec3(2.2));
+    // daylight on one side, a soft night side, and a thin violet atmosphere at the limb
+    float lit = 0.38 + 0.62 * smoothstep(-0.35, 0.85, dot(n, uLight));
+    col *= lit;
+    col *= mix(0.6, 1.0, smoothstep(0.0, 0.35, facing));
+    col += vec3(0.32, 0.3, 0.95) * pow(1.0 - facing, 3.5) * 0.35 * lit;
+    // a soft glint of the light on the seas
+    vec3 h = normalize(uLight + view);
+    col += vec3(0.5, 0.5, 1.0) * pow(max(dot(n, h), 0.0), 60.0) * 0.25 * (1.0 - land);
+
+    // the valley around Manali, as a holographic map in the orb's violet
     float dist = acos(clamp(dot(p, uManaliDir), -1.0, 1.0));
     float region = (1.0 - smoothstep(0.08, 0.2, dist)) * uManali;
     vec2 q = vec2(dot(p, uEast), dot(p, uNorth)) / 0.18;
@@ -155,105 +181,15 @@ const SPHERE_FRAG = /* glsl */ `
     float height = ridge * (1.0 - valley * 0.8);
     float line = 1.0 - smoothstep(0.0, 0.08, abs(fract(height * 11.0) - 0.5) * 2.0 - 0.86);
     float peaks = smoothstep(0.58, 0.72, height);
-    vec3 holo = vec3(0.004, 0.02, 0.04) + vec3(0.06, 0.32, 0.45) * line * (0.35 + height)
-      + vec3(0.55, 0.85, 1.0) * peaks * 0.35;
+    vec3 holo = vec3(0.006, 0.004, 0.03) + vec3(0.16, 0.13, 0.6) * line * (0.35 + height)
+      + vec3(0.75, 0.72, 1.0) * peaks * 0.35;
     float river = exp(-pow(q.x - riverX, 2.0) * 5200.0);
     vec2 cell = floor(q * 14.0);
     vec2 jitter = vec2(hash(cell + 3.1), hash(cell + 7.7)) * 0.6 + 0.2;
     float lights = step(0.8, hash(cell)) * valley * smoothstep(0.16, 0.0, length(fract(q * 14.0) - jitter));
-    holo += vec3(0.35, 0.95, 1.0) * river * 1.5 + vec3(1.0, 0.72, 0.36) * lights * 1.8;
+    holo += vec3(0.6, 0.62, 1.0) * river * 1.5 + vec3(1.0, 0.72, 0.36) * lights * 1.8;
     col = mix(col, holo, region);
-
-    // the rim: cyan light along the edge (brighter than white at its peak, so it blooms a little)
-    float rim = pow(1.0 - facing, 3.2);
-    col += vec3(0.16, 0.58, 0.95) * rim * (0.5 + lit) * 0.55;
     gl_FragColor = vec4(col, 1.0);
-  }
-`;
-
-// Continents as dots. Each dot twinkles a little; dots fade on the far side and under the valley.
-const DOT_VERT = /* glsl */ `
-  attribute float seed;
-  uniform float uPixel;
-  uniform float uScale;
-  uniform float uTime;
-  uniform float uManali;
-  uniform vec3 uManaliDir;
-  varying float vA;
-  varying vec3 vWorldN;
-  varying vec3 vWorld;
-  void main() {
-    vec3 dir = normalize(position);
-    float dist = acos(clamp(dot(dir, uManaliDir), -1.0, 1.0));
-    vA = (0.55 + 0.45 * sin(uTime * (0.6 + seed) + seed * 40.0)) * (1.0 - (1.0 - smoothstep(0.06, 0.2, dist)) * uManali);
-    vec4 w = modelMatrix * vec4(position, 1.0);
-    vWorld = w.xyz;
-    vWorldN = normalize(mat3(modelMatrix) * dir);
-    vec4 mv = viewMatrix * w;
-    gl_PointSize = clamp(uScale / -mv.z, 1.1, 4.0) * uPixel;
-    gl_Position = projectionMatrix * mv;
-  }
-`;
-const DOT_FRAG = /* glsl */ `
-  varying float vA;
-  varying vec3 vWorldN;
-  varying vec3 vWorld;
-  void main() {
-    float d = length(gl_PointCoord - 0.5) * 2.0;
-    float a = smoothstep(1.0, 0.35, d);
-    float facing = dot(vWorldN, normalize(cameraPosition - vWorld));
-    float edge = smoothstep(-0.05, 0.35, facing);
-    vec3 c = mix(vec3(0.16, 0.6, 0.92), vec3(0.55, 0.9, 1.0), smoothstep(0.8, 1.0, vA));
-    gl_FragColor = vec4(c * a * vA * edge * 0.36, 1.0);
-  }
-`;
-
-// Flight paths: a faint line with a bright pulse travelling toward Manali.
-const ARC_VERT = /* glsl */ `
-  attribute float along;
-  attribute float offset;
-  varying float vAlong;
-  varying float vOffset;
-  void main() {
-    vAlong = along;
-    vOffset = offset;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-const ARC_FRAG = /* glsl */ `
-  uniform float uTime;
-  uniform float uOpacity;
-  varying float vAlong;
-  varying float vOffset;
-  void main() {
-    float head = fract(uTime * 0.16 + vOffset);
-    float behind = head - vAlong;
-    float pulse = behind >= 0.0 ? exp(-behind * 14.0) : 0.0;
-    float ends = smoothstep(0.0, 0.05, vAlong) * smoothstep(1.0, 0.95, vAlong);
-    vec3 c = vec3(0.35, 0.8, 1.0) * (0.1 + pulse * 1.2) * ends;
-    gl_FragColor = vec4(c * uOpacity, 1.0);
-  }
-`;
-
-const HALO_VERT = /* glsl */ `
-  varying vec3 vNormal;
-  varying vec3 vWorld;
-  void main() {
-    vNormal = normalize(mat3(modelMatrix) * normal);
-    vec4 w = modelMatrix * vec4(position, 1.0);
-    vWorld = w.xyz;
-    gl_Position = projectionMatrix * viewMatrix * w;
-  }
-`;
-const HALO_FRAG = /* glsl */ `
-  uniform float uOpacity;
-  varying vec3 vNormal;
-  varying vec3 vWorld;
-  void main() {
-    float rim = dot(normalize(vNormal), normalize(cameraPosition - vWorld));
-    // a thin shell: the glow rises from its edge to the globe's edge, then hides behind the globe
-    float glow = pow(smoothstep(0.0, -0.32, rim), 3.0);
-    gl_FragColor = vec4(vec3(0.16, 0.55, 0.95) * glow * 0.3 * uOpacity, 1.0);
   }
 `;
 
@@ -292,7 +228,6 @@ export type Planet = {
     time: THREE.IUniform<number>;
     manali: THREE.IUniform<number>;
     marker: THREE.IUniform<number>;
-    halo: THREE.IUniform<number>;
     pixel: THREE.IUniform<number>;
   };
   /** spin and tilt that put Manali at the centre of the face toward us */
@@ -300,92 +235,23 @@ export type Planet = {
   dispose: () => void;
 };
 
-/** Points spread evenly over the sphere (a Fibonacci lattice), kept where the land mask is white. */
-function landDots(mask: HTMLImageElement, count: number) {
-  const w = mask.naturalWidth;
-  const h = mask.naturalHeight;
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const g = canvas.getContext("2d", { willReadFrequently: true })!;
-  g.drawImage(mask, 0, 0);
-  const px = g.getImageData(0, 0, w, h).data;
-  const pos: number[] = [];
-  const seeds: number[] = [];
-  const golden = Math.PI * (3 - Math.sqrt(5));
-  for (let i = 0; i < count; i++) {
-    const y = 1 - ((i + 0.5) / count) * 2;
-    const r = Math.sqrt(1 - y * y);
-    const t = golden * i;
-    const x = Math.cos(t) * r;
-    const z = Math.sin(t) * r;
-    const lon = Math.atan2(x, z);
-    const lat = Math.asin(y);
-    const u = Math.min(w - 1, Math.floor((lon / (2 * Math.PI) + 0.5) * w));
-    const v = Math.min(h - 1, Math.floor((0.5 - lat / Math.PI) * h));
-    if (px[(v * w + u) * 4] < 128) continue;
-    const k = PLANET_RADIUS * 1.003;
-    pos.push(x * k, y * k, z * k);
-    seeds.push(((i * 2654435761) % 1000) / 1000);
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  geo.setAttribute("seed", new THREE.Float32BufferAttribute(seeds, 1));
-  return geo;
-}
-
-/** Great-circle arcs from each city to Manali, lifted off the surface in the middle. */
-function flightPaths() {
-  const pos: number[] = [];
-  const along: number[] = [];
-  const offset: number[] = [];
-  const index: number[] = [];
-  const steps = 64;
-  let base = 0;
-  CITIES.forEach(([lat, lon], c) => {
-    const a = toDir(lat * DEG, lon * DEG);
-    const angle = a.angleTo(manaliDir);
-    const lift = 0.015 + angle * 0.045;
-    const sin = Math.sin(angle);
-    for (let s = 0; s <= steps; s++) {
-      const t = s / steps;
-      // spherical interpolation along the great circle
-      const p = a
-        .clone()
-        .multiplyScalar(Math.sin((1 - t) * angle) / sin)
-        .add(manaliDir.clone().multiplyScalar(Math.sin(t * angle) / sin));
-      const k = PLANET_RADIUS * (1.004 + lift * Math.sin(Math.PI * t));
-      pos.push(p.x * k, p.y * k, p.z * k);
-      along.push(t);
-      offset.push((c * 0.37) % 1);
-      if (s) index.push(base + s - 1, base + s);
-    }
-    base += steps + 1;
-  });
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  geo.setAttribute("along", new THREE.Float32BufferAttribute(along, 1));
-  geo.setAttribute("offset", new THREE.Float32BufferAttribute(offset, 1));
-  geo.setIndex(index);
-  return geo;
-}
-
-export async function makePlanet(): Promise<Planet> {
+export async function makePlanet(maxAniso = 8): Promise<Planet> {
   const mask = await new THREE.ImageLoader().loadAsync(
     "/journey/earth-land.png",
   );
   const landTex = new THREE.Texture(mask);
-  landTex.needsUpdate = true;
   landTex.colorSpace = THREE.NoColorSpace;
+  landTex.anisotropy = maxAniso;
+  landTex.wrapS = THREE.RepeatWrapping;
+  landTex.flipY = false; // row 0 is the north pole, as v = 0 is
+  landTex.needsUpdate = true;
 
   const time = { value: 0 };
   const manali = { value: 0 };
   const marker = { value: 0 };
-  const halo = { value: 1 };
   const pixel = { value: 1 };
   const east = new THREE.Vector3(0, 1, 0).cross(manaliDir).normalize();
   const north = manaliDir.clone().cross(east).normalize();
-  const md = { value: manaliDir };
 
   const root = new THREE.Group();
   const tilt = new THREE.Group();
@@ -394,63 +260,39 @@ export async function makePlanet(): Promise<Planet> {
   tilt.add(spin);
 
   const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(PLANET_RADIUS, 128, 96),
+    new THREE.SphereGeometry(PLANET_RADIUS, 192, 128),
     new THREE.ShaderMaterial({
       vertexShader: SPHERE_VERT,
       fragmentShader: SPHERE_FRAG,
       uniforms: {
         uTime: time,
         uManali: manali,
-        uManaliDir: md,
+        uManaliDir: { value: manaliDir },
         uEast: { value: east },
         uNorth: { value: north },
-        uLight: { value: new THREE.Vector3(-0.5, 0.45, 0.75).normalize() },
+        uLight: { value: new THREE.Vector3(-0.45, 0.4, 0.8).normalize() },
         uLand: { value: landTex },
       },
     }),
   );
   spin.add(sphere);
 
-  const dots = new THREE.Points(
-    landDots(mask, 130000),
-    new THREE.ShaderMaterial({
-      vertexShader: DOT_VERT,
-      fragmentShader: DOT_FRAG,
-      uniforms: {
-        uPixel: pixel,
-        uScale: { value: 40 },
-        uTime: time,
-        uManali: manali,
-        uManaliDir: md,
-      },
-      blending: THREE.AdditiveBlending,
-      transparent: true,
-      depthWrite: false,
-    }),
-  );
-  dots.renderOrder = 2;
-  spin.add(dots);
-
-  const arcs = new THREE.LineSegments(
-    flightPaths(),
-    new THREE.ShaderMaterial({
-      vertexShader: ARC_VERT,
-      fragmentShader: ARC_FRAG,
-      uniforms: { uTime: time, uOpacity: halo },
-      blending: THREE.AdditiveBlending,
-      transparent: true,
-      depthWrite: false,
-    }),
-  );
-  arcs.renderOrder = 3;
-  spin.add(arcs);
-
+  // a thin violet atmosphere just beyond the edge
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(PLANET_RADIUS * 1.08, 96, 64),
+    new THREE.SphereGeometry(PLANET_RADIUS * 1.035, 128, 64),
     new THREE.ShaderMaterial({
-      vertexShader: HALO_VERT,
-      fragmentShader: HALO_FRAG,
-      uniforms: { uOpacity: halo },
+      vertexShader: SPHERE_VERT,
+      fragmentShader: /* glsl */ `
+        varying vec3 vNormal;
+        varying vec3 vWorld;
+        void main() {
+          vec3 view = normalize(cameraPosition - vWorld);
+          float f = 1.0 - abs(dot(normalize(vNormal), view));
+          // strongest just outside the planet's edge, fading to nothing at the shell's edge
+          float glow = smoothstep(1.0, 0.86, f) * smoothstep(0.5, 0.9, f);
+          gl_FragColor = vec4(vec3(0.2, 0.18, 0.7) * glow * glow * 0.3, 1.0);
+        }
+      `,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
       transparent: true,
@@ -490,7 +332,7 @@ export async function makePlanet(): Promise<Planet> {
     tilt,
     spin,
     marker: mark,
-    uniforms: { time, manali, marker, halo, pixel },
+    uniforms: { time, manali, marker, pixel },
     facing: { spin: -MANALI.lon, tilt: MANALI.lat },
     dispose: () => landTex.dispose(),
   };

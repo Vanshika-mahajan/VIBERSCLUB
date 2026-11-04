@@ -83,17 +83,22 @@ export async function createWorld(
   const door = makeDoor(frameTex, leafTex);
   meadowScene.add(night.group, door.group);
   const cosmos = makeCosmos();
-  const planet = await makePlanet();
+  const planet = await makePlanet(maxAniso);
   cosmos.scene.add(planet.root);
 
+  // multisampled targets: smooth edges on the door, the grass and the globe
   const cosmosTarget = new THREE.WebGLRenderTarget(1, 1, {
     type: THREE.HalfFloatType,
+    samples: 4,
   });
   door.uniforms.cosmos.value = cosmosTarget.texture;
 
   const composer = new EffectComposer(
     renderer,
-    new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }),
+    new THREE.WebGLRenderTarget(1, 1, {
+      type: THREE.HalfFloatType,
+      samples: 4,
+    }),
   );
   const renderPass = new RenderPass(meadowScene, camera);
   // only light brighter than the photo's whites blooms: the doorway, the shafts, the brightest stars
@@ -110,7 +115,7 @@ export async function createWorld(
     if (!w || !h || (w === width && h === height)) return;
     width = w;
     height = h;
-    const ratio = Math.min(window.devicePixelRatio || 1, 1.75);
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
     renderer.setPixelRatio(ratio);
     renderer.setSize(w, h, false);
     composer.setPixelRatio(ratio);
@@ -158,7 +163,7 @@ export async function createWorld(
     const angle = p.leaf * 82 * DEG;
     door.hinge.rotation.y = angle;
     // moonlight: the door is a pale shape in the dark, warmed by the lanterns beside it
-    door.tint(0.5 * (1 - p.dusk * 0.85));
+    door.tint((0.5 + 0.5 * p.day) * (1 - p.dusk * 0.85));
     door.shade(angle);
     door.uniforms.light.value = p.light;
     door.uniforms.iris.value = p.iris;
@@ -167,6 +172,7 @@ export async function createWorld(
     door.uniforms.time.value = elapsed;
     door.rays.visible = p.rays > 0.001;
     night.uniforms.dusk.value = p.dusk;
+    night.uniforms.day.value = p.day;
     night.uniforms.spill.value = p.rays;
     night.uniforms.time.value = elapsed;
     night.uniforms.wind.value = p.life;

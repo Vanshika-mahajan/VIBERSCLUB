@@ -26,6 +26,8 @@ export type WorldParams = {
   lookY: number;
   /** idle life: camera breathing, grass wind, pollen. 0 stops it */
   life: number;
+  /** the door page by night (0) or by day (1); tweened when the visitor switches */
+  day: number;
 
   // ---- in the cosmos (both the 3D and the CSS version read these) ----
   /** the sphere's radius on screen, as a share of half the screen's shorter side; 0 hides it */
@@ -58,6 +60,7 @@ export const initialParams = (): WorldParams => ({
   lookX: 0,
   lookY: 0,
   life: 1,
+  day: 0,
   planet: 0,
   planetY: 0,
   spin: 0,

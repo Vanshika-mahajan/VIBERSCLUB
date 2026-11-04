@@ -21,6 +21,7 @@ import { buildDoorOpening, buildDoorOpeningStill } from "./timelines/door";
 import { buildWorldOpening } from "./timelines/world";
 import type { World } from "./world/engine";
 import { initialParams } from "./world/params";
+import { useDayNight } from "./useDayNight";
 import { useJourney, type Phase } from "./useJourney";
 import s from "./journey.module.css";
 
@@ -62,6 +63,21 @@ export function JourneyScreen() {
   );
   // the 3D world, once its first frame is on screen; until then (or without WebGL) the CSS scene plays
   const [world, setWorld] = useState<World | null>(null);
+
+  // day or night on the door page: the 3D world fades between them, the CSS follows data-mode
+  const { mode, known, toggle } = useDayNight();
+  const firstMode = useRef(true);
+  useEffect(() => {
+    if (!known) return;
+    const day = mode === "day" ? 1 : 0;
+    gsap.to(params, {
+      day,
+      duration: firstMode.current || prefersReducedMotion() ? 0 : 1.6,
+      ease: "sine.inOut",
+      overwrite: true,
+    });
+    firstMode.current = false;
+  }, [mode, known, params]);
 
   // scene two: the door opens
   useGSAP(
@@ -150,6 +166,7 @@ export function JourneyScreen() {
       className={s.journey}
       data-phase={phase}
       data-world={world ? "3d" : "css"}
+      data-mode={mode}
     >
       <DoorScene ref={door} between={<CosmosBackdrop ref={cosmos} />} />
       <WorldCanvas params={params} onReady={setWorld} />
@@ -163,9 +180,20 @@ export function JourneyScreen() {
 
       <header ref={top} className={s.top}>
         <span className={s.brand}>Vibers Club</span>
-        <Link href="/universe" className={s.skipLink}>
-          Enter the app
-        </Link>
+        <div className={s.topActions}>
+          <button
+            type="button"
+            className={s.mode}
+            onClick={toggle}
+            aria-label={mode === "day" ? "Switch to night" : "Switch to day"}
+            title={mode === "day" ? "Night" : "Day"}
+          >
+            {mode === "day" ? <MoonIcon /> : <SunIcon />}
+          </button>
+          <Link href="/universe" className={s.skipLink}>
+            Enter the app
+          </Link>
+        </div>
       </header>
 
       <div ref={copy} className={s.copy}>
@@ -214,5 +242,27 @@ export function JourneyScreen() {
         {ANNOUNCE[phase] ?? ""}
       </p>
     </div>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.2" fill="currentColor" />
+      <g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
+      </g>
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M20.2 14.6A8.4 8.4 0 0 1 9.4 3.8a8.6 8.6 0 1 0 10.8 10.8Z"
+      />
+    </svg>
   );
 }

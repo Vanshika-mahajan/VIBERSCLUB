@@ -29,9 +29,10 @@ const SKY_FRAG = /* glsl */ `
   void main() {
     float b = 1.0 - abs(dot(vDir, uBand));
     float glow = pow(b, 6.0);
-    vec3 deep = vec3(0.004, 0.006, 0.016);
-    vec3 midnight = vec3(0.006, 0.011, 0.03);
-    vec3 c = mix(deep, midnight, glow) + vec3(0.01, 0.015, 0.035) * pow(b, 24.0);
+    // the Energy Orb's night: near-black indigo, a breath lighter along the galaxy's plane
+    vec3 deep = vec3(0.0016, 0.0009, 0.0045);
+    vec3 midnight = vec3(0.003, 0.002, 0.009);
+    vec3 c = mix(deep, midnight, glow);
     gl_FragColor = vec4(c, 1.0);
   }
 `;
@@ -90,12 +91,13 @@ export function makeCosmos(): Cosmos {
     ),
   );
 
+  // lavender and white, as around the Energy Orb
   const palette = [
     new THREE.Color(1, 1, 1),
-    new THREE.Color(0.75, 0.88, 1),
-    new THREE.Color(0.55, 0.95, 1),
-    new THREE.Color(0.8, 0.7, 1),
-    new THREE.Color(1, 0.86, 0.6),
+    new THREE.Color(0.78, 0.78, 1),
+    new THREE.Color(0.62, 0.6, 1),
+    new THREE.Color(0.85, 0.8, 1),
+    new THREE.Color(0.7, 0.75, 1),
   ];
 
   const points = (
@@ -178,10 +180,10 @@ export function makeCosmos(): Cosmos {
   // the galaxy band: thick with small stars in cyan, violet and gold
   scene.add(
     points(
-      14000,
+      5000,
       () => inBand(580, 0.22),
-      () => 1 + rand() * 1.8,
-      () => 0.25 + rand() * 0.5,
+      () => 1 + rand() * 1.6,
+      () => 0.2 + rand() * 0.35,
       [palette[1], palette[2], palette[3], palette[4]],
     ),
   );
@@ -191,7 +193,7 @@ export function makeCosmos(): Cosmos {
       2600,
       () => inBand(560, 0.09),
       () => 40 + rand() * 60,
-      () => 0.006 + rand() * 0.01,
+      () => 0.0015 + rand() * 0.002,
       [palette[2], palette[3], palette[1], palette[4]],
     ),
   );

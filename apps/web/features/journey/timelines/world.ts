@@ -1,5 +1,6 @@
 import { gsap } from "@/lib/motion/gsap";
 import type { World } from "../world/engine";
+import { ORB_START, SPIN_ARRIVE, SPIN_DOOR } from "./discovery";
 
 /**
  * Scene two in 3D, about 5 seconds. The thought holds; the interface leaves; light flares at the seam;
@@ -15,6 +16,14 @@ export function buildWorldOpening(
   return (
     gsap
       .timeline({ defaults: { ease: "power2.inOut" } })
+      // the orb is already there behind the door, turning fast; we see it through the doorway
+      .set(p, { planet: ORB_START, planetY: 0 }, 0)
+      .fromTo(
+        p,
+        { spin: SPIN_DOOR },
+        { spin: SPIN_ARRIVE, duration: 5.8, ease: "none" },
+        0,
+      )
       // 1. the thought has its moment, then the interface steps away
       .to(
         ui,

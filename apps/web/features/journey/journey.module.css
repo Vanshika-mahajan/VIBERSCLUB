@@ -380,6 +380,96 @@
   text-decoration-color: var(--gold);
 }
 
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 18px);
+}
+/* day or night: a round glass button with a sun or a moon */
+.mode {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(251, 247, 238, 0.32);
+  background: rgba(8, 8, 14, 0.32);
+  color: var(--ivory);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.3s;
+}
+.mode:hover {
+  border-color: var(--gold);
+  transform: rotate(-12deg);
+}
+.mode:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+.journey:not([data-phase="idle"]) .mode {
+  visibility: hidden;
+}
+
+/* ---------- day: the same place in warm, hazy sunlight (the Landscape look) ---------- */
+
+.journey[data-mode="day"] {
+  background: #c9bb93;
+}
+.journey[data-mode="day"] .headline {
+  color: var(--forest);
+  text-shadow: 0 1px 28px rgba(255, 248, 230, 0.7);
+}
+.journey[data-mode="day"] .brand,
+.journey[data-mode="day"] .skipLink {
+  color: #23301f;
+  text-shadow: 0 1px 12px rgba(255, 248, 230, 0.6);
+}
+.journey[data-mode="day"] .skipLink {
+  text-decoration-color: rgba(35, 48, 31, 0.4);
+}
+.journey[data-mode="day"] .mode {
+  color: #23301f;
+  border-color: rgba(35, 48, 31, 0.3);
+  background: rgba(255, 248, 230, 0.4);
+}
+.journey[data-mode="day"] .scrim {
+  background:
+    linear-gradient(
+      to top,
+      rgba(22, 32, 18, 0.72) 0%,
+      rgba(22, 32, 18, 0.36) 22%,
+      transparent 42%
+    ),
+    linear-gradient(to bottom, rgba(255, 248, 230, 0.3), transparent 22%);
+}
+.journey[data-mode="day"] .door img,
+.journey[data-mode="day"] .leaf img,
+.journey[data-mode="day"] .grass {
+  filter: none;
+}
+.journey[data-mode="day"] .sun {
+  background: radial-gradient(
+    40% 40% at 64% 18%,
+    rgba(255, 236, 190, 0.35),
+    transparent 70%
+  );
+  mix-blend-mode: soft-light;
+}
+.dayStill {
+  display: none;
+}
+.journey[data-mode="day"] .dayStill {
+  display: block;
+}
+.journey[data-mode="day"] .nightStill {
+  display: none;
+}
+
 /* the headline floats in the sky, above the door */
 .copy {
   position: absolute;

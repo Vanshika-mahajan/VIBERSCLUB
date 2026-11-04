@@ -101,9 +101,16 @@ const LIGHT = /* glsl */ `
   uniform vec3 uLamps[4];
   uniform float uTime;
   uniform float uDusk;
+  uniform float uDay;
   uniform float uSpill;
   uniform vec3 uSpillAt;
-  const vec3 HAZE = vec3(0.011, 0.011, 0.015);
+  // night: near-black haze; day: the warm, dusty haze of the Landscape template
+  vec3 haze() { return mix(vec3(0.011, 0.011, 0.015), vec3(0.5, 0.44, 0.29), uDay); }
+  // the light a surface facing n receives: moonlight at night, low warm sun by day
+  vec3 skyLight(vec3 n, vec3 night) {
+    float sun = 0.45 + 0.55 * clamp(dot(n, normalize(vec3(0.35, 0.8, 0.45))), 0.0, 1.0);
+    return mix(night, vec3(2.5, 2.25, 1.75) * sun, uDay);
+  }
   vec3 lampLight(vec3 w) {
     vec3 l = vec3(0.0);
     for (int i = 0; i < 4; i++) {
@@ -111,17 +118,17 @@ const LIGHT = /* glsl */ `
       float flick = 0.92 + 0.08 * sin(uTime * 9.0 + float(i) * 2.3) * sin(uTime * 3.1 + float(i));
       l += vec3(1.0, 0.36, 0.12) * flick * 0.9 / (1.0 + dot(d, d) * 2.6);
     }
-    return l;
+    return l * (1.0 - 0.9 * uDay);
   }
   vec3 doorLight(vec3 w) {
     vec2 d = (w.xz - uSpillAt.xz) * vec2(0.9, 0.42);
     return vec3(1.0, 0.68, 0.34) * uSpill * 1.4 * exp(-dot(d, d) * 1.4);
   }
   vec3 finish(vec3 c, vec3 w, float dist) {
-    float fog = 1.0 - exp(-dist * 0.016);
+    float fog = 1.0 - exp(-dist * mix(0.016, 0.011, uDay));
     // low mist lying in the hollows, thicker with distance
     fog = max(fog, (1.0 - smoothstep(0.0, 6.0, w.y)) * smoothstep(18.0, 90.0, dist) * 0.55);
-    c = mix(c, HAZE, clamp(fog, 0.0, 1.0));
+    c = mix(c, haze(), clamp(fog, 0.0, 1.0));
     return mix(c, c * vec3(0.12, 0.12, 0.2), uDusk);
   }
 `;
@@ -129,6 +136,7 @@ const LIGHT = /* glsl */ `
 type Shared = {
   uTime: THREE.IUniform<number>;
   uDusk: THREE.IUniform<number>;
+  uDay: THREE.IUniform<number>;
   uSpill: THREE.IUniform<number>;
   uSpillAt: THREE.IUniform<THREE.Vector3>;
   uLamps: THREE.IUniform<THREE.Vector3[]>;
@@ -160,6 +168,7 @@ const SKY_VERT = /* glsl */ `
 const MOON_FRAG = /* glsl */ `
   ${NOISE}
   uniform float uDusk;
+  uniform float uDay;
   varying vec2 vUv;
   void main() {
     vec2 q = (vUv - 0.5) * 2.0;
@@ -174,6 +183,8 @@ const MOON_FRAG = /* glsl */ `
     vec2 f = fract(g) - 0.5 - (vec2(hash(cell), hash(cell + 7.0)) - 0.5) * 0.5;
     float crater = step(0.72, hash(cell + 3.0)) * smoothstep(0.22, 0.12, length(f));
     moon *= 1.0 - crater * 0.35;
+    // by day it is the sun, pale behind the haze
+    moon = mix(moon, vec3(1.02, 0.94, 0.74) * (0.92 + 0.08 * sqrt(1.0 - r * r)), uDay);
     gl_FragColor = vec4(mix(moon, moon * 0.15, uDusk), 1.0);
   }
 `;
@@ -182,20 +193,24 @@ const SKY_FRAG = /* glsl */ `
   ${NOISE}
   uniform vec3 uMoon;
   uniform float uDusk;
+  uniform float uDay;
   uniform float uTime;
   varying vec3 vDir;
   void main() {
     vec3 d = normalize(vDir);
     float up = clamp(d.y, -0.2, 1.0);
     vec3 c = mix(vec3(0.014, 0.013, 0.017), vec3(0.002, 0.002, 0.004), smoothstep(-0.02, 0.4, up));
+    vec3 day = mix(vec3(0.6, 0.53, 0.36), vec3(0.42, 0.4, 0.33), smoothstep(-0.02, 0.5, up));
     float m = dot(d, uMoon);
     // the red glow the moon throws into the haze
-    c += vec3(0.5, 0.025, 0.04) * (pow(max(m, 0.0), 260.0) * 0.45 + pow(max(m, 0.0), 40.0) * 0.08 + pow(max(m, 0.0), 8.0) * 0.012);
+    c += (1.0 - uDay) * vec3(0.5, 0.025, 0.04) * (pow(max(m, 0.0), 260.0) * 0.45 + pow(max(m, 0.0), 40.0) * 0.08 + pow(max(m, 0.0), 8.0) * 0.012);
     // faint stars
     vec2 sp = vec2(atan(d.x, -d.z), d.y) * 160.0;
     float s = hash(floor(sp));
     float tw = 0.6 + 0.4 * sin(uTime * (1.0 + s * 3.0) + s * 50.0);
-    c += vec3(0.8, 0.85, 1.0) * smoothstep(0.997, 1.0, s) * smoothstep(0.02, 0.2, up) * 0.25 * tw * (1.0 - smoothstep(0.98, 0.999, m));
+    day += vec3(0.5, 0.4, 0.22) * (pow(max(m, 0.0), 30.0) * 0.5 + pow(max(m, 0.0), 6.0) * 0.12);
+    c = mix(c, day, uDay);
+    c += (1.0 - uDay) * vec3(0.8, 0.85, 1.0) * smoothstep(0.997, 1.0, s) * smoothstep(0.02, 0.2, up) * 0.25 * tw * (1.0 - smoothstep(0.98, 0.999, m));
     c = mix(c, c * vec3(0.15, 0.15, 0.3), uDusk);
     gl_FragColor = vec4(c, 1.0);
   }
@@ -217,13 +232,16 @@ const RIDGE_VERT = /* glsl */ `
 const RIDGE_FRAG = /* glsl */ `
   uniform vec3 uColor;
   uniform vec3 uMist;
+  uniform vec3 uColorDay;
+  uniform vec3 uMistDay;
+  uniform float uDay;
   uniform float uDusk;
   uniform vec3 uMoon;
   varying float vRise;
   varying vec3 vWorld;
   void main() {
     // dark ridges, the haze lying thick at their feet
-    vec3 c = mix(uMist, uColor, smoothstep(0.0, 0.55, vRise));
+    vec3 c = mix(mix(uMist, uMistDay, uDay), mix(uColor, uColorDay, uDay), smoothstep(0.0, 0.55, vRise));
     // the slopes facing the moon catch a little red
     c += vec3(0.012, 0.001, 0.002) * smoothstep(0.5, 1.0, vRise) * smoothstep(0.6, 1.0, dot(normalize(vec3(vWorld.x, 0.0, vWorld.z)), normalize(vec3(uMoon.x, 0.0, uMoon.z))));
     gl_FragColor = vec4(mix(c, c * vec3(0.15, 0.15, 0.3), uDusk), 1.0);
@@ -237,6 +255,7 @@ function ridge(
   shared: Shared,
   color: THREE.Color,
   mist: THREE.Color,
+  colorDay: THREE.Color,
 ) {
   const seg = 360;
   const half = dist * 2.4;
@@ -275,6 +294,9 @@ function ridge(
       uniforms: {
         uColor: { value: color },
         uMist: { value: mist },
+        uColorDay: { value: colorDay },
+        uMistDay: { value: new THREE.Color(0.55, 0.48, 0.32) },
+        uDay: shared.uDay,
         uDusk: shared.uDusk,
         uMoon: { value: MOON_DIR },
       },
@@ -318,7 +340,7 @@ const GROUND_FRAG = /* glsl */ `
     vec3 stone = mix(vec3(0.008, 0.008, 0.009), vec3(0.04, 0.038, 0.04) * (0.8 + 0.4 * hash(floor(cell))), joint);
     vec3 albedo = mix(grass, stone, onPath);
     float moon = 0.35 + 0.65 * clamp(dot(n, normalize(vec3(-0.3, 0.9, 0.35))), 0.0, 1.0);
-    vec3 c = albedo * (vec3(0.42, 0.5, 0.4) * moon + 0.1) + albedo * lampLight(vWorld) * 7.0 + albedo * doorLight(vWorld) * 5.0;
+    vec3 c = albedo * skyLight(n, vec3(0.42, 0.5, 0.4) * moon + 0.1) * mix(vec3(1.0), vec3(1.1, 1.25, 0.7), uDay) + albedo * lampLight(vWorld) * 7.0 + albedo * doorLight(vWorld) * 5.0;
     gl_FragColor = vec4(finish(c, vWorld, length(vWorld - cameraPosition)), 1.0);
   }
 `;
@@ -342,7 +364,7 @@ function makeGround(shared: Shared) {
     for (let i = 0; i < nx; i++) {
       const a = j * (nx + 1) + i;
       const b = a + nx + 1;
-      index.push(a, b, a + 1, a + 1, b, b + 1);
+      index.push(a, a + 1, b, a + 1, b + 1, b);
     }
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
@@ -395,9 +417,9 @@ const BLADE_FRAG = /* glsl */ `
     vec3 root = vec3(0.006, 0.009, 0.003);
     vec3 tip = mix(vec3(0.035, 0.065, 0.015), vec3(0.07, 0.09, 0.03), vSeed);
     vec3 albedo = mix(root, tip, smoothstep(0.0, 1.0, vY));
-    vec3 c = albedo * (vec3(0.62, 0.56, 0.62) + 0.1);
+    vec3 c = albedo * mix(vec3(0.72, 0.66, 0.72), vec3(3.4, 2.8, 1.8) * (0.75 + 0.25 * vY), uDay);
     // the tips catch the moon's red from behind
-    c += vec3(0.05, 0.006, 0.006) * pow(vY, 3.0) * step(0.55, vSeed);
+    c += (1.0 - uDay) * vec3(0.05, 0.006, 0.006) * pow(vY, 3.0) * step(0.55, vSeed);
     c += albedo * lampLight(vWorld) * 6.0 + albedo * doorLight(vWorld) * 5.0;
     gl_FragColor = vec4(finish(c, vWorld, length(vWorld - cameraPosition)), 1.0);
   }
@@ -515,7 +537,7 @@ const LEAF_FRAG = /* glsl */ `
     q = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * q;
     float a = maple(q);
     if (a < 0.5) discard;
-    vec3 c = vTint + vTint * lampLight(vWorld) * 1.6 + vTint * doorLight(vWorld);
+    vec3 c = vTint * mix(1.0, 1.7, uDay) + vTint * lampLight(vWorld) * 1.6 + vTint * doorLight(vWorld);
     gl_FragColor = vec4(finish(c, vWorld, length(vWorld - cameraPosition)), 1.0);
   }
 `;
@@ -527,7 +549,7 @@ const BARK_FRAG = /* glsl */ `
   void main() {
     vec3 albedo = vec3(0.012, 0.01, 0.01);
     float moon = 0.4 + 0.6 * clamp(dot(normalize(vNormal), normalize(vec3(-0.3, 0.6, 0.6))), 0.0, 1.0);
-    vec3 c = albedo * moon + albedo * lampLight(vWorld) * 2.0;
+    vec3 c = albedo * skyLight(normalize(vNormal), vec3(moon)) * mix(1.0, 2.5, uDay) + albedo * lampLight(vWorld) * 2.0;
     gl_FragColor = vec4(finish(c, vWorld, length(vWorld - cameraPosition)), 1.0);
   }
 `;
@@ -660,13 +682,14 @@ function makeTrees(
 const GLOW_FRAG = /* glsl */ `
   uniform float uTime;
   uniform float uDusk;
+  uniform float uDay;
   uniform float uSeed;
   varying vec2 vUv;
   void main() {
     float d = length(vUv - 0.5) * 2.0;
     float flick = 0.9 + 0.1 * sin(uTime * 8.0 + uSeed) * sin(uTime * 2.7 + uSeed * 3.0);
     float a = exp(-d * d * 4.5) * 0.55 + exp(-d * d * 40.0) * 0.6;
-    vec3 c = vec3(0.9, 0.12, 0.08) * a * 0.6 * flick * (1.0 - uDusk * 0.7);
+    vec3 c = vec3(0.9, 0.12, 0.08) * a * 0.6 * flick * (1.0 - uDusk * 0.7) * (1.0 - uDay * 0.85);
     gl_FragColor = vec4(c, 1.0);
   }
 `;
@@ -698,7 +721,7 @@ function makeLantern(
       void main() {
         vec3 albedo = vec3(0.05, 0.047, 0.047);
         float moon = 0.3 + 0.7 * clamp(dot(normalize(vNormal), normalize(vec3(-0.3, 0.7, 0.6))), 0.0, 1.0);
-        vec3 c = albedo * moon * 0.35 + albedo * lampLight(vWorld) * 1.4;
+        vec3 c = albedo * skyLight(normalize(vNormal), vec3(moon * 0.35)) + albedo * lampLight(vWorld) * 1.4;
         gl_FragColor = vec4(finish(c, vWorld, length(vWorld - cameraPosition)), 1.0);
       }
     `,
@@ -744,6 +767,7 @@ function makeLantern(
       uniforms: {
         uTime: shared.uTime,
         uDusk: shared.uDusk,
+        uDay: shared.uDay,
         uSeed: { value: seed },
       },
       transparent: true,
@@ -801,6 +825,7 @@ const FALL_FRAG = /* glsl */ `
     q.x /= max(vFlip, 0.25);
     if (maple(q) < 0.5) discard;
     vec3 c = mix(vec3(0.4, 0.012, 0.03), vec3(0.62, 0.04, 0.04), vSeed) * (0.45 + 0.55 * vFlip);
+    c *= mix(1.0, 2.2, uDay);
     c += c * lampLight(vWorld);
     gl_FragColor = vec4(finish(c, vWorld, length(vWorld - cameraPosition)), 1.0);
   }
@@ -824,10 +849,11 @@ const SPARK_VERT = /* glsl */ `
 `;
 const SPARK_FRAG = /* glsl */ `
   uniform float uDusk;
+  uniform float uDay;
   varying float vA;
   void main() {
     float d = length(gl_PointCoord - 0.5);
-    float a = smoothstep(0.5, 0.0, d) * vA * (1.0 - uDusk);
+    float a = smoothstep(0.5, 0.0, d) * vA * (1.0 - uDusk) * (1.0 - uDay);
     gl_FragColor = vec4(vec3(1.0, 0.92, 0.85) * a * 1.6, 1.0);
   }
 `;
@@ -839,6 +865,8 @@ export type Nightland = {
   uniforms: {
     time: THREE.IUniform<number>;
     dusk: THREE.IUniform<number>;
+    /** 0 night … 1 day */
+    day: THREE.IUniform<number>;
     spill: THREE.IUniform<number>;
     wind: THREE.IUniform<number>;
     life: THREE.IUniform<number>;
@@ -853,6 +881,7 @@ export type Nightland = {
 export function makeNightland(options: { grass?: number } = {}): Nightland {
   const time = { value: 0 };
   const dusk = { value: 0 };
+  const day = { value: 0 };
   const spill = { value: 0 };
   const wind = { value: 1 };
   const life = { value: 1 };
@@ -867,6 +896,7 @@ export function makeNightland(options: { grass?: number } = {}): Nightland {
   const shared: Shared = {
     uTime: time,
     uDusk: dusk,
+    uDay: day,
     uSpill: spill,
     uSpillAt: { value: new THREE.Vector3(DOOR.x, 0, DOOR.z + 2.2) },
     uLamps: { value: lamps },
@@ -878,7 +908,12 @@ export function makeNightland(options: { grass?: number } = {}): Nightland {
     new THREE.ShaderMaterial({
       vertexShader: SKY_VERT,
       fragmentShader: SKY_FRAG,
-      uniforms: { uMoon: { value: MOON_DIR }, uDusk: dusk, uTime: time },
+      uniforms: {
+        uMoon: { value: MOON_DIR },
+        uDusk: dusk,
+        uDay: day,
+        uTime: time,
+      },
       side: THREE.BackSide,
       depthWrite: false,
     }),
@@ -891,7 +926,7 @@ export function makeNightland(options: { grass?: number } = {}): Nightland {
     new THREE.ShaderMaterial({
       vertexShader: UV_VERT,
       fragmentShader: MOON_FRAG,
-      uniforms: { uDusk: dusk },
+      uniforms: { uDusk: dusk, uDay: day },
       depthWrite: false,
     }),
   );
@@ -904,9 +939,33 @@ export function makeNightland(options: { grass?: number } = {}): Nightland {
   // three ranges, nearer ones darker, the farthest almost lost in the haze
   const mist = new THREE.Color(0.03, 0.026, 0.032);
   const ranges = [
-    ridge(520, 120, 11.3, shared, new THREE.Color(0.009, 0.009, 0.012), mist),
-    ridge(340, 62, 5.7, shared, new THREE.Color(0.005, 0.006, 0.008), mist),
-    ridge(230, 30, 2.1, shared, new THREE.Color(0.003, 0.004, 0.004), mist),
+    ridge(
+      520,
+      120,
+      11.3,
+      shared,
+      new THREE.Color(0.009, 0.009, 0.012),
+      mist,
+      new THREE.Color(0.42, 0.37, 0.25),
+    ),
+    ridge(
+      340,
+      62,
+      5.7,
+      shared,
+      new THREE.Color(0.005, 0.006, 0.008),
+      mist,
+      new THREE.Color(0.3, 0.28, 0.17),
+    ),
+    ridge(
+      230,
+      30,
+      2.1,
+      shared,
+      new THREE.Color(0.003, 0.004, 0.004),
+      mist,
+      new THREE.Color(0.19, 0.19, 0.1),
+    ),
   ];
   ranges.forEach((r, i) => {
     r.renderOrder = -9 + i;
@@ -992,7 +1051,13 @@ export function makeNightland(options: { grass?: number } = {}): Nightland {
       new THREE.ShaderMaterial({
         vertexShader: SPARK_VERT,
         fragmentShader: SPARK_FRAG,
-        uniforms: { uTime: time, uPixel: pixel, uLife: life, uDusk: dusk },
+        uniforms: {
+          uTime: time,
+          uPixel: pixel,
+          uLife: life,
+          uDusk: dusk,
+          uDay: day,
+        },
         transparent: true,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
@@ -1004,7 +1069,7 @@ export function makeNightland(options: { grass?: number } = {}): Nightland {
 
   return {
     group,
-    uniforms: { time, dusk, spill, wind, life, pixel, scale },
+    uniforms: { time, dusk, day, spill, wind, life, pixel, scale },
     face: (camera) => {
       for (const l of lanterns) l.halo.quaternion.copy(camera.quaternion);
       const halfH =

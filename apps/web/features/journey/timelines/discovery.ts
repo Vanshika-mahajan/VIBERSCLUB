@@ -8,6 +8,16 @@ const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
 const smooth = (x: number) => x * x * (3 - 2 * x);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
+/** the orb's size when we first see it, through the doorway */
+export const ORB_START = 0.55;
+/**
+ * Its spin, in radians still to turn before Manali faces us. Through the door it turns about once a
+ * second; from the cosmos it slows (power3.out starts at the same speed) until Manali comes round.
+ */
+export const SPIN_ARRIVE = TAU * 1.45;
+export const SPIN_DOOR = SPIN_ARRIVE + 6 * 5.8;
+const SPIN_SLOW = 4.6;
+
 /** where the sphere ends up once the cards have settled */
 const SETTLED = { planet: 0.34, planetY: 0.36 };
 
@@ -15,7 +25,7 @@ const SETTLED = { planet: 0.34, planetY: 0.36 };
  * Scenes three to five, about 12 seconds after the door. Everything moves by tweening the shared
  * params; the 3D world and the driver below both read them, so the CSS and 3D versions stay in step.
  *
- *  0.0  the sphere arrives from the dark, spinning fast, and slows (milestones 4 and 5)
+ *  0.0  the orb, already in view through the door, turns fast and slows (milestones 4 and 5)
  *  3.4  the camera dives toward Manali, the surface turns into the valley, the marker lights (6)
  *  6.6  back out; the Vibers appear and orbit the sphere, slowing (7)
  * 10.0  they settle into the row, the heading and the way onward appear (8)
@@ -29,35 +39,46 @@ export function buildDiscovery(
     d.more,
     d.root.querySelector<HTMLElement>("[class*=sample]")!,
   ];
-  return gsap
-    .timeline({ defaults: { ease: "power2.inOut" } })
-    .set(d.root, { autoAlpha: 1 }, 0)
-    .set(p, { planet: 0.015, spin: TAU * 3.5, planetY: 0 }, 0)
-    .to(p, { planet: 0.6, duration: 2.6, ease: "power3.out" }, 0)
-    .to(p, { spin: 0, duration: 3.8, ease: "power3.out" }, 0)
-    .to(p, { planet: 0.78, duration: 1.4, ease: "sine.inOut" }, 2.2)
-    .call(() => advance("manali"), undefined, 3.4)
-    .to(p, { planet: 2.6, duration: 2.3 }, 3.4)
-    .to(p, { manali: 1, duration: 1.5, ease: "sine.inOut" }, 3.9)
-    .to(p, { marker: 1, duration: 0.8, ease: "power2.out" }, 5.0)
-    .call(() => advance("orbit"), undefined, 6.6)
-    .to(p, { planet: 0.62, duration: 1.9 }, 6.6)
-    .fromTo(
-      p,
-      { orbit: -0.6 },
-      { orbit: TAU * 0.9, duration: 4.6, ease: "power2.out" },
-      6.9,
-    )
-    .to(p, { cards: 1, duration: 1.6, ease: "power2.out" }, 7.2)
-    .to(p, { ...SETTLED, duration: 1.7 }, 10.0)
-    .to(p, { settle: 1, duration: 1.6, ease: "none" }, 10.1)
-    .fromTo(
-      d.head,
-      { autoAlpha: 0, y: 18 },
-      { autoAlpha: 1, y: 0, duration: 1.1, ease: "power2.out" },
-      10.6,
-    )
-    .fromTo(extras, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7 }, 11.3);
+  return (
+    gsap
+      .timeline({ defaults: { ease: "power2.inOut" } })
+      .set(d.root, { autoAlpha: 1 }, 0)
+      // the orb is already here (seen through the door); it keeps turning fast, then slows for Manali
+      .fromTo(
+        p,
+        { planet: ORB_START, planetY: 0 },
+        { planet: 0.78, duration: 3.4, ease: "sine.inOut" },
+        0,
+      )
+      .fromTo(
+        p,
+        { spin: SPIN_ARRIVE },
+        { spin: 0, duration: SPIN_SLOW, ease: "power3.out" },
+        0,
+      )
+      .call(() => advance("manali"), undefined, 3.4)
+      .to(p, { planet: 2.6, duration: 2.3 }, 3.4)
+      .to(p, { manali: 1, duration: 1.5, ease: "sine.inOut" }, 3.9)
+      .to(p, { marker: 1, duration: 0.8, ease: "power2.out" }, 5.0)
+      .call(() => advance("orbit"), undefined, 6.6)
+      .to(p, { planet: 0.62, duration: 1.9 }, 6.6)
+      .fromTo(
+        p,
+        { orbit: -0.6 },
+        { orbit: TAU * 0.9, duration: 4.6, ease: "power2.out" },
+        6.9,
+      )
+      .to(p, { cards: 1, duration: 1.6, ease: "power2.out" }, 7.2)
+      .to(p, { ...SETTLED, duration: 1.7 }, 10.0)
+      .to(p, { settle: 1, duration: 1.6, ease: "none" }, 10.1)
+      .fromTo(
+        d.head,
+        { autoAlpha: 0, y: 18 },
+        { autoAlpha: 1, y: 0, duration: 1.1, ease: "power2.out" },
+        10.6,
+      )
+      .fromTo(extras, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7 }, 11.3)
+  );
 }
 
 /** Reduced motion: no flight, no orbit. The result is simply there, with Manali marked. */
