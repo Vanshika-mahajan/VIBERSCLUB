@@ -3,17 +3,29 @@
 import Link from "next/link";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type PointerEvent as RPointerEvent,
 } from "react";
+import CircularGallery from "@/components/reactbits/CircularGallery";
 import type { Match, Viber } from "@/features/discover/types";
 import { interestById, areas } from "@/lib/taxonomy";
 import { actions, useDemo } from "@/lib/demo/store";
 import { firstName, viberById } from "@/lib/demo/people";
 import { toast } from "@/components/ui";
-import { Icon, Photo, SampleTag, useDeck } from "./shared";
+import {
+  Icon,
+  Photo,
+  SampleTag,
+  canUseWebGL2,
+  portrait,
+  useDeck,
+} from "./shared";
 import s from "./club.module.css";
+
+const noop = () => () => {};
 
 type Verdict = "like" | "pass" | "save";
 const THRESHOLD = 110;
@@ -60,7 +72,28 @@ export function Community({ vibe = "" }: { vibe?: string }) {
     }, 260);
   };
 
-  const top = deck[0];
+  // the gallery needs WebGL2; without it, the card stack below does the same job
+  const gallery = useSyncExternalStore(noop, canUseWebGL2, () => false);
+  const [active, setActive] = useState(0);
+  const items = useMemo(
+    () =>
+      gallery
+        ? deck.map((m) => ({
+            image: m.viber.photoUrl || portrait(m.viber.name),
+            fallback: portrait(m.viber.name),
+            text: firstName(m.viber),
+            description: m.viber.role,
+            alt: m.viber.name,
+          }))
+        : [],
+    [deck, gallery],
+  );
+  // the gallery loops, so the card in front is the reported index, wrapped to what is left
+  const current = deck.length
+    ? deck[((active % deck.length) + deck.length) % deck.length]
+    : undefined;
+
+  const top = gallery ? current : deck[0];
   const onKey = (e: React.KeyboardEvent) => {
     if (!top) return;
     const verdict = (
@@ -74,12 +107,47 @@ export function Community({ vibe = "" }: { vibe?: string }) {
 
   const likedOnly = liked.filter((id) => viberById[id]);
 
+  const actionRow = top && (
+    <div className={s.actions}>
+      <button
+        type="button"
+        className={s.round}
+        data-kind="pass"
+        aria-label={`Pass on ${top.viber.name}`}
+        onClick={() => decide(top, "pass")}
+      >
+        <Icon name="x" size={24} />
+      </button>
+      <button
+        type="button"
+        className={s.round}
+        data-kind="like"
+        aria-label={`Like ${top.viber.name}`}
+        onClick={() => decide(top, "like")}
+      >
+        <Icon name="heart" size={28} />
+      </button>
+      <button
+        type="button"
+        className={s.round}
+        data-kind="save"
+        aria-label={`Save ${top.viber.name} for later`}
+        onClick={() => decide(top, "save")}
+      >
+        <Icon name="bookmark" size={22} />
+      </button>
+    </div>
+  );
+
   return (
     <div className={s.community}>
       <div className={s.deckWrap}>
         <div
           className={s.sectionHead}
-          style={{ width: "min(100%, 380px)", marginBottom: 0 }}
+          style={{
+            width: gallery ? "100%" : "min(100%, 380px)",
+            marginBottom: 0,
+          }}
         >
           <div>
             <h2 className={s.h2}>Vibers like you</h2>
@@ -103,7 +171,38 @@ export function Community({ vibe = "" }: { vibe?: string }) {
             </p>
           </div>
         </div>
-        {top ? (
+        {top && gallery ? (
+          <>
+            <div
+              className={s.gallery}
+              role="group"
+              aria-roledescription="profile gallery"
+              aria-label={`${top.viber.name}, ${top.viber.role}. Drag, scroll or use the arrow keys to see the next Viber.`}
+            >
+              <CircularGallery
+                items={items}
+                bend={2.2}
+                itemSize={0.98}
+                itemAspect={0.74}
+                gap={0.2}
+                borderRadius={0.06}
+                wave={0.6}
+                fadeEdges={0.16}
+                shadow={0.35}
+                textColor="#f3ebdd"
+                font='italic 400 26px "Fraunces Variable"'
+                openOnClick={false}
+                snap
+                onActiveChange={setActive}
+              />
+            </div>
+            <ViberDetails match={top} />
+            {actionRow}
+            <p className={s.hint}>
+              Drag or scroll to browse, then pass, like or save for later
+            </p>
+          </>
+        ) : top ? (
           <>
             <div
               className={s.deck}
@@ -128,35 +227,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
                 ))
                 .reverse()}
             </div>
-            <div className={s.actions}>
-              <button
-                type="button"
-                className={s.round}
-                data-kind="pass"
-                aria-label={`Pass on ${top.viber.name}`}
-                onClick={() => decide(top, "pass")}
-              >
-                <Icon name="x" size={24} />
-              </button>
-              <button
-                type="button"
-                className={s.round}
-                data-kind="like"
-                aria-label={`Like ${top.viber.name}`}
-                onClick={() => decide(top, "like")}
-              >
-                <Icon name="heart" size={28} />
-              </button>
-              <button
-                type="button"
-                className={s.round}
-                data-kind="save"
-                aria-label={`Save ${top.viber.name} for later`}
-                onClick={() => decide(top, "save")}
-              >
-                <Icon name="bookmark" size={22} />
-              </button>
-            </div>
+            {actionRow}
             <p className={s.hint}>
               Drag the card, or use ← pass · → like · ↑ save for later
             </p>
@@ -338,6 +409,42 @@ export function Community({ vibe = "" }: { vibe?: string }) {
         )}
       </dialog>
     </div>
+  );
+}
+
+/** The Viber in front of the gallery: where they are, why they fit, a line from them and what they like */
+function ViberDetails({ match }: { match: Match }) {
+  const v = match.viber;
+  return (
+    <article className={s.details} aria-live="polite">
+      <p className={s.detailsMeta}>
+        {v.status === "local" ? "Local" : "Visiting"} · {areas[v.area].label}
+        {v.sample && (
+          <>
+            {" "}
+            <SampleTag />
+          </>
+        )}
+      </p>
+      <h3 className={s.detailsName}>{v.name}</h3>
+      <p className={s.why}>{match.reasons[0] ?? "New to the club"}</p>
+      <p className={s.detailsBio}>{v.bio}</p>
+      <div className={s.chips} style={{ gap: 6 }}>
+        {v.interests.slice(0, 5).map((i) => (
+          <span
+            key={i}
+            className={s.tag}
+            data-tone={
+              match.shared.includes(interestById[i]?.label)
+                ? undefined
+                : "clover"
+            }
+          >
+            {interestById[i]?.label ?? i}
+          </span>
+        ))}
+      </div>
+    </article>
   );
 }
 

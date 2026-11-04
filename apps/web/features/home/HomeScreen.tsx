@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useSyncExternalStore } from "react";
+import CircularCarousel from "@/components/reactbits/CircularCarousel";
+import { portrait } from "@/features/club/shared";
 import { HealthStatus } from "@/components/HealthStatus";
-import { Avatar, Section } from "@/components/ui";
+import { Section } from "@/components/ui";
 import { EventCard } from "@/features/events/EventCard";
 import { hashtag, interpret } from "@/features/discover/interpret";
 import { discover } from "@/features/discover/rank";
@@ -11,6 +13,8 @@ import { roadmaps, places } from "@/lib/demo/data";
 import { allEvents, vibers } from "@/lib/demo/people";
 import { useDemo } from "@/lib/demo/store";
 import { areas, interestById } from "@/lib/taxonomy";
+
+const noop = () => () => {};
 
 export function HomeScreen() {
   const me = useDemo((s) => s.me);
@@ -22,8 +26,23 @@ export function HomeScreen() {
   // Vibers like you: the same ranking as Discover, run on your own vibe and interests
   const likeYou = useMemo(() => {
     const t = interpret(me.vibe, { added: me.interests, removed: [] });
-    return discover(t, vibers.filter((v) => !blocked.includes(v.id)), 6).matches.slice(0, 6);
+    return discover(t, vibers.filter((v) => !blocked.includes(v.id)), 10).matches.slice(0, 10);
   }, [me, blocked]);
+  // the ring is drawn in the browser only (its fallback portraits are drawn on a canvas)
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const ring = useMemo(
+    () =>
+      mounted
+        ? likeYou.map((m) => ({
+            src: m.viber.photoUrl || portrait(m.viber.name),
+            fallback: portrait(m.viber.name),
+            alt: m.viber.name,
+            title: m.viber.name,
+            subtitle: m.shared.slice(0, 2).join(" · ") || areas[m.viber.area].label,
+          }))
+        : [],
+    [likeYou, mounted],
+  );
   const upcoming = useMemo(() => {
     const mine = new Set(me.interests);
     return allEvents(hosted)
@@ -78,15 +97,30 @@ export function HomeScreen() {
       </div>
 
       <Section title="Vibers like you" action={<Link href="/discover" className="link text-sm">Discover</Link>}>
-        <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:px-0">
+        {/* relevant profiles on a slowly turning ring: drag to spin, click one to bring it to the front */}
+        <div className="relative -mx-4 h-[380px] md:mx-0 md:h-[440px]">
+          {ring.length > 0 && (
+            <CircularCarousel
+              items={ring}
+              ariaLabel="Vibers like you"
+              preset="cylinder"
+              intro="rise"
+              cardWidth={190}
+              aspectRatio={0.78}
+              gap={22}
+              speed={9}
+              depthFade={0.6}
+              fadeColor="#1f0c11"
+              innerShade={0.35}
+              cornerRadius={18}
+              captions
+            />
+          )}
+        </div>
+        <ul className="sr-only">
           {likeYou.map((m) => (
-            <li key={m.viber.id} className="card flex w-64 shrink-0 items-center gap-3 p-3 md:w-auto">
-              <Avatar name={m.viber.name} src={m.viber.photoUrl} size={52} />
-              <span className="min-w-0">
-                <b className="block truncate">{m.viber.name}</b>
-                <small className="block truncate font-semibold text-accent">{m.shared.join(" · ")}</small>
-                <small className="block truncate text-muted">{areas[m.viber.area].label}</small>
-              </span>
+            <li key={m.viber.id}>
+              {m.viber.name}, {areas[m.viber.area].label}. You share {m.shared.join(", ")}.
             </li>
           ))}
         </ul>
@@ -103,7 +137,7 @@ export function HomeScreen() {
       <Section title="Explore Manali" action={<Link href="/explore" className="link text-sm">Places</Link>}>
         <div className="grid gap-3 md:grid-cols-3">
           {roadmaps.map((r) => (
-            <Link key={r.id} href={`/explore#${r.id}`} className="card block p-4 transition hover:border-brand/30 hover:shadow-soft">
+            <Link key={r.id} href={`/explore#${r.id}`} className="card block p-4 transition hover:border-rose/30 hover:shadow-soft">
               <b className="block">{r.title}</b>
               <small className="text-muted">{r.summary}</small>
               <p className="mt-2 text-xs font-bold text-ink2">{r.stops.map((s) => places.find((p) => p.id === s.placeId)?.name).join(" → ")}</p>

@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
+import OptionWheel from "@/components/reactbits/OptionWheel";
 import { places } from "@/lib/demo/data";
 import { useDemo } from "@/lib/demo/store";
 import { allEvents } from "@/lib/demo/people";
@@ -22,6 +23,11 @@ export const TABS = [
 ] as const;
 export type TabId = (typeof TABS)[number]["id"];
 const isTab = (x: string | null): x is TabId => TABS.some((t) => t.id === x);
+
+/** Solang, above Manali: the hero photograph (ridges and dusk show if it can't load) */
+const HERO_PHOTO =
+  places.find((p) => p.id === "solang")?.photoUrl?.replace("w=640", "w=1600") ??
+  "";
 
 /** The soft ridges at the foot of the hero, in the palette, far to near */
 function Ridges() {
@@ -69,7 +75,6 @@ export function ClubHome() {
   const tab: TabId = isTab(q) ? q : "events";
   // what was typed at the door, if the journey brought us here
   const vibe = (params.get("vibe") ?? "").slice(0, 200);
-  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const me = useDemo((st) => st.me);
   const hosted = useDemo((st) => st.hosted);
@@ -77,29 +82,26 @@ export function ClubHome() {
   const deck = useDeck(vibe);
   const weekEvents = allEvents(hosted).filter((e) => e.dayOffset < 7).length;
 
-  const go = (id: TabId, focus = false) => {
+  const go = (id: TabId) => {
     const keep = vibe ? `&vibe=${encodeURIComponent(vibe)}` : "";
     router.replace(`${pathname}?tab=${id}${keep}`, { scroll: false });
-    if (focus) tabRefs.current[id]?.focus();
   };
-  const onKey = (e: KeyboardEvent) => {
-    const i = TABS.findIndex((t) => t.id === tab);
-    const next = {
-      ArrowRight: i + 1,
-      ArrowLeft: i - 1,
-      Home: 0,
-      End: TABS.length - 1,
-    }[e.key];
-    if (next === undefined) return;
-    e.preventDefault();
-    go(TABS[(next + TABS.length) % TABS.length].id, true);
+  // the wheel reports every option it passes; open the tab it comes to rest on
+  const settle = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(settle.current), []);
+  const onWheel = (index: number) => {
+    window.clearTimeout(settle.current);
+    const id = TABS[index].id;
+    settle.current = window.setTimeout(() => id !== tab && go(id), 220);
   };
   const jump = (id: TabId) => {
     go(id);
     document
-      .getElementById("club-tabs")
+      .getElementById("club-content")
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+  const [heroPhoto, setHeroPhoto] = useState(true);
+  const tabIndex = TABS.findIndex((t) => t.id === tab);
 
   const stats: { id: TabId; n: number; label: string }[] = [
     { id: "community", n: deck.length, label: "Vibers like you" },
@@ -115,71 +117,79 @@ export function ClubHome() {
   return (
     <div className={s.club}>
       <header className={s.hero}>
-        <span className={s.sunDisc} aria-hidden="true" />
         <Ridges />
-        <div className={s.heroInner}>
-          <p className={s.kicker}>
-            <span className={s.kickerDot} aria-hidden="true" /> Manali ·{" "}
-            {me.status === "local" ? "Local" : "Visiting"}
-          </p>
-          <h1 className={s.title}>
-            Hi {me.name}, your Manali has <em>people</em> in it.
-          </h1>
-          <p className={s.sly}>Travel solo. Just not alone.</p>
-          <p className={s.lede}>
-            Meet Vibers who share your vibe, join what&apos;s on, find places
-            worth the walk and plan your days, all in one place.
-          </p>
-        </div>
-        <div className={s.stats}>
-          {stats.map((st) => (
-            <button
-              key={st.id}
-              type="button"
-              className={s.stat}
-              onClick={() => jump(st.id)}
-            >
-              <span className={s.statNum}>{st.n}</span>
-              <span className={s.statLabel}>{st.label}</span>
-            </button>
-          ))}
+        {heroPhoto && (
+          // eslint-disable-next-line @next/next/no-img-element -- sample photo from a CDN
+          <img
+            className={s.heroPhoto}
+            src={HERO_PHOTO}
+            alt=""
+            onError={() => setHeroPhoto(false)}
+            ref={(el) => {
+              if (el?.complete && el.naturalWidth === 0) setHeroPhoto(false);
+            }}
+          />
+        )}
+        <div className={s.heroShade} aria-hidden="true" />
+        <div className={s.heroGrid}>
+          <div className={s.heroInner}>
+            <p className={s.kicker}>
+              <span className={s.kickerDot} aria-hidden="true" /> Manali ·{" "}
+              {me.status === "local" ? "Local" : "Visiting"}
+            </p>
+            <h1 className={s.title}>
+              Hi {me.name}, your Manali has <em>people</em> in it.
+            </h1>
+            <p className={s.sly}>Travel solo. Just not alone.</p>
+            <p className={s.lede}>
+              Meet Vibers who share your vibe, join what&apos;s on, find places
+              worth the walk and plan your days, all in one place.
+            </p>
+            <div className={s.stats}>
+              {stats.map((st) => (
+                <button
+                  key={st.id}
+                  type="button"
+                  className={s.stat}
+                  onClick={() => jump(st.id)}
+                >
+                  <span className={s.statNum}>{st.n}</span>
+                  <span className={s.statLabel}>{st.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* the five rooms of the club, on a wheel: scroll, drag, click or use the arrow keys */}
+          <nav className={s.wheel} aria-label="Club sections">
+            <OptionWheel
+              id="club-tabs"
+              ariaLabel="Vibers Club sections"
+              items={TABS.map((t) => t.label)}
+              defaultSelected={tabIndex}
+              selected={tabIndex}
+              onChange={onWheel}
+              side="right"
+              fontSize={2.1}
+              spacing={1.5}
+              curve={1}
+              tilt={9}
+              blur={1.2}
+              fade={0.28}
+              minOpacity={0.12}
+              smoothing={180}
+              inset={8}
+              textColor="rgba(243, 235, 221, 0.42)"
+              activeColor="#f3ebdd"
+              className={s.wheelInner}
+            />
+          </nav>
         </div>
       </header>
 
-      <div
-        id="club-tabs"
-        className={s.tabs}
-        role="tablist"
-        aria-label="Vibers Club"
-        onKeyDown={onKey}
-        style={{ scrollMarginTop: 10 }}
-      >
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            ref={(el) => {
-              tabRefs.current[t.id] = el;
-            }}
-            type="button"
-            role="tab"
-            id={`tab-${t.id}`}
-            aria-selected={tab === t.id}
-            aria-controls={`panel-${t.id}`}
-            tabIndex={tab === t.id ? 0 : -1}
-            className={s.tab}
-            onClick={() => go(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div
+      <section
         key={tab}
-        role="tabpanel"
-        id={`panel-${tab}`}
-        aria-labelledby={`tab-${tab}`}
-        tabIndex={0}
+        id="club-content"
+        aria-label={TABS[tabIndex].label}
         className={s.panel}
       >
         {tab === "events" && <Events />}
@@ -187,7 +197,7 @@ export function ClubHome() {
         {tab === "explore" && <Explore />}
         {tab === "itinerary" && <Itinerary />}
         {tab === "post" && <PostTab onSeeCommunity={() => jump("community")} />}
-      </div>
+      </section>
     </div>
   );
 }

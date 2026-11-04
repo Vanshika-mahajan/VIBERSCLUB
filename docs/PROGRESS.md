@@ -14,6 +14,17 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the dark luxury pass (2026-11-04)
+ARPIT asked for: no black screen after Enter, a premium dark Winewood Whisper theme (layered Black Cherry, forest accents, warm neutrals, editorial type) and five React Bits components.
+- `journey.module.css`: the CSS still stays under the 3D canvas until the stars, so a dropped canvas frame shows the meadow, never black.
+- `app/globals.css`: dark tokens (recess, canvas, surface, raised; Mulberry for selected and active; champagne call to action; ivory, champagne and stone text; soft status colours) and the shared button, chip, field and card styles. Discover and the universe keep the light paper look (tokens reset inside them).
+- `components/reactbits/`: CircularCarousel, AccordionGallery, OptionWheel, CircularGallery and ScrollStack (JavaScript + CSS, with `.d.ts` types; local edits marked "Vibers Club": controlled wheel, photo fallbacks, no loseContext on unmount). ESLint compiler rules are off for these vendor files.
+- Club home: the hero is a photograph with the sections on an OptionWheel (replaces the tab bar); Community is a CircularGallery with the Viber in front described below and pass, like, save; My itinerary opens with an AccordionGallery of plans; Explore places are a ScrollStack. Today shows Vibers like you on a CircularCarousel.
+- `features/club/shared.tsx`: drawn portraits and valleys for the galleries when a photo is missing or blocked.
+
+## Tests executed (dark luxury pass, 2026-11-04, in the cloud workspace)
+Vitest 84 passed. E2E 69 of 72 passed; the two "API OK" checks need the API, and one Discover layout check on the phone failed once and passed 16 of 16 on a rerun. Typecheck and ESLint clean.
+
 ## Files created or modified in the Winewood Whisper pass (2026-11-04)
 ARPIT asked for three things: fix a black flash after Enter, replace the quote screen at the end of the dive with a clean transition, and move the whole site to his Winewood Whisper palette (plan approved: https://claude.ai/artifact/Sf2oLK7crdUpoxuFYjQuYJ).
 - `world/engine.ts`: the automatic resolution step now only runs while the door is shut. Resizing the drawing buffer mid-journey is the likely cause of the black flash he recorded (Safari on Mac; not reproducible here, Chromium only).

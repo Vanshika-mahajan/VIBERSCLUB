@@ -27,7 +27,7 @@ export function MotionLab() {
             splitType="chars"
             delay={30}
             trigger="load"
-            className="display text-5xl text-brand italic md:text-7xl"
+            className="display text-5xl text-brand-ink italic md:text-7xl"
           />
           <SplitText
             tag="h1"
@@ -45,7 +45,7 @@ export function MotionLab() {
       <Reveal stagger={0.12} className="mt-16 grid gap-4 md:grid-cols-2">
         {blocks.map((b) => (
           <article key={b.name} className="rounded-2xl bg-surface p-6 shadow-card" data-testid="lab-block">
-            <h2 className="font-extrabold text-brand">{b.name}</h2>
+            <h2 className="font-extrabold text-brand-ink">{b.name}</h2>
             <p className="mt-2 text-muted">{b.what}</p>
           </article>
         ))}

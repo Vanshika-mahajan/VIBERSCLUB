@@ -41,7 +41,7 @@ export function HealthStatus() {
           setState({ kind: "loading" });
           setAttempt((n) => n + 1);
         }}
-        className="rounded-full border border-line2 px-4 py-1.5 text-sm hover:border-brand hover:text-brand"
+        className="rounded-full border border-line2 px-4 py-1.5 text-sm hover:border-rose hover:text-brand-ink"
       >
         Try again
       </button>

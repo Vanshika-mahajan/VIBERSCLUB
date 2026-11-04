@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import AccordionGallery from "@/components/reactbits/AccordionGallery";
 import {
   clubTemplates,
   viberTemplates,
@@ -10,10 +11,14 @@ import { places } from "@/lib/demo/data";
 import { actions, useDemo } from "@/lib/demo/store";
 import { firstName, viberById } from "@/lib/demo/people";
 import { toast } from "@/components/ui";
-import { Icon, Photo, SampleTag } from "./shared";
+import { Icon, Photo, SampleTag, landscape } from "./shared";
 import s from "./club.module.css";
 
 const placeName = (id: string) => places.find((p) => p.id === id)?.name ?? id;
+const placePhoto = (id: string) =>
+  places.find((p) => p.id === id)?.photoUrl?.replace(/w=\d+/, "w=1100");
+const templates = [...clubTemplates, ...viberTemplates];
+const noop = () => () => {};
 
 /** My itinerary: build my own day by day, or start from a plan by Vibers Club or another Viber. */
 export function Itinerary() {
@@ -30,196 +35,199 @@ export function Itinerary() {
   };
 
   return (
-    <div className={s.itinGrid}>
-      <section
-        aria-labelledby="mine-title"
-        style={{ display: "flex", flexDirection: "column", gap: 16 }}
-      >
-        <div className={s.sectionHead} style={{ marginBottom: 0 }}>
-          <div>
-            <h2 id="mine-title" className={s.h2}>
-              My itinerary
-            </h2>
-            <p
-              className={`${s.muted} ${s.small}`}
-              style={{ margin: "4px 0 0" }}
-            >
-              Day by day, stop by stop.
-            </p>
-          </div>
-        </div>
-
-        {mine.length > 1 && (
-          <div className={s.chips} role="group" aria-label="My plans">
-            {mine.map((it) => (
-              <button
-                key={it.id}
-                type="button"
-                className={s.chip}
-                aria-pressed={open?.id === it.id}
-                onClick={() => setOpenId(it.id)}
-              >
-                {it.title}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {open ? (
-          <PlanEditor plan={open} />
-        ) : (
-          <div className={s.empty}>
-            <p className={s.h3} style={{ color: "var(--ink)" }}>
-              Your itinerary is missing a few people.
-            </p>
-            <p>
-              Start your own below, or borrow a plan from Vibers Club or another
-              Viber.
-            </p>
-          </div>
-        )}
-
-        <form
-          className={`${s.card} ${s.create}`}
-          style={{ padding: 16 }}
-          onSubmit={(e) => {
-            e.preventDefault();
-            const it = actions.createItinerary(title, days);
-            setOpenId(it.id);
-            setTitle("");
-            toast(`"${it.title}" created. Add your first stop.`);
-          }}
+    <div style={{ display: "flex", flexDirection: "column", gap: 44 }}>
+      <TemplateGallery onUse={use} />
+      <div className={s.itinGrid}>
+        <section
+          aria-labelledby="mine-title"
+          style={{ display: "flex", flexDirection: "column", gap: 16 }}
         >
-          <div>
-            <label className={s.label} htmlFor="it-title">
-              Create your own
-            </label>
-            <input
-              id="it-title"
-              className={s.field}
-              placeholder="My Manali trip"
-              value={title}
-              maxLength={60}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+          <div className={s.sectionHead} style={{ marginBottom: 0 }}>
+            <div>
+              <h2 id="mine-title" className={s.h2}>
+                My itinerary
+              </h2>
+              <p
+                className={`${s.muted} ${s.small}`}
+                style={{ margin: "4px 0 0" }}
+              >
+                Day by day, stop by stop.
+              </p>
+            </div>
           </div>
-          <div>
-            <label className={s.label} htmlFor="it-days">
-              Days
-            </label>
-            <input
-              id="it-days"
-              className={s.field}
-              type="number"
-              min={1}
-              max={14}
-              value={days}
-              onChange={(e) => setDays(Number(e.target.value) || 1)}
-            />
-          </div>
-          <button type="submit" className={s.btn}>
-            <Icon name="plus" size={16} /> Create
-          </button>
-        </form>
-      </section>
 
-      <aside
-        aria-label="Templates"
-        style={{ display: "flex", flexDirection: "column", gap: 22 }}
-      >
-        <TemplateList
-          title="By Vibers Club"
-          hint="Our favourite ways to spend a few days."
-          plans={clubTemplates}
-          onUse={use}
-        />
-        <TemplateList
-          title="By other Vibers"
-          hint="Plans Vibers have shared from their own trips."
-          plans={viberTemplates}
-          onUse={use}
-        />
-      </aside>
+          {mine.length > 1 && (
+            <div className={s.chips} role="group" aria-label="My plans">
+              {mine.map((it) => (
+                <button
+                  key={it.id}
+                  type="button"
+                  className={s.chip}
+                  aria-pressed={open?.id === it.id}
+                  onClick={() => setOpenId(it.id)}
+                >
+                  {it.title}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {open ? (
+            <PlanEditor plan={open} />
+          ) : (
+            <div className={s.empty}>
+              <p className={s.h3} style={{ color: "var(--ink)" }}>
+                Your itinerary is missing a few people.
+              </p>
+              <p>
+                Start your own below, or borrow a plan from Vibers Club or
+                another Viber.
+              </p>
+            </div>
+          )}
+
+          <form
+            className={`${s.card} ${s.create}`}
+            style={{ padding: 16 }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              const it = actions.createItinerary(title, days);
+              setOpenId(it.id);
+              setTitle("");
+              toast(`"${it.title}" created. Add your first stop.`);
+            }}
+          >
+            <div>
+              <label className={s.label} htmlFor="it-title">
+                Create your own
+              </label>
+              <input
+                id="it-title"
+                className={s.field}
+                placeholder="My Manali trip"
+                value={title}
+                maxLength={60}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className={s.label} htmlFor="it-days">
+                Days
+              </label>
+              <input
+                id="it-days"
+                className={s.field}
+                type="number"
+                min={1}
+                max={14}
+                value={days}
+                onChange={(e) => setDays(Number(e.target.value) || 1)}
+              />
+            </div>
+            <button type="submit" className={s.btn}>
+              <Icon name="plus" size={16} /> Create
+            </button>
+          </form>
+        </section>
+      </div>
     </div>
   );
 }
 
-function TemplateList({
-  title,
-  hint,
-  plans,
-  onUse,
-}: {
-  title: string;
-  hint: string;
-  plans: Plan[];
-  onUse: (p: Plan) => void;
-}) {
+/**
+ * Plans to start from, by Vibers Club and by other Vibers, as a row of photographs: hover, tap or
+ * focus one to open it, and its details and "Use this plan" appear below.
+ */
+function TemplateGallery({ onUse }: { onUse: (p: Plan) => void }) {
+  const mounted = useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  );
+  const [index, setIndex] = useState(0);
+  const items = useMemo(
+    () =>
+      templates.map((p) => {
+        const first = p.days[0]?.stops[0]?.placeId ?? "";
+        return {
+          image: placePhoto(first) || (mounted ? landscape(p.title) : ""),
+          fallback: mounted ? landscape(p.title) : undefined,
+          label: p.title,
+          alt: `${p.title}: ${placeName(first)}`,
+        };
+      }),
+    [mounted],
+  );
+  const p = templates[index] ?? templates[0];
+  const author = viberById[p.by];
+  const stops = p.days.flatMap((d) => d.stops);
   return (
-    <div>
-      <h3 className={s.h3}>{title}</h3>
-      <p className={`${s.muted} ${s.small}`} style={{ margin: "2px 0 10px" }}>
-        {hint}
-      </p>
-      <ul
-        className={s.mine}
-        style={{ listStyle: "none", margin: 0, padding: 0 }}
-      >
-        {plans.map((p) => {
-          const author = viberById[p.by];
-          const stops = p.days.flatMap((d) => d.stops);
-          return (
-            <li key={p.id} className={`${s.card} ${s.template}`}>
-              <div className={s.row}>
-                {author ? (
-                  <Photo
-                    src={author.photoUrl?.replace(/w=\d+/, "w=96")}
-                    name={author.name}
-                    position={author.photoPosition}
-                    className={s.avatar}
-                  />
-                ) : (
-                  <span
-                    className={s.avatar}
-                    style={{
-                      display: "grid",
-                      placeItems: "center",
-                      background: "var(--color-moss)",
-                      color: "var(--color-sand)",
-                    }}
-                    aria-hidden="true"
-                  >
-                    <Icon name="spark" size={16} />
-                  </span>
-                )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className={s.miniName}>{p.title}</p>
-                  <p className={`${s.muted} ${s.small}`}>
-                    {author ? `by ${firstName(author)}` : "by Vibers Club"} ·{" "}
-                    {p.days.length} {p.days.length === 1 ? "day" : "days"} ·{" "}
-                    {stops.length} stops
-                  </p>
-                </div>
-                {p.sample && <SampleTag />}
-              </div>
-              <p className={s.small}>{p.summary}</p>
-              <p className={s.templateStops}>
-                {stops.map((st) => placeName(st.placeId)).join(" → ")}
-              </p>
-              <div>
-                <button
-                  type="button"
-                  className={s.ghost}
-                  onClick={() => onUse(p)}
-                >
-                  Use this plan
-                </button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+    <section aria-labelledby="templates-title">
+      <div className={s.sectionHead}>
+        <div>
+          <h2 id="templates-title" className={s.h2}>
+            Start from a plan
+          </h2>
+          <p className={`${s.muted} ${s.small}`} style={{ margin: "4px 0 0" }}>
+            Ways to spend a few days, by Vibers Club and by Vibers who have done
+            them.
+          </p>
+        </div>
+      </div>
+      <div className={s.accordion}>
+        <AccordionGallery
+          items={items}
+          defaultIndex={0}
+          ariaLabel="Itinerary templates"
+          onChange={setIndex}
+          height={380}
+          gap={10}
+          radius={20}
+          expandRatio={0.5}
+          tilt={4}
+          parallax={0.35}
+          grayscale={false}
+          overlayColor="#1f0c11"
+          accentColor="#b98a95"
+          textColor="#f3ebdd"
+          trigger="hover"
+        />
+      </div>
+      <article className={`${s.card} ${s.templateDetail}`} aria-live="polite">
+        <div className={s.row}>
+          {author ? (
+            <Photo
+              src={author.photoUrl?.replace(/w=\d+/, "w=96")}
+              name={author.name}
+              position={author.photoPosition}
+              className={s.avatar}
+            />
+          ) : (
+            <span className={`${s.avatar} ${s.clubMark}`} aria-hidden="true">
+              <Icon name="spark" size={16} />
+            </span>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 className={s.templateTitle}>{p.title}</h3>
+            <p className={`${s.muted} ${s.small}`}>
+              {author ? `by ${firstName(author)}` : "by Vibers Club"} ·{" "}
+              {p.days.length} {p.days.length === 1 ? "day" : "days"} ·{" "}
+              {stops.length} stops
+            </p>
+          </div>
+          {p.sample && <SampleTag />}
+        </div>
+        <p className={s.templateSummary}>{p.summary}</p>
+        <p className={s.templateStops}>
+          {stops.map((st) => placeName(st.placeId)).join(" → ")}
+        </p>
+        <div>
+          <button type="button" className={s.btn} onClick={() => onUse(p)}>
+            Use this plan
+          </button>
+        </div>
+      </article>
+    </section>
   );
 }
 

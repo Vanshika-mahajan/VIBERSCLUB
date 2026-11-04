@@ -156,7 +156,7 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
         <li className="pb-2 text-center text-xs text-muted">You connected. Meet in public places, and tell someone your plans.</li>
         {list.map((m) => (
           <li key={m.id} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-            <span className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-brand text-white" : "bg-sand text-ink"}`}>{m.text}</span>
+            <span className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-brand text-ink" : "bg-sand text-ink"}`}>{m.text}</span>
           </li>
         ))}
         <li ref={end} aria-hidden="true" />

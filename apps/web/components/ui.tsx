@@ -112,7 +112,7 @@ export function Toaster() {
   return (
     <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[90] mx-auto grid w-[min(520px,92vw)] gap-2 md:bottom-6">
       {list.map((t) => (
-        <div key={t.id} className="rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-white shadow-soft">
+        <div key={t.id} className="rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-ink shadow-soft">
           {t.text}
         </div>
       ))}

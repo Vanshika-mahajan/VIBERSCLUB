@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
-/* Vibers Club look: Winewood Whisper (2026-11-04). Burgundy is the identity (Mulberry Wine for brand,
-   Black Cherry for depth and text), forest green is the second world (Shadowed Ivy, Mossed Green), and
-   Plum Bloom and Dusky Leaf are kept for interactive accents. Pages sit on warm light neutrals mixed from
-   the palette, so the dark colours stay special. Dusky Leaf never carries text on a dark surface (under
-   3:1); every text pairing here is at least 4.5:1.
+/* Vibers Club look: Winewood Whisper, dark (2026-11-04). A private travel club at night: the page is a
+   deep Black Cherry, surfaces lift in small wine steps (canvas, surface, raised), forest green comes in
+   for places and nature, and warm ivory and champagne carry the type instead of pure white.
+   Mulberry marks what is selected or active, Plum and Moss are small interaction accents, Dusky Leaf is
+   for quiet details only (never text on dark). Every text pairing is at least 4.5:1.
    `static` emits every token as a CSS variable, so CSS modules and canvas code can read them too.
    No apostrophes in comments inside this block: Tailwind drops every token after one. */
 @theme static {
@@ -16,70 +16,89 @@
   --color-moss: #2f4736;
   --color-leaf: #586759;
 
-  /* brand: Mulberry for filled buttons, the nav and links; Black Cherry when pressed or deeper */
+  /* surfaces, deepest first: recess (wells, inputs), canvas (the page), surface (cards), raised (hover, menus) */
+  --color-recess: #170a0e;
+  --color-canvas: #1f0c11;
+  --color-surface: #2a1016;
+  --color-raised: #34161d;
+  --color-sand: #2e141a;
+  /* brand: Mulberry fills for active and selected things; brand-ink is its readable light partner */
   --color-brand: #51202c;
-  --color-brand-hover: #2a1016;
+  --color-brand-hover: #5e2834;
   --color-brand-deep: #2a1016;
-  /* accent: Plum for hover, selected chips and the moments that matter (like, join, post) */
-  --color-accent: #6b3543;
-  --color-accent-hover: #51202c;
-  --color-accent-wash: #f1e4e5;
-  /* rose: a light Plum for decoration only (dots, underlines, glows), never text */
-  --color-rose: #b88792;
-  --color-rose-wash: #f1e4e5;
-  /* forest: the second world, for immersive bands, place heroes and the cards on them */
+  --color-brand-ink: #e2c2c8;
+  /* the main call to action: champagne, set in Black Cherry */
+  --color-cta: #eadcc6;
+  --color-cta-hover: #f4ebdd;
+  --color-on-cta: #2a1016;
+  /* accent: a light Plum for text and icons, Mulberry wash behind selected chips */
+  --color-accent: #d3a9b2;
+  --color-accent-hover: #e2c2c8;
+  --color-accent-wash: #51202c;
+  --color-rose: #b98a95;
+  --color-rose-wash: #3a1820;
+  /* forest: the second world, for places, nature and the cards on them */
   --color-forest: #18231d;
   --color-forest-surface: #2f4736;
   --color-support: #586759;
-  /* mist: pale greens mixed from Dusky Leaf, for quiet fills and alternate sections */
-  --color-mist: #e4e8e1;
-  --color-mist-deep: #c9d2c6;
-  /* surfaces: warm ivory with a trace of Mulberry */
-  --color-canvas: #f6f1eb;
-  --color-surface: #fbf8f4;
-  --color-raised: #fdfbf8;
-  --color-sand: #ede3dc;
-  /* text and lines on light */
-  --color-ink: #2a1016;
-  --color-ink2: #42262d;
-  --color-muted: #5e4a4e;
-  --color-silver: #a39498;
-  --color-line: rgba(42, 16, 22, 0.12);
-  --color-line2: rgba(42, 16, 22, 0.2);
-  /* text on dark */
-  --color-on-dark: #f6f1eb;
+  --color-mist: #1f2d25;
+  --color-mist-deep: #2f4736;
+  /* type: ivory headings, champagne supporting text, warm stone for metadata */
+  --color-ink: #f3ebdd;
+  --color-ink2: #e3d3bc;
+  --color-muted: #b5a49a;
+  --color-silver: #6e5a5e;
+  --color-line: rgba(243, 235, 221, 0.09);
+  --color-line2: rgba(243, 235, 221, 0.17);
+  --color-on-dark: #f3ebdd;
   --color-on-wine: #e6c3c9;
   --color-on-forest: #c9d2c6;
-  /* status, warmed to sit with the palette */
-  --color-ok: #2f6a45;
-  --color-warn: #8a5a12;
-  --color-danger: #a3231c;
-  --color-danger-hover: #861c16;
-  --color-focus: #6b3543;
+  /* status, softened for a dark page */
+  --color-ok: #9cc3a5;
+  --color-warn: #e0b872;
+  --color-danger: #e07a72;
+  --color-danger-hover: #ea9a93;
+  --color-danger-fill: #8e2b26;
+  --color-focus: #d3a9b2;
 
   --font-sans:
     "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
-  /* shadows are tinted with Black Cherry, never blue-grey */
+  /* shadows: deep and soft, with a hairline of light on top so surfaces read as lifted */
   --shadow-soft:
-    0 18px 50px -22px rgba(42, 16, 22, 0.32), 0 2px 6px rgba(42, 16, 22, 0.05);
+    0 24px 60px -28px rgba(8, 2, 4, 0.75),
+    inset 0 1px 0 rgba(243, 235, 221, 0.05);
   --shadow-card:
-    0 10px 30px -20px rgba(42, 16, 22, 0.36), 0 1px 2px rgba(42, 16, 22, 0.04);
+    0 16px 40px -26px rgba(8, 2, 4, 0.8),
+    inset 0 1px 0 rgba(243, 235, 221, 0.04);
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
-  background: var(--color-canvas);
+  /* depth, not flatness: Black Cherry light from above, a breath of forest from below */
+  background:
+    radial-gradient(
+      110% 55% at 50% -12%,
+      rgba(81, 32, 44, 0.55),
+      transparent 62%
+    ),
+    radial-gradient(
+      70% 45% at 100% 105%,
+      rgba(24, 35, 29, 0.7),
+      transparent 70%
+    ),
+    var(--color-canvas);
+  background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--color-mist);
+  background: var(--color-mulberry);
   color: var(--color-ink);
 }
 
@@ -90,54 +109,57 @@ body {
 }
 
 @layer components {
+  /* a curated card: a wine surface, a hairline border, lifted a step on hover */
   .card {
     @apply rounded-3xl border border-line bg-surface shadow-card;
   }
   .chip {
-    @apply inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-sm font-bold whitespace-nowrap text-ink2;
+    @apply inline-flex h-8 items-center gap-1.5 rounded-full border border-line2 bg-transparent px-3 text-sm font-semibold whitespace-nowrap text-ink2;
   }
   button.chip {
-    @apply cursor-pointer transition hover:border-brand/35 hover:text-brand;
+    @apply cursor-pointer transition duration-300 hover:border-rose/60 hover:text-ink;
   }
+  /* selected: Mulberry, the club colour for "this one" */
   .chip[aria-pressed="true"],
   .chip[aria-selected="true"] {
-    @apply border-brand/25 bg-accent-wash text-brand;
+    @apply border-brand bg-brand text-ink;
   }
+  /* the main action: champagne set in Black Cherry */
   .btn {
-    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-brand px-5 font-extrabold text-white transition hover:bg-brand-hover disabled:pointer-events-none disabled:opacity-45;
+    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-cta px-5 font-bold tracking-[0.01em] text-on-cta transition duration-300 hover:bg-cta-hover active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45;
   }
-  /* the warm call to action: one per screen, for discovering people */
+  /* the warm call to action, for people: Mulberry with an ivory label */
   .btn-accent {
-    @apply bg-accent shadow-[0_10px_24px_-12px_rgba(107,53,67,0.7)] hover:bg-accent-hover;
+    @apply border border-rose/25 bg-brand text-ink hover:bg-brand-hover;
   }
   .btn-danger {
-    @apply bg-danger hover:bg-danger-hover;
+    @apply bg-danger-fill text-ink hover:bg-danger-fill/85;
   }
   .btn-ghost {
-    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-line2 bg-surface px-5 font-extrabold text-ink transition hover:border-brand hover:text-brand disabled:pointer-events-none disabled:opacity-45;
+    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-line2 bg-transparent px-5 font-bold text-ink transition duration-300 hover:border-rose/60 hover:bg-raised active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45;
   }
   .btn-sm {
     @apply h-9 px-4 text-sm;
   }
   .kicker {
-    @apply text-xs font-extrabold tracking-[0.12em] text-muted uppercase;
+    @apply text-[0.7rem] font-bold tracking-[0.2em] text-ink2/80 uppercase;
   }
   .link {
-    @apply font-bold text-brand decoration-rose decoration-2 underline-offset-4 hover:underline;
+    @apply font-semibold text-brand-ink decoration-rose/60 decoration-1 underline-offset-4 hover:underline;
   }
   .field {
-    @apply w-full rounded-xl border border-line2 bg-raised px-3 py-2.5 outline-none focus:border-brand focus:ring-3 focus:ring-brand/15;
+    @apply w-full rounded-xl border border-line2 bg-recess px-3 py-2.5 text-ink outline-none placeholder:text-muted/80 focus:border-rose/70 focus:ring-3 focus:ring-rose/15;
   }
   .field[aria-invalid="true"] {
     @apply border-danger/60 focus:border-danger focus:ring-danger/15;
   }
   .display {
-    @apply font-display font-semibold tracking-[-0.025em];
+    @apply font-display font-medium tracking-[-0.02em] text-ink;
     font-optical-sizing: auto;
   }
-  /* one word in a headline, set in italic terracotta */
+  /* one word in a headline, set in italic light plum */
   .accent-word {
-    @apply font-display font-medium text-accent italic;
+    @apply font-display font-normal text-accent italic;
   }
 }
 

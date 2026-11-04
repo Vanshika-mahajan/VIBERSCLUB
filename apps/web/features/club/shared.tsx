@@ -53,6 +53,101 @@ export function Photo({
   );
 }
 
+const portraits = new Map<string, string>();
+/**
+ * A drawn portrait for a Viber without a usable photo, for the WebGL galleries (which need an image):
+ * initials in the serif on a wine or forest ground. Browser only; empty on the server.
+ */
+export function portrait(name: string): string {
+  if (typeof document === "undefined") return "";
+  const hit = portraits.get(name);
+  if (hit) return hit;
+  const c = document.createElement("canvas");
+  c.width = 600;
+  c.height = 780;
+  const g = c.getContext("2d");
+  if (!g) return "";
+  const forest =
+    [...name].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 2 === 0;
+  const ground = g.createLinearGradient(0, 0, 600, 780);
+  ground.addColorStop(0, forest ? "#2f4736" : "#51202c");
+  ground.addColorStop(1, forest ? "#18231d" : "#2a1016");
+  g.fillStyle = ground;
+  g.fillRect(0, 0, 600, 780);
+  const light = g.createRadialGradient(430, 170, 10, 430, 170, 430);
+  light.addColorStop(0, "rgba(185, 138, 149, 0.32)");
+  light.addColorStop(1, "rgba(185, 138, 149, 0)");
+  g.fillStyle = light;
+  g.fillRect(0, 0, 600, 780);
+  g.fillStyle = "rgba(243, 235, 221, 0.88)";
+  g.font = 'italic 300 190px "Fraunces Variable", Georgia, serif';
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillText(initials(name), 300, 400);
+  const url = c.toDataURL("image/jpeg", 0.88);
+  portraits.set(name, url);
+  return url;
+}
+
+/**
+ * A drawn valley for a place or plan without a usable photo: ridges in the palette under a dusk sky,
+ * varied by the name. Browser only; empty on the server.
+ */
+export function landscape(name: string): string {
+  if (typeof document === "undefined") return "";
+  const key = `land:${name}`;
+  const hit = portraits.get(key);
+  if (hit) return hit;
+  const c = document.createElement("canvas");
+  c.width = 900;
+  c.height = 1100;
+  const g = c.getContext("2d");
+  if (!g) return "";
+  let seed = [...name].reduce((sum, ch) => sum * 31 + ch.charCodeAt(0), 7);
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed & 0xffff) / 0xffff;
+  };
+  const sky = g.createLinearGradient(0, 0, 0, 1100);
+  sky.addColorStop(0, "#2a1016");
+  sky.addColorStop(0.55, "#51202c");
+  sky.addColorStop(1, "#6b3543");
+  g.fillStyle = sky;
+  g.fillRect(0, 0, 900, 1100);
+  const ridges = ["#6b3543", "#586759", "#2f4736", "#18231d"];
+  ridges.forEach((color, i) => {
+    const base = 520 + i * 150;
+    g.beginPath();
+    g.moveTo(0, 1100);
+    g.lineTo(0, base);
+    for (let x = 0; x <= 900; x += 90)
+      g.lineTo(x, base - rand() * (180 - i * 30));
+    g.lineTo(900, 1100);
+    g.closePath();
+    g.globalAlpha = 0.55 + i * 0.15;
+    g.fillStyle = color;
+    g.fill();
+  });
+  g.globalAlpha = 1;
+  const url = c.toDataURL("image/jpeg", 0.86);
+  portraits.set(key, url);
+  return url;
+}
+
+let webgl2: boolean | undefined;
+/** Whether this browser can draw the WebGL2 galleries (false on the server) */
+export function canUseWebGL2(): boolean {
+  if (typeof document === "undefined") return false;
+  if (webgl2 === undefined) {
+    try {
+      webgl2 = !!document.createElement("canvas").getContext("webgl2");
+    } catch {
+      webgl2 = false;
+    }
+  }
+  return webgl2;
+}
+
 export function SampleTag() {
   return <span className={s.sample}>Sample</span>;
 }

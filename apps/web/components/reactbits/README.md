@@ -22,3 +22,10 @@ but must not sell or redistribute the components themselves.
 | Component | From | Used in |
 | --- | --- | --- |
 | SplitText | TextAnimations/SplitText | /lab (landing hero next) |
+- `CircularGallery` (JS + CSS): Community, the Vibers to like, pass or save.
+- `CircularCarousel` (JS + CSS): Today, Vibers like you.
+- `AccordionGallery` (JS + CSS): My itinerary, plans to start from.
+- `OptionWheel` (JS + CSS): the club home sections, in the hero.
+- `ScrollStack` (JS + CSS): Explore, places in Manali.
+
+The five above are the JavaScript + CSS variant, each with a small `.d.ts` beside it for TypeScript.

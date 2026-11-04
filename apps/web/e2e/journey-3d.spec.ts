@@ -91,6 +91,6 @@ test("Enter the app opens the club home", async ({ page }) => {
   await page.getByRole("link", { name: "Enter the app" }).click();
   await expect(page).toHaveURL(/\/home$/);
   await expect(
-    page.getByRole("tablist", { name: "Vibers Club" }),
+    page.getByRole("listbox", { name: "Vibers Club sections" }),
   ).toBeVisible();
 });

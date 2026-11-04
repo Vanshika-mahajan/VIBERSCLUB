@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import ScrollStack, {
+  ScrollStackItem,
+} from "@/components/reactbits/ScrollStack";
 import { interpret } from "@/features/discover/interpret";
 import { areas, interestById } from "@/lib/taxonomy";
 import { places, type PlaceKind } from "@/lib/demo/data";
@@ -115,48 +118,67 @@ export function Explore() {
             Tap the heart on a place to keep it here.
           </div>
         ) : (
-          <ul
-            className={s.grid}
-            style={{ listStyle: "none", margin: 0, padding: 0 }}
+          // the places pile up as you scroll: each one settles on the last, like pages of a travel journal
+          <ScrollStack
+            key={kind}
+            className={s.stack}
+            useWindowScroll
+            smoothScroll={false}
+            itemDistance={60}
+            itemStackDistance={18}
+            stackPosition="12%"
+            itemScale={0.035}
+            baseScale={0.86}
+            dimAmount={0.22}
+            holdDistance={120}
           >
-            {shown.map((p) => {
+            {shown.map((p, i) => {
               const on = savedPlaces.includes(p.id);
               return (
-                <li key={p.id} className={`${s.card} ${s.placeCard}`}>
-                  <Photo src={p.photoUrl} className={s.placePhoto}>
+                <ScrollStackItem key={p.id} itemClassName={s.stackCard}>
+                  <Photo
+                    src={p.photoUrl?.replace(/w=\d+/, "w=1100")}
+                    className={s.stackPhoto}
+                  >
                     <span className={s.pill}>{p.kind}</span>
-                    <button
-                      type="button"
-                      className={s.heart}
-                      aria-pressed={on}
-                      aria-label={
-                        on ? `Remove ${p.name} from saved` : `Save ${p.name}`
-                      }
-                      onClick={() =>
-                        toast(
-                          actions.toggleSavePlace(p.id)
-                            ? `${p.name} saved.`
-                            : `${p.name} removed.`,
-                        )
-                      }
-                    >
-                      <Icon name="heart" size={18} />
-                    </button>
                   </Photo>
-                  <div className={s.placeBody}>
-                    <h3 className={s.h3}>{p.name}</h3>
+                  <div className={s.stackBody}>
+                    <p className={s.stackIndex}>
+                      {String(i + 1).padStart(2, "0")} /{" "}
+                      {String(shown.length).padStart(2, "0")}
+                    </p>
+                    <h3 className={s.stackName}>{p.name}</h3>
                     <p className={`${s.muted} ${s.small}`}>
                       <Icon name="pin" size={13} /> {areas[p.area].label}
                     </p>
-                    <p className={s.small}>{p.blurb}</p>
+                    <p className={s.stackBlurb}>{p.blurb}</p>
                     <p className={s.tip}>
-                      <b>Tip:</b> {p.tip}
+                      <b>Local tip</b> {p.tip}
                     </p>
+                    <div className={s.stackActions}>
+                      <button
+                        type="button"
+                        className={on ? s.btn : s.ghost}
+                        aria-pressed={on}
+                        aria-label={
+                          on ? `Remove ${p.name} from saved` : `Save ${p.name}`
+                        }
+                        onClick={() =>
+                          toast(
+                            actions.toggleSavePlace(p.id)
+                              ? `${p.name} saved.`
+                              : `${p.name} removed.`,
+                          )
+                        }
+                      >
+                        <Icon name="heart" size={16} /> {on ? "Saved" : "Save"}
+                      </button>
+                    </div>
                   </div>
-                </li>
+                </ScrollStackItem>
               );
             })}
-          </ul>
+          </ScrollStack>
         )}
       </section>
 

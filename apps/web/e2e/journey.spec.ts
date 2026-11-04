@@ -164,10 +164,9 @@ test.describe("after Manali", () => {
     await expect(page).toHaveURL(/\/home\?tab=community&vibe=/, {
       timeout: 8000,
     });
-    await expect(page.getByRole("tab", { name: "Community" })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
+    await expect(
+      page.getByRole("option", { name: "Community" }),
+    ).toHaveAttribute("aria-selected", "true");
     await expect(
       page.getByText(
         "Picked for “Looking for people who love mountain adventures”.",

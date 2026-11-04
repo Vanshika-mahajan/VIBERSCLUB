@@ -7,7 +7,7 @@
   --night-green: #0f2418;
   /* the night keeps its own gold; the day takes the club palette (below) */
   --gold: #e7bc69;
-  --forest: var(--color-ink);
+  --forest: #2a1016; /* day text: Black Cherry on the bright meadow */
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -297,9 +297,17 @@
   visibility: hidden;
 }
 /* once the 3D world is showing, the identical CSS scene steps aside after the cross-fade */
-.journey[data-world="3d"] .scene {
+/* The CSS still stays under the 3D canvas until we are through the door: if the browser ever drops a
+   frame of the canvas (Safari did, for about a second after Enter), the same picture shows instead of
+   black. Hidden from the stars on, where the cosmos is drawn edge to edge. */
+.journey[data-world="3d"]:not([data-phase="idle"]):not([data-phase="opening"])
+  .scene {
   visibility: hidden;
-  transition: visibility 0s 0.7s;
+}
+/* behind the canvas it is only a safety net: hold it still so it costs nothing */
+.journey[data-world="3d"] .scene,
+.journey[data-world="3d"] .scene * {
+  animation-play-state: paused !important;
 }
 .worldScrim {
   display: none;
@@ -419,8 +427,8 @@
 /* ---------- day: the same place in warm, hazy sunlight (the Landscape look) ---------- */
 
 .journey[data-mode="day"] {
-  --gold: var(--color-plum);
-  background: var(--color-sand);
+  --gold: #6b3543;
+  background: #ede3dc;
 }
 .journey[data-mode="day"] .headline {
   color: var(--forest);
@@ -428,14 +436,14 @@
 }
 .journey[data-mode="day"] .brand,
 .journey[data-mode="day"] .skipLink {
-  color: var(--color-ink);
+  color: #2a1016;
   text-shadow: 0 1px 12px rgba(255, 248, 230, 0.6);
 }
 .journey[data-mode="day"] .skipLink {
   text-decoration-color: rgba(42, 16, 22, 0.4);
 }
 .journey[data-mode="day"] .mode {
-  color: var(--color-ink);
+  color: #2a1016;
   border-color: rgba(42, 16, 22, 0.3);
   background: rgba(255, 248, 230, 0.4);
 }
@@ -517,7 +525,7 @@
   }
 }
 .journey[data-mode="day"] .tagline {
-  color: var(--color-ink);
+  color: #2a1016;
   text-shadow: 0 1px 18px rgba(255, 248, 230, 0.8);
 }
 .line {
@@ -664,16 +672,16 @@
 .journey[data-mode="day"] .chip {
   border-color: rgba(42, 16, 22, 0.16);
   background: rgba(246, 241, 235, 0.66);
-  color: var(--color-ink);
+  color: #2a1016;
 }
 .journey[data-mode="day"] .chip:hover:not(:disabled) {
-  border-color: var(--color-plum);
+  border-color: #6b3543;
   background: rgba(246, 241, 235, 0.88);
 }
 .journey[data-mode="day"] .chip[aria-pressed="true"] {
-  border-color: var(--color-plum);
-  background: var(--color-plum);
-  color: var(--color-on-dark);
+  border-color: #6b3543;
+  background: #6b3543;
+  color: #f6f1eb;
 }
 
 .actions {

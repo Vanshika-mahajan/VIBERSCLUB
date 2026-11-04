@@ -30,13 +30,13 @@ export function AppNav() {
           aria-current={active ? "page" : undefined}
           className={`relative flex h-14 items-center px-3 text-sm md:h-auto md:rounded-xl md:px-4 md:py-3 ${
             active
-              ? "font-extrabold text-brand before:absolute before:inset-x-3 before:top-0 before:h-0.5 before:rounded-full before:bg-rose md:bg-accent-wash/70 md:before:hidden"
-              : "font-semibold text-muted hover:text-brand md:hover:bg-sand"
+              ? "font-extrabold text-brand-ink before:absolute before:inset-x-3 before:top-0 before:h-0.5 before:rounded-full before:bg-rose md:bg-accent-wash/70 md:before:hidden"
+              : "font-semibold text-muted hover:text-brand-ink md:hover:bg-sand"
           }`}
         >
           {label}
           {href === "/chats" && requests > 0 && (
-            <span className="ml-1.5 inline-grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[0.68rem] font-extrabold text-white" aria-label={`${requests} new requests`}>
+            <span className="ml-1.5 inline-grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[0.68rem] font-extrabold text-ink" aria-label={`${requests} new requests`}>
               {requests}
             </span>
           )}
@@ -51,7 +51,7 @@ export function AppNav() {
     >
       <Link href="/home" className="hidden items-center gap-2.5 px-5 py-6 md:flex">
         <Mark />
-        <span className="display text-xl text-brand">Vibers Club</span>
+        <span className="display text-xl text-brand-ink">Vibers Club</span>
       </Link>
       <ul className="flex justify-around md:flex-col md:gap-1 md:px-3">
         {navItems.map((i) => link(i.href, i.label))}
