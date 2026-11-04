@@ -129,6 +129,7 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
     const cv = canvasRef.current;
     if (!cv || !universe) return;
     const sp = new Sphere(cv, {
+      dark: true,
       reduced: calmRef.current,
       onPick: (it) => pickRef.current(it),
       onHover: (it, p) => setTip(it && p && it.kind !== "world" ? { it, x: p.x, y: p.y } : null),

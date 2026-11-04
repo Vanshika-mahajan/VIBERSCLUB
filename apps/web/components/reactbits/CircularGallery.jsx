@@ -1101,7 +1101,11 @@ const CircularGallery = ({
               aria-label={`${item.text || item.alt || 'Image'}, ${index + 1} of ${count}`}
               aria-current={index === active ? 'true' : undefined}
               onFocus={() => engineRef.current?.focus(index)}
-              onClick={() => engineRef.current?.open(index)}
+              onClick={() => {
+                // Vibers Club: with openOnClick off, Enter on a card reports the click like a tap does
+                if (!openOnClick) onItemClick?.(list[index], index);
+                else engineRef.current?.open(index);
+              }}
             >
               {item.text || item.alt || `Image ${index + 1}`}
             </button>

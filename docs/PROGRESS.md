@@ -14,6 +14,16 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the restructure, Phase 2: Discover (2026-11-04)
+- Discover is pure black on its page only: `discover.module.css` tokens set to black-page values, `sphere.ts` has a `dark` option (black ground, wine glow, ivory orbits), and the Community section uses `.night` in `club.module.css`. The universe keeps light paper (`universe.module.css` restores its tokens).
+- `features/club/ProfileOverview.tsx`: a click (or Enter) on a gallery card, or "Open <name>", opens the Viber's overview in place: photo, name, role, travel status and area, what you share, bio, hashtags, what they are here for, View full profile and Connect (a like; mutual-only chat still applies). `CircularGallery.jsx` local edit: Enter on a card reports the click when openOnClick is off.
+- `app/vibers/[id]` + `features/vibers/FullProfile.tsx`: the full profile page.
+- Removed (approved): `EventsScreen`, `ExploreScreen`, `OptionWheel`; their unit tests now cover the club Events and Explore.
+- Gotcha: with cacheComponents, a page you leave stays mounted but hidden, so an open modal `<dialog>` would block the next page. Dialogs close in their effect cleanup.
+
+## Tests executed (restructure Phase 2, 2026-11-04, in the cloud workspace)
+Vitest 84 passed. E2E all passed except the two "API OK" checks (need the API running). Typecheck and ESLint clean.
+
 ## Files created or modified in the restructure, Phase 1: navigation (2026-11-04)
 ARPIT's restructure brief, six phases with approval after each. Plan: https://claude.ai/artifact/2rjm2AcyDcs4482w88S5xY. Phase 1 approved and built:
 - `components/AppNav.tsx`, `components/reactbits/PillNav.*`: a bottom pill bar on every screen size with Home, Discover and Explore; the sidebar is gone. `components/ProfileMenu.tsx`: avatar at the top right with Your profile, Chats (request count) and Events.
@@ -21,7 +31,6 @@ ARPIT's restructure brief, six phases with approval after each. Plan: https://cl
 - Discover: the sphere is now the first screen of the page (no longer fixed), with Community below; the Manali dive lands on `/discover?vibe=`.
 - Explore (`features/explore/ExploreHub.tsx`): two sections, Explore (places with kind and area filters, day plans, posts like yours) and Itinerary (`?section=itinerary`).
 - Events: `/events` uses the club Events list (one-tap join; now hides blocked hosts).
-- No longer used, kept until deletion is approved: `features/events/EventsScreen.tsx`, `features/explore/ExploreScreen.tsx`, `components/reactbits/OptionWheel.*`.
 
 ## Tests executed (restructure Phase 1, 2026-11-04, in the cloud workspace)
 Vitest 84 passed. E2E 74 of 76 passed; the two "API OK" checks need the API running. Typecheck and ESLint clean.

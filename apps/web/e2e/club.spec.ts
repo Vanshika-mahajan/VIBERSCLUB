@@ -50,6 +50,43 @@ test("community: like, pass and save for later", async ({ page }) => {
   await expect.poll(name).not.toBe(second);
 });
 
+test("community: a Viber's overview opens in place, then their full profile", async ({
+  page,
+}) => {
+  await page.goto("/discover#community");
+  const front = page.locator(
+    '[aria-roledescription="profile gallery"], [aria-roledescription="card stack"]',
+  );
+  const name = (await front.getAttribute("aria-label"))!.split(/[.,]/)[0];
+  await page.getByRole("button", { name: `Open ${name.split(" ")[0]}` }).click();
+  const overview = page.getByRole("dialog", { name });
+  await expect(overview).toBeVisible();
+  await expect(page).toHaveURL(/\/discover/);
+  for (const h of ["Into", "Here for"])
+    await expect(overview.getByRole("heading", { name: h })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(overview).toBeHidden();
+  await page.getByRole("button", { name: `Open ${name.split(" ")[0]}` }).click();
+  await overview.getByRole("link", { name: "View full profile" }).click();
+  await expect(page).toHaveURL(/\/vibers\//);
+  await expect(page.getByRole("heading", { name, level: 1 })).toBeVisible();
+  const connect = page.getByRole("button", { name: "Connect" });
+  // keep it clear of the pill bar at the foot of the screen
+  await connect.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await connect.click();
+  // liked: either waiting for them, or (when they liked you first) straight into a chat
+  await expect(
+    page.getByText(/^Waiting for /).or(page.getByRole("link", { name: "Open chat" })),
+  ).toBeVisible();
+});
+
+test("Discover is black from the sphere to the community", async ({ page }) => {
+  await page.goto("/discover");
+  const bg = (sel: string) =>
+    page.locator(sel).first().evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(await bg("[data-formed]")).toBe("rgb(0, 0, 0)");
+});
+
 test("events: join and leave", async ({ page }) => {
   await page.goto("/events");
   await page.getByRole("button", { name: "Join", exact: true }).first().click();

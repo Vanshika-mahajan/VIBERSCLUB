@@ -12,7 +12,7 @@ export default function DiscoverPage() {
     <>
       <h1 className="sr-only">Discover Vibers</h1>
       <DiscoverScreen />
-      <section id="community" aria-label="Community" className={`${s.club} scroll-mt-6 pt-10`}>
+      <section id="community" aria-label="Community" className={`${s.club} ${s.night} scroll-mt-6 pt-10`}>
         <Suspense>
           <CommunityFromDoor />
         </Suspense>

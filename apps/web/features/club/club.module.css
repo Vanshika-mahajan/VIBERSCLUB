@@ -1189,3 +1189,277 @@
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+/* ---------- Discover at night: the whole page pure black, surfaces just off black ---------- */
+.night {
+  --color-canvas: #000000;
+  --color-surface: #0e0a0b;
+  --color-raised: #151012;
+  --color-recess: #0a0708;
+  --color-sand: #1a1214;
+  --color-rose-wash: #2a1016;
+  --paper: #000000;
+  --card: #0e0a0b;
+}
+.night::before {
+  background: #000000;
+}
+
+/* ---------- a Viber's overview, opened in place from the gallery ---------- */
+.ov {
+  width: min(960px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100svh - 48px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  color: var(--color-ink);
+  overflow: visible;
+}
+.ov::backdrop {
+  background: rgb(0 0 0 / 0.78);
+  backdrop-filter: blur(6px);
+  animation: ovFade 0.35s ease both;
+}
+.ovCard {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  max-height: calc(100svh - 48px);
+  overflow: hidden;
+  border: 1px solid rgba(243, 235, 221, 0.1);
+  border-radius: 28px;
+  background: #0e0a0b;
+  box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.95);
+  /* the photo grows out of the gallery: from a small card to the whole overview */
+  animation: ovGrow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.ovPhoto {
+  position: relative;
+  min-height: 100%;
+  aspect-ratio: auto;
+  animation: ovZoom 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.ovPhoto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ovShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgb(0 0 0 / 0.65));
+}
+.ovPhotoName {
+  position: absolute;
+  left: 24px;
+  bottom: 18px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  color: #f3ebdd;
+}
+.ovBody {
+  position: relative;
+  overflow-y: auto;
+  padding: clamp(24px, 4vw, 40px);
+  animation: ovRise 0.6s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.ovClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line2);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+.ovClose:hover {
+  background: var(--color-raised);
+}
+.ovClose:focus-visible,
+.ov a:focus-visible,
+.ov button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.ovName {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.05;
+}
+.ovRole {
+  margin: 6px 0 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+}
+.ovFit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--color-brand);
+  color: var(--color-ink);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+.ovFit span {
+  font-weight: 500;
+  color: var(--color-brand-ink);
+}
+.ovBio {
+  margin: 18px 0 0;
+  color: var(--color-ink2);
+  line-height: 1.6;
+}
+.ovH {
+  margin: 22px 0 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.ovTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--color-muted);
+}
+.ovTags [data-shared] {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+.ovSmall {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-ink2);
+}
+.ovActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+.ovActions > * {
+  flex: 1 1 160px;
+}
+.ovDone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--color-raised);
+  color: var(--color-muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+.ovNote {
+  margin: 16px 0 0;
+  font-size: 0.76rem;
+  color: var(--color-silver);
+}
+@keyframes ovGrow {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+    border-radius: 60px;
+  }
+}
+@keyframes ovZoom {
+  from {
+    transform: scale(1.12);
+  }
+}
+@keyframes ovRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes ovFade {
+  from {
+    opacity: 0;
+  }
+}
+@media (max-width: 720px) {
+  .ovCard {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .ovPhoto {
+    min-height: 0;
+    height: 42svh;
+  }
+  .ovBody {
+    overflow: visible;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ovCard,
+  .ovPhoto,
+  .ovBody,
+  .ov::backdrop {
+    animation: none;
+  }
+}
+
+/* ---------- a Viber's full profile page ---------- */
+.fullCard {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  overflow: hidden;
+  border: 1px solid rgba(243, 235, 221, 0.1);
+  border-radius: 28px;
+  background: #0e0a0b;
+}
+.fullCard .ovPhoto {
+  min-height: 520px;
+  animation: none;
+}
+.fullBody {
+  padding: clamp(24px, 4vw, 44px);
+}
+.fullReasons {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-ink2);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+@media (max-width: 720px) {
+  .fullCard {
+    grid-template-columns: 1fr;
+  }
+  .fullCard .ovPhoto {
+    min-height: 0;
+    height: 52svh;
+  }
+}
+.ov .detailsMeta,
+.fullBody .detailsMeta {
+  justify-content: flex-start;
+  margin-right: 48px;
+}
+.ov:focus,
+.ov:focus-visible {
+  outline: none;
+}

@@ -14,6 +14,7 @@ import type { Match, Viber } from "@/features/discover/types";
 import { interestById, areas } from "@/lib/taxonomy";
 import { actions, useDemo } from "@/lib/demo/store";
 import { firstName, viberById } from "@/lib/demo/people";
+import { ProfileOverview } from "./ProfileOverview";
 import { toast } from "@/components/ui";
 import {
   Icon,
@@ -45,10 +46,15 @@ export function Community({ vibe = "" }: { vibe?: string }) {
     verdict: Verdict;
   } | null>(null);
   const [match, setMatch] = useState<Viber | null>(null);
+  // the Viber whose overview is open (from a click on the gallery), by id
+  const [overviewId, setOverviewId] = useState<string | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (match && !dialog.current?.open) dialog.current?.showModal?.();
+    const d = dialog.current;
+    if (match && !d?.open) d?.showModal?.();
+    // leaving the page keeps it alive but hidden; a modal left open would block the next page
+    return () => d?.close();
   }, [match]);
 
   const decide = (m: Match, verdict: Verdict) => {
@@ -94,6 +100,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
     : undefined;
 
   const top = gallery ? current : deck[0];
+  const overview = deck.find((m) => m.viber.id === overviewId);
   const onKey = (e: React.KeyboardEvent) => {
     if (!top) return;
     const verdict = (
@@ -136,6 +143,14 @@ export function Community({ vibe = "" }: { vibe?: string }) {
       >
         <Icon name="bookmark" size={22} />
       </button>
+      <button
+        type="button"
+        className={s.ghost}
+        style={{ alignSelf: "center", whiteSpace: "nowrap" }}
+        onClick={() => setOverviewId(top.viber.id)}
+      >
+        Open {firstName(top.viber)}
+      </button>
     </div>
   );
 
@@ -177,7 +192,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
               className={s.gallery}
               role="group"
               aria-roledescription="profile gallery"
-              aria-label={`${top.viber.name}, ${top.viber.role}. Drag, scroll or use the arrow keys to see the next Viber.`}
+              aria-label={`${top.viber.name}, ${top.viber.role}. Drag, scroll or use the arrow keys to see the next Viber; click or press Enter to open their overview.`}
             >
               <CircularGallery
                 items={items}
@@ -194,12 +209,15 @@ export function Community({ vibe = "" }: { vibe?: string }) {
                 openOnClick={false}
                 snap
                 onActiveChange={setActive}
+                onItemClick={(_item, index) =>
+                  setOverviewId(deck[index]?.viber.id ?? null)
+                }
               />
             </div>
             <ViberDetails match={top} />
             {actionRow}
             <p className={s.hint}>
-              Drag or scroll to browse, then pass, like or save for later
+              Drag or scroll to browse, tap a Viber to open them, then pass, like or save for later
             </p>
           </>
         ) : top ? (
@@ -361,6 +379,20 @@ export function Community({ vibe = "" }: { vibe?: string }) {
           )}
         </div>
       </aside>
+
+      {overview && (
+        <ProfileOverview
+          key={overview.viber.id}
+          match={overview}
+          liked={liked.includes(overview.viber.id)}
+          connection={connections[overview.viber.id]}
+          onConnect={() => {
+            setOverviewId(null);
+            decide(overview, "like");
+          }}
+          onClose={() => setOverviewId(null)}
+        />
+      )}
 
       <dialog
         ref={dialog}
