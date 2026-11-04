@@ -14,6 +14,18 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the first page, milestone 3 (2026-11-04)
+- `public/journey/door-frame.webp` and `door-leaf.webp`: the door split into its frame (with an empty doorway) and the leaf (replaces `door.webp`).
+- `features/journey/scenes/DoorScene.tsx`: two identical stages (behind and in front of the cosmos) on camera rigs; doorway, light, spill on the grass, dusk veil, leaf and seam exposed to the timeline; `freeze()` stops parallax.
+- `features/journey/scenes/CosmosBackdrop.tsx`: midnight sky with a Milky Way band and three depths of CSS stars, seen through the doorway (placeholder for the three.js scene in milestone 4).
+- `features/journey/timelines/door.ts`: the opening timeline (about 4 s) and the reduced-motion version; the cosmos is clipped to the doorway's on-screen rectangle every frame.
+- `features/journey/JourneyScreen.tsx` and `useJourney.ts`: phase advance, Skip intro button (takes focus), Escape to skip, screen-reader announcements.
+- Tests: three new cases in `e2e/journey.spec.ts` (full run to the cosmos, Skip and Escape, reduced motion).
+
+## Tests executed (first page milestone 3, 2026-11-04, in the cloud workspace)
+- Vitest: 73 passed. Typecheck and lint clean.
+- Playwright (phone and desktop): journey, universe, discover, demo and motion specs, 40 passed. Video of the transition reviewed frame by frame on desktop and phone.
+
 ## Files created or modified in the first page, milestone 2 (2026-11-04)
 - `/` is now the cinematic first page (`app/page.tsx` → `features/journey/JourneyScreen.tsx`); the universe moved to `/universe` (`app/universe/page.tsx`), Home in the nav and the brand links point there, and the nav hides on both.
 - `features/journey/useJourney.ts`: phases (idle → opening → cosmos → manali → orbit → settled) and the thought.

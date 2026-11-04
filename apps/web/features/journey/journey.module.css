@@ -22,6 +22,13 @@
   inset: 0;
 }
 
+/* A camera rig: the push-in scales and moves both rigs together. Its origin is set to the doorway in JS. */
+.camera {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
 /* Wider than the screen by 64px (or taller by 36px) so parallax never shows an edge.
    Every layer is placed in % of this stage, so the door stays where the photo expects it. */
 .stage {
@@ -56,7 +63,11 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(60% 55% at 18% 34%, rgba(255, 214, 150, 0.32), transparent 70%);
+  background: radial-gradient(
+    60% 55% at 18% 34%,
+    rgba(255, 214, 150, 0.32),
+    transparent 70%
+  );
   mix-blend-mode: soft-light;
 }
 
@@ -69,6 +80,113 @@
   height: 37.7%;
 }
 
+/* The door leaf inside door-frame.webp, measured once: 17.94% from the left, 12.22% from the top,
+   63.64% wide, 80.23% tall (door-leaf.webp is exactly that crop). The hole, light and leaf all share it. */
+.hole,
+.glow,
+.leaf {
+  position: absolute;
+  left: 17.94%;
+  top: 12.22%;
+  width: 63.64%;
+  height: 80.23%;
+}
+.leaf {
+  transform-origin: 0% 50%;
+  backface-visibility: hidden;
+  z-index: 1;
+}
+/* the leaf darkens as it turns away from the sun */
+.leafShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(40, 20, 30, 0.5),
+    rgba(20, 10, 20, 0.85)
+  );
+  opacity: 0;
+}
+/* the light that pours through the doorway. As we pass through, it opens from the centre outward
+   (--iris grows), so the night appears in the middle while the light rushes past the edges */
+.glow {
+  --iris: -45; /* fully lit until the timeline opens it */
+  opacity: 0;
+  visibility: hidden;
+  background: radial-gradient(70% 55% at 50% 55%, #fffaf0 0%, #ffe9b8 38%, #ffc874 70%, #f3a65a 100%);
+  box-shadow:
+    0 0 40px 14px rgba(255, 214, 140, 0.75),
+    0 0 140px 60px rgba(255, 190, 110, 0.35);
+  mask-image: radial-gradient(
+    closest-side,
+    transparent calc(var(--iris) * 1%),
+    #000 calc(var(--iris) * 1% + 45%)
+  );
+}
+
+/* the light thrown forward onto the grass, widening toward us */
+.spill {
+  position: absolute;
+  left: calc(49.4% - 9%);
+  width: 18%;
+  top: 74.5%;
+  height: 22%;
+  clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 226, 160, 0.9),
+    rgba(255, 200, 120, 0.25) 60%,
+    transparent
+  );
+  mix-blend-mode: screen;
+  filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+}
+/* midnight settles over the meadow as we leave it */
+.dusk {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 60% at 50% 45%, #10183a, #04060f);
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ---------- the cosmos behind the door (milestone 4 adds the sphere here) ---------- */
+
+.cosmos {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  visibility: hidden;
+  clip-path: inset(50%);
+  background: radial-gradient(
+    120% 90% at 50% 40%,
+    #0c1638 0%,
+    #070b1f 45%,
+    #020309 100%
+  );
+}
+/* a soft Milky Way band across the sky, placeholder until the three.js galaxy in milestone 4 */
+.galaxy {
+  position: absolute;
+  inset: -30%;
+  background:
+    radial-gradient(60% 9% at 50% 50%, rgba(160, 185, 255, 0.16), transparent 72%),
+    radial-gradient(42% 5% at 46% 49%, rgba(205, 180, 255, 0.12), transparent 70%),
+    radial-gradient(30% 4% at 56% 52%, rgba(130, 230, 255, 0.1), transparent 70%),
+    radial-gradient(14% 3% at 50% 50%, rgba(255, 235, 200, 0.12), transparent 70%);
+  transform: rotate(-28deg);
+  filter: blur(10px);
+}
+.stars {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -1000px 0 0 -1000px;
+  background: transparent;
+}
+
 /* contact shadow and the long shadow the low sun throws to the right */
 .doorShadow {
   position: absolute;
@@ -77,7 +195,11 @@
   bottom: -2.5%;
   height: 7%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(20, 38, 16, 0.55), transparent);
+  background: radial-gradient(
+    closest-side,
+    rgba(20, 38, 16, 0.55),
+    transparent
+  );
   transform: skewX(-40deg);
   transform-origin: left center;
   filter: blur(4px);
@@ -86,10 +208,10 @@
 /* light leaking through the seam on the latch side: the first hint that something is behind */
 .seam {
   position: absolute;
-  left: 83.4%;
-  top: 10%;
+  left: 81.2%;
+  top: 12.6%;
   width: 0.6%;
-  height: 83%;
+  height: 79.5%;
   border-radius: 2px;
   background: linear-gradient(#fff6d8, #ffd27a 60%, #ffb35c);
   box-shadow:
@@ -98,9 +220,6 @@
   opacity: 0.4;
   z-index: 1;
   mix-blend-mode: screen;
-}
-.door img {
-  z-index: 0;
 }
 
 .mote {
@@ -127,11 +246,53 @@
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(to top, rgba(15, 36, 24, 0.78) 0%, rgba(15, 36, 24, 0.42) 22%, transparent 42%),
+    linear-gradient(
+      to top,
+      rgba(15, 36, 24, 0.78) 0%,
+      rgba(15, 36, 24, 0.42) 22%,
+      transparent 42%
+    ),
     linear-gradient(to bottom, rgba(18, 52, 70, 0.22), transparent 18%);
 }
 
 /* ---------- interface ---------- */
+
+/* Skip takes the app link's place, top right, the moment the journey starts */
+.journey:not([data-phase="idle"]) .skipLink {
+  visibility: hidden;
+}
+.skip {
+  position: absolute;
+  z-index: 2;
+  right: clamp(12px, 3.4vw, 40px);
+  top: max(10px, calc(env(safe-area-inset-top) - 8px));
+  padding: 10px 16px;
+  border: 1px solid rgba(251, 247, 238, 0.35);
+  border-radius: 999px;
+  background: rgba(4, 8, 20, 0.35);
+  color: var(--ivory);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+.skip:hover {
+  border-color: var(--gold);
+}
+.skip:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 .top {
   position: absolute;

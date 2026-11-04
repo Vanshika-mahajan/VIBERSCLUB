@@ -46,3 +46,46 @@ test.describe("with reduced motion", () => {
     expect(await grass.evaluate((el) => getComputedStyle(el).transform)).toBe(a);
   });
 });
+
+test.describe("the door opens", () => {
+  test("a thought opens the door and carries us into the cosmos", async ({ page }) => {
+    await page.goto("/");
+    await page.getByLabel("What’s on your mind?").fill("Planning a spontaneous trip to Manali");
+    await page.keyboard.press("Enter");
+    const stage = page.locator("[data-phase]");
+    await expect(stage).toHaveAttribute("data-phase", "opening");
+    // Skip is offered at once and takes focus
+    await expect(page.getByRole("button", { name: /Skip intro/ })).toBeFocused();
+    // the leaf turns on its hinge
+    await page.waitForTimeout(1800);
+    const turned = await page.locator("[class*=leaf]").first().evaluate((el) => getComputedStyle(el).transform);
+    expect(turned).not.toBe("none");
+    await expect(stage).toHaveAttribute("data-phase", "cosmos", { timeout: 6000 });
+    // the cosmos now fills the screen, the meadow is gone
+    const cosmos = page.locator("[data-cosmos]");
+    await expect(cosmos).toBeVisible();
+    const clip = await cosmos.evaluate((el) => getComputedStyle(el).clipPath);
+    expect(clip === "none" || /inset\(0px( 0px)*\)/.test(clip)).toBe(true);
+  });
+
+  test("Skip and Escape jump straight to the cosmos", async ({ page }) => {
+    await page.goto("/");
+    await page.getByLabel("What’s on your mind?").fill("Hidden cafés in Old Manali");
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+    await page.keyboard.press("Escape");
+    await expect(page.locator("[data-phase]")).toHaveAttribute("data-phase", "cosmos", { timeout: 1500 });
+  });
+});
+
+test.describe("door with reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+  test("the door does not swing; the cosmos fades in", async ({ page }) => {
+    await page.goto("/");
+    await page.getByLabel("What’s on your mind?").fill("Looking for like-minded people to explore with");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("[data-phase]")).toHaveAttribute("data-phase", "cosmos", { timeout: 1500 });
+    const leaf = await page.locator("[class*=leaf]").first().evaluate((el) => getComputedStyle(el).transform);
+    expect(leaf).toBe("none");
+  });
+});

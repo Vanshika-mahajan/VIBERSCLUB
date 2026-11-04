@@ -44,7 +44,12 @@ export function ThoughtInput({ locked, onSubmit }: Props) {
   }
 
   return (
-    <form className={s.thought} onSubmit={submit} data-locked={locked || undefined} noValidate>
+    <form
+      className={s.thought}
+      onSubmit={submit}
+      data-locked={locked || undefined}
+      noValidate
+    >
       <label htmlFor={id} className={s.ask}>
         What&rsquo;s on your mind?
       </label>

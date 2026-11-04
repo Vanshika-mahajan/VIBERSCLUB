@@ -2,42 +2,132 @@
 
 import "@fontsource-variable/fraunces/wght-italic.css";
 import Link from "next/link";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import SplitText from "@/components/reactbits/SplitText";
+import { gsap, useGSAP } from "@/lib/motion/gsap";
+import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
+import { CosmosBackdrop } from "./scenes/CosmosBackdrop";
 import { DoorScene, type DoorSceneHandle } from "./scenes/DoorScene";
 import { ThoughtInput } from "./scenes/ThoughtInput";
-import { useJourney } from "./useJourney";
+import { buildDoorOpening, buildDoorOpeningStill } from "./timelines/door";
+import { useJourney, type Phase } from "./useJourney";
 import s from "./journey.module.css";
 
+/** What a screen reader hears as each scene begins. */
+const ANNOUNCE: Partial<Record<Phase, string>> = {
+  opening: "The door opens.",
+  cosmos: "You step into the cosmos.",
+};
+
 /**
- * The first page. Milestone 2: the door scene and the thought.
- * The stage carries data-phase so CSS and tests can follow the journey.
+ * The first page. The director (useJourney) owns the phase; each scene's timeline is built when
+ * its phase begins and tells the director when it ends. Skip and Escape fast-forward the
+ * running timeline. The stage carries data-phase so CSS and tests can follow along.
  */
 export function JourneyScreen() {
   const journey = useJourney();
+  const { phase, advance } = journey;
+  const root = useRef<HTMLDivElement>(null);
   const door = useRef<DoorSceneHandle>(null);
+  const cosmos = useRef<HTMLDivElement>(null);
+  const top = useRef<HTMLElement>(null);
+  const copy = useRef<HTMLDivElement>(null);
+  const ground = useRef<HTMLDivElement>(null);
+  const skipButton = useRef<HTMLButtonElement>(null);
+  const running = useRef<gsap.core.Timeline | null>(null);
+
+  // scene two: the door opens
+  useGSAP(
+    () => {
+      if (phase !== "opening" || !door.current || !cosmos.current) return;
+      const parts = {
+        ...door.current,
+        cosmos: cosmos.current,
+        ui: [top.current!, copy.current!, ground.current!],
+      };
+      const tl = prefersReducedMotion()
+        ? buildDoorOpeningStill(parts)
+        : buildDoorOpening(parts);
+      tl.eventCallback("onComplete", () => advance("cosmos"));
+      running.current = tl;
+    },
+    { dependencies: [phase], scope: root },
+  );
+
+  const skip = useCallback(() => {
+    const tl = running.current;
+    if (tl && tl.progress() < 1)
+      tl.tweenTo(tl.duration(), { duration: 0.4, ease: "power1.inOut" });
+  }, []);
+
+  // Escape skips while a scene is playing; Skip takes focus so keyboard users find it first
+  const playing = phase !== "idle" && phase !== "settled";
+  useEffect(() => {
+    if (!playing) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && skip();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [playing, skip]);
+  useEffect(() => {
+    if (phase === "opening") skipButton.current?.focus({ preventScroll: true });
+  }, [phase]);
 
   return (
-    <div className={s.journey} data-phase={journey.phase}>
-      <DoorScene ref={door} />
+    <div ref={root} className={s.journey} data-phase={phase}>
+      <DoorScene ref={door} between={<CosmosBackdrop ref={cosmos} />} />
 
-      <header className={s.top}>
+      <header ref={top} className={s.top}>
         <span className={s.brand}>Vibers Club</span>
         <Link href="/universe" className={s.skipLink}>
           Enter the app
         </Link>
       </header>
 
-      <div className={s.copy}>
-        <h1 className={s.headline} aria-label="Every journey begins with a thought.">
-          <SplitText tag="span" text="Every journey" splitType="chars" delay={28} duration={1.1} trigger="load" textAlign="center" className={s.line} />
-          <SplitText tag="span" text="begins with a thought." splitType="chars" delay={28} duration={1.1} trigger="load" textAlign="center" className={s.line} />
+      <div ref={copy} className={s.copy}>
+        <h1
+          className={s.headline}
+          aria-label="Every journey begins with a thought."
+        >
+          <SplitText
+            tag="span"
+            text="Every journey"
+            splitType="chars"
+            delay={28}
+            duration={1.1}
+            trigger="load"
+            textAlign="center"
+            className={s.line}
+          />
+          <SplitText
+            tag="span"
+            text="begins with a thought."
+            splitType="chars"
+            delay={28}
+            duration={1.1}
+            trigger="load"
+            textAlign="center"
+            className={s.line}
+          />
         </h1>
       </div>
 
-      <div className={s.ground}>
-        <ThoughtInput locked={journey.phase !== "idle"} onSubmit={journey.submit} />
+      <div ref={ground} className={s.ground}>
+        <ThoughtInput locked={phase !== "idle"} onSubmit={journey.submit} />
       </div>
+
+      {playing && (
+        <button
+          ref={skipButton}
+          type="button"
+          className={s.skip}
+          onClick={skip}
+        >
+          Skip intro <span aria-hidden="true">&rarr;</span>
+        </button>
+      )}
+      <p className={s.srOnly} aria-live="polite">
+        {ANNOUNCE[phase] ?? ""}
+      </p>
     </div>
   );
 }
