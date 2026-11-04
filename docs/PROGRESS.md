@@ -14,6 +14,17 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the first page, night opening (2026-11-04)
+ARPIT asked for the opening page in the look of ThreeUI's Temple Night and Landscape, keeping his door (no torii gate).
+- `features/journey/world/nightland.ts` (new): the opening world built in code. A red moon with seas and craters, a near-black hazy sky, three mountain ranges fading into mist, rolling ground with two grassy mounds framing the view, instanced grass blades in the wind, a stone path, red maples (branches plus maple-leaf points), four stone lanterns with red halos and real light on the ground, red leaves falling and pale sparks around the door. Everything sinks into the dark as we leave (the `dusk` param).
+- `world/engine.ts`: uses the night world instead of the meadow photo and front grass; the door is moonlit. `world/door.ts`: softer light shafts, a short shadow toward us.
+- `journey.module.css`: night palette for the page (ivory headline with a red glow, black scrims); the CSS fallback dims the door, darkens the grass cut-out and swaps the sun for a red moon wash; the portrait door position matches the 3D camera.
+- `public/journey/night.webp`, `night-portrait.webp` (new): stills of the night world, rendered by the 3D engine without the door, for devices that get the CSS version. The meadow photos stay in the repo, unused for now.
+- Tried the `@designcodeio/threeui` package directly: it needs an older three.js (removed APIs, shader errors with three 0.186), so the scene is our own build in its style, and the package is not installed.
+
+## Tests executed (night opening, 2026-11-04, in the cloud workspace)
+Vitest 79 passed. Typecheck, ESLint and Prettier clean. Journey e2e 26 passed (CSS and 3D, desktop and phone). Frame-by-frame review on desktop (960x540) and phone (390x844) in headless Chromium.
+
 ## Files created or modified in the first page, milestones 4 to 9 (2026-11-04)
 ARPIT asked to build the remaining milestones straight through and review the finished page.
 - `features/journey/world/planet.ts`: the colourful sphere, drawn entirely by shader (noise continents in emerald, gold and rose, teal seas, clouds, atmosphere); around Manali the surface turns into the valley (ridges, contours, the Beas river, village lights); a pulsing marker. `engine.ts` places it from the shared params.

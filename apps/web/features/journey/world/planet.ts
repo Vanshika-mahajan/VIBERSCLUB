@@ -15,7 +15,11 @@ export const MANALI = { lat: 32.24 * DEG, lon: 77.19 * DEG };
 
 /** latitude and longitude (radians) to a unit vector; longitude 0 faces +z */
 export function toDir(lat: number, lon: number) {
-  return new THREE.Vector3(Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon));
+  return new THREE.Vector3(
+    Math.cos(lat) * Math.sin(lon),
+    Math.sin(lat),
+    Math.cos(lat) * Math.cos(lon),
+  );
 }
 const manaliDir = toDir(MANALI.lat, MANALI.lon);
 
@@ -367,7 +371,9 @@ function flightPaths() {
 }
 
 export async function makePlanet(): Promise<Planet> {
-  const mask = await new THREE.ImageLoader().loadAsync("/journey/earth-land.png");
+  const mask = await new THREE.ImageLoader().loadAsync(
+    "/journey/earth-land.png",
+  );
   const landTex = new THREE.Texture(mask);
   landTex.needsUpdate = true;
   landTex.colorSpace = THREE.NoColorSpace;
@@ -410,7 +416,13 @@ export async function makePlanet(): Promise<Planet> {
     new THREE.ShaderMaterial({
       vertexShader: DOT_VERT,
       fragmentShader: DOT_FRAG,
-      uniforms: { uPixel: pixel, uScale: { value: 40 }, uTime: time, uManali: manali, uManaliDir: md },
+      uniforms: {
+        uPixel: pixel,
+        uScale: { value: 40 },
+        uTime: time,
+        uManali: manali,
+        uManaliDir: md,
+      },
       blending: THREE.AdditiveBlending,
       transparent: true,
       depthWrite: false,
@@ -449,13 +461,21 @@ export async function makePlanet(): Promise<Planet> {
 
   const markGeo = new THREE.BufferGeometry();
   const at = manaliDir.clone().multiplyScalar(PLANET_RADIUS * 1.006);
-  markGeo.setAttribute("position", new THREE.Float32BufferAttribute([at.x, at.y, at.z], 3));
+  markGeo.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute([at.x, at.y, at.z], 3),
+  );
   const mark = new THREE.Points(
     markGeo,
     new THREE.ShaderMaterial({
       vertexShader: MARK_VERT,
       fragmentShader: MARK_FRAG,
-      uniforms: { uOpacity: marker, uTime: time, uPixel: pixel, uSize: { value: 96 } },
+      uniforms: {
+        uOpacity: marker,
+        uTime: time,
+        uPixel: pixel,
+        uSize: { value: 96 },
+      },
       transparent: true,
       depthWrite: false,
       depthTest: false,

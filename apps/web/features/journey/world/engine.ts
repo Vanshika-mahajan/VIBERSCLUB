@@ -6,9 +6,8 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { gsap } from "@/lib/motion/gsap";
 import { makeCosmos } from "./cosmos";
 import { makeDoor } from "./door";
-import { makeForeground } from "./foreground";
 import { DOOR, PHOTO_ASPECT, PHOTO_FOV } from "./layout";
-import { makeMeadow } from "./meadow";
+import { makeNightland } from "./nightland";
 import { makePlanet, PLANET_RADIUS } from "./planet";
 import { cameraAt, initialParams, type WorldParams } from "./params";
 
@@ -19,6 +18,8 @@ export type World = {
   /** review tooling: stop the loop and draw one frame at a time */
   manual: (on: boolean) => void;
   step: (deltaMs: number) => void;
+  /** review tooling: the camera and the door, to render the fallback's stills */
+  dev: { camera: THREE.PerspectiveCamera; door: THREE.Object3D };
   dispose: () => void;
 };
 
@@ -63,21 +64,24 @@ export async function createWorld(
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
   const loader = new THREE.TextureLoader();
-  const [photo, frameTex, leafTex, grassTex] = await Promise.all([
-    load("/journey/meadow.webp", loader, maxAniso),
+  const [frameTex, leafTex] = await Promise.all([
     load("/journey/door-frame.webp", loader, maxAniso),
     load("/journey/door-leaf.webp", loader, maxAniso),
-    load("/journey/grass.webp", loader, maxAniso),
   ]);
 
   const camera = new THREE.PerspectiveCamera(PHOTO_FOV, 1, 0.05, 3000);
   camera.rotation.order = "YXZ";
 
   const meadowScene = new THREE.Scene();
-  const meadow = makeMeadow(photo);
+  // fewer grass blades where there are fewer pixels to fill
+  const night = makeNightland({
+    grass:
+      Math.min(window.innerWidth * window.innerHeight, 2_000_000) > 600_000
+        ? 80000
+        : 45000,
+  });
   const door = makeDoor(frameTex, leafTex);
-  const fore = makeForeground(grassTex);
-  meadowScene.add(meadow.group, door.group, fore.group);
+  meadowScene.add(night.group, door.group);
   const cosmos = makeCosmos();
   const planet = await makePlanet();
   cosmos.scene.add(planet.root);
@@ -115,7 +119,7 @@ export async function createWorld(
     door.uniforms.res.value.set(Math.round(w * ratio), Math.round(h * ratio));
     cosmos.uniforms.pixel.value = ratio;
     planet.uniforms.pixel.value = ratio;
-    fore.uniforms.pixel.value = ratio;
+    night.uniforms.pixel.value = ratio;
     camera.aspect = w / h;
   };
   const observer = new ResizeObserver(resize);
@@ -153,7 +157,8 @@ export async function createWorld(
     // the door and its light
     const angle = p.leaf * 82 * DEG;
     door.hinge.rotation.y = angle;
-    door.tint(1 - p.dusk * 0.85);
+    // moonlight: the door is a pale shape in the dark, warmed by the lanterns beside it
+    door.tint(0.5 * (1 - p.dusk * 0.85));
     door.shade(angle);
     door.uniforms.light.value = p.light;
     door.uniforms.iris.value = p.iris;
@@ -161,12 +166,14 @@ export async function createWorld(
     door.uniforms.rays.value = p.rays;
     door.uniforms.time.value = elapsed;
     door.rays.visible = p.rays > 0.001;
-    meadow.uniforms.dusk.value = p.dusk;
-    meadow.uniforms.spill.value = p.rays;
-    fore.uniforms.dusk.value = p.dusk;
-    fore.uniforms.time.value = elapsed;
-    fore.uniforms.wind.value = p.life;
-    fore.uniforms.life.value = p.life;
+    night.uniforms.dusk.value = p.dusk;
+    night.uniforms.spill.value = p.rays;
+    night.uniforms.time.value = elapsed;
+    night.uniforms.wind.value = p.life;
+    night.uniforms.life.value = Math.max(p.life, 0.6);
+    night.uniforms.scale.value =
+      renderer.domElement.height / (2 * Math.tan((camera.fov / 2) * DEG));
+    night.face(camera);
     cosmos.uniforms.time.value = elapsed;
 
     // the sphere: sized and placed on screen by the params, at whatever distance gives that size
@@ -213,6 +220,7 @@ export async function createWorld(
       manual = on;
     },
     step: (deltaMs) => frame(deltaMs),
+    dev: { camera, door: door.group },
     dispose: () => {
       gsap.ticker.remove(tick);
       observer.disconnect();
@@ -232,7 +240,7 @@ export async function createWorld(
           }
         });
       }
-      for (const t of [photo, frameTex, leafTex, grassTex]) t.dispose();
+      for (const t of [frameTex, leafTex]) t.dispose();
       planet.dispose();
       cosmosTarget.dispose();
       composer.dispose();

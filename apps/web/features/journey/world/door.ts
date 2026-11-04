@@ -63,7 +63,7 @@ const RAYS_FRAG = /* glsl */ `
   void main() {
     float streak = noise(vAround * 26.0 + uTime * 0.15) * 0.7 + noise(vAround * 61.0 - uTime * 0.1) * 0.5;
     float fade = pow(1.0 - vAlong, 2.2) * smoothstep(0.0, 0.06, vAlong);
-    float a = uRays * fade * streak * 0.2;
+    float a = uRays * fade * streak * 0.11;
     gl_FragColor = vec4(vec3(1.0, 0.78, 0.48) * a * 2.0, 1.0);
   }
 `;
@@ -202,20 +202,20 @@ export function makeDoor(
   frame.renderOrder = 3;
   group.add(frame);
 
-  // the long shadow the low sun throws to the right, and a contact shadow at the base
+  // the moon is behind the door: its shadow falls toward us, soft and short
   const shadowTex = softShadowTexture();
   const long = new THREE.Mesh(
-    new THREE.PlaneGeometry(4.4, 0.9),
+    new THREE.PlaneGeometry(3.4, 2.6),
     new THREE.MeshBasicMaterial({
       map: shadowTex,
       transparent: true,
-      opacity: 0.42,
+      opacity: 0.55,
       depthWrite: false,
-      color: "#0d1a08",
+      color: "#020304",
     }),
   );
-  long.rotation.x = -Math.PI / 2;
-  long.position.set(DOOR.x + 1.9, 0.01, DOOR.z - 0.1);
+  long.rotation.set(-Math.PI / 2, 0, Math.PI / 2);
+  long.position.set(DOOR.x, 0.012, DOOR.z + 1.1);
   long.renderOrder = 0;
   group.add(long);
 

@@ -28,21 +28,21 @@ export type DoorSceneHandle = {
   freeze: () => void;
 };
 
-/** Tall phone screens get ARPIT's portrait composition (door baked in, the live door sits exactly over it). */
+/** Tall phone screens get the portrait night still (the live door sits where the 3D camera puts it). */
 export const PORTRAIT = "(max-aspect-ratio: 2/3)";
 
 function Meadow() {
   const {
     props: { srcSet: portrait },
   } = getImageProps({
-    src: "/journey/meadow-portrait.webp",
+    src: "/journey/night-portrait.webp",
     width: 941,
     height: 1672,
     alt: "",
     sizes: "calc(100vw + 64px)",
   });
   const { props } = getImageProps({
-    src: "/journey/meadow.webp",
+    src: "/journey/night.webp",
     width: 1672,
     height: 941,
     alt: "",
