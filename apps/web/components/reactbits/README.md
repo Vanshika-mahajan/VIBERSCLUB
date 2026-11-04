@@ -25,8 +25,7 @@ but must not sell or redistribute the components themselves.
 - `CircularGallery` (JS + CSS): Community on Discover, the Vibers to like, pass or save.
 - `CircularCarousel` (JS + CSS): Home, Vibers like you.
 - `AccordionGallery` (JS + CSS): My itinerary, plans to start from.
-- `OptionWheel` (JS + CSS): not in use since the restructure (Phase 1); the file stays until removal is approved.
 - `PillNav` (JS + CSS): the bottom bar with Home, Discover and Explore (local edits: Winewood theme, `placement="bottom"` opens the folded menu upward).
 - `ScrollStack` (JS + CSS): Explore, places in Manali.
 
-The six above are the JavaScript + CSS variant, each with a small `.d.ts` beside it for TypeScript.
+The five above are the JavaScript + CSS variant, each with a small `.d.ts` beside it for TypeScript.

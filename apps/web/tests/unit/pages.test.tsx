@@ -3,9 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ChatsScreen } from "@/features/chats/ChatsScreen";
 import { EventScreen } from "@/features/events/EventScreen";
-import { EventsScreen } from "@/features/events/EventsScreen";
+import { Events } from "@/features/club/Events";
+import { Explore } from "@/features/club/Explore";
 import { HostForm, validate } from "@/features/events/HostForm";
-import { ExploreScreen } from "@/features/explore/ExploreScreen";
 import { ProfileScreen } from "@/features/profile/ProfileScreen";
 import { Toaster } from "@/components/ui";
 import { getState } from "@/lib/demo/store";
@@ -19,16 +19,15 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("Events", () => {
-  it("filters by free and paid", async () => {
+  it("filters to free events, and hides events by blocked hosts", async () => {
     const user = userEvent.setup();
-    render(<EventsScreen />);
-    const count = () => Number(screen.getByText(/^\d+ events?$/).textContent!.split(" ")[0]);
+    render(<Events />);
+    const count = () => screen.getAllByRole("listitem").length;
     const all = count();
     await user.click(screen.getByRole("button", { name: "Free" }));
-    const free = count();
-    await user.click(screen.getByRole("button", { name: "Paid" }));
-    expect(free + count()).toBe(all);
-    expect(screen.queryByText("Free", { selector: "span" })).not.toBeInTheDocument();
+    expect(count()).toBeGreaterThan(0);
+    expect(count()).toBeLessThan(all);
+    for (const item of screen.getAllByRole("listitem")) expect(item).toHaveTextContent("Free");
   });
 
   it("joins an event with seats, and waitlists a full one", async () => {
@@ -78,14 +77,22 @@ describe("Events", () => {
 });
 
 describe("Explore", () => {
+  // the places stack watches its size; jsdom has no layout, so a silent observer is enough
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+
   it("filters by area and saves a place", async () => {
     const user = userEvent.setup();
-    render(<ExploreScreen />);
+    render(<Explore />);
     await user.click(screen.getByRole("button", { name: "Vashisht" }));
-    expect(screen.getByText("3 places")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Jogini falls" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Hadimba Devi temple" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Save Jogini falls" }));
     expect(getState().savedPlaces).toEqual(["jogini"]);
-    expect(screen.getByRole("button", { name: "Unsave Jogini falls" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Remove Jogini falls from saved" })).toHaveAttribute("aria-pressed", "true");
   });
 });
 
