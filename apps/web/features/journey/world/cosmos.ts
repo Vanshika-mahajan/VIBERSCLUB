@@ -30,8 +30,8 @@ const SKY_FRAG = /* glsl */ `
     float b = 1.0 - abs(dot(vDir, uBand));
     float glow = pow(b, 6.0);
     vec3 deep = vec3(0.004, 0.006, 0.016);
-    vec3 midnight = vec3(0.012, 0.022, 0.06);
-    vec3 c = mix(deep, midnight, glow) + vec3(0.02, 0.03, 0.07) * pow(b, 24.0);
+    vec3 midnight = vec3(0.006, 0.011, 0.03);
+    vec3 c = mix(deep, midnight, glow) + vec3(0.01, 0.015, 0.035) * pow(b, 24.0);
     gl_FragColor = vec4(c, 1.0);
   }
 `;
@@ -168,7 +168,7 @@ export function makeCosmos(): Cosmos {
   // far dust of faint stars everywhere
   scene.add(
     points(
-      7000,
+      12000,
       () => onSphere(600),
       () => 1 + rand() * 1.6,
       () => 0.5 + rand() * 0.7,
@@ -181,7 +181,7 @@ export function makeCosmos(): Cosmos {
       14000,
       () => inBand(580, 0.22),
       () => 1 + rand() * 1.8,
-      () => 0.35 + rand() * 0.7,
+      () => 0.25 + rand() * 0.5,
       [palette[1], palette[2], palette[3], palette[4]],
     ),
   );
@@ -191,7 +191,7 @@ export function makeCosmos(): Cosmos {
       2600,
       () => inBand(560, 0.09),
       () => 40 + rand() * 60,
-      () => 0.012 + rand() * 0.02,
+      () => 0.006 + rand() * 0.01,
       [palette[2], palette[3], palette[1], palette[4]],
     ),
   );

@@ -1,23 +1,46 @@
 import * as THREE from "three";
 
 /**
- * The colourful Earth-like sphere. Everything is drawn by the shader, so there is no texture to
- * download: continents from 3D noise in emerald, gold and rose; teal seas with a sun glint; drifting
- * clouds; a cyan rim of atmosphere. Around Manali the surface turns, artistically, into the valley:
- * snowy ridges, contour lines, the glowing Beas river and the warm lights of villages along it.
+ * The globe, in the style ARPIT chose: a dark sphere whose continents are drawn in glowing cyan dots,
+ * a bright cyan rim, and flight paths arcing across it toward Manali, with pulses travelling along
+ * them. The coastlines come from Natural Earth (public domain), rasterised into
+ * /journey/earth-land.png (equirectangular, white = land). Around Manali the surface becomes a
+ * holographic map of the valley: contour lines, the glowing Beas and the warm lights of villages.
  */
 
 export const PLANET_RADIUS = 6;
 const DEG = Math.PI / 180;
-/** Manali, 32.24° N 77.19° E, in the sphere's own coordinates (longitude 0 faces +z) */
+/** Manali, 32.24° N 77.19° E */
 export const MANALI = { lat: 32.24 * DEG, lon: 77.19 * DEG };
-const manaliDir = new THREE.Vector3(
-  Math.cos(MANALI.lat) * Math.sin(MANALI.lon),
-  Math.sin(MANALI.lat),
-  Math.cos(MANALI.lat) * Math.cos(MANALI.lon),
-);
-/** light from the upper left and in front, so the face toward us is lit */
-const SUN = new THREE.Vector3(-0.55, 0.42, 0.72).normalize();
+
+/** latitude and longitude (radians) to a unit vector; longitude 0 faces +z */
+export function toDir(lat: number, lon: number) {
+  return new THREE.Vector3(Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon));
+}
+const manaliDir = toDir(MANALI.lat, MANALI.lon);
+
+/** where the flight paths start: they all arc toward Manali */
+const CITIES: [number, number][] = [
+  [28.61, 77.21], // Delhi
+  [19.08, 72.88], // Mumbai
+  [12.97, 77.59], // Bengaluru
+  [22.57, 88.36], // Kolkata
+  [51.51, -0.13], // London
+  [52.52, 13.4], // Berlin
+  [48.86, 2.35], // Paris
+  [32.09, 34.78], // Tel Aviv
+  [35.69, 51.39], // Tehran
+  [25.2, 55.27], // Dubai
+  [55.76, 37.62], // Moscow
+  [1.35, 103.82], // Singapore
+  [35.68, 139.69], // Tokyo
+  [-33.87, 151.21], // Sydney
+  [40.71, -74.01], // New York
+  [37.77, -122.42], // San Francisco
+  [-23.55, -46.63], // São Paulo
+  [-33.92, 18.42], // Cape Town
+  [27.72, 85.32], // Kathmandu
+];
 
 // Simplex noise in 3D: Stefan Gustavson and Ashima Arts (MIT).
 const NOISE = /* glsl */ `
@@ -77,7 +100,7 @@ const NOISE = /* glsl */ `
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 `;
 
-const VERT = /* glsl */ `
+const SPHERE_VERT = /* glsl */ `
   varying vec3 vPos;
   varying vec3 vNormal;
   varying vec3 vWorld;
@@ -90,13 +113,15 @@ const VERT = /* glsl */ `
   }
 `;
 
-const FRAG = /* glsl */ `
-  uniform float uTime;
+// The body of the globe: nearly black, lit faintly on one side, with a cyan rim; the valley near Manali.
+const SPHERE_FRAG = /* glsl */ `
   uniform float uManali;
-  uniform vec3 uSun;
+  uniform float uTime;
   uniform vec3 uManaliDir;
   uniform vec3 uEast;
   uniform vec3 uNorth;
+  uniform vec3 uLight;
+  uniform sampler2D uLand;
   varying vec3 vPos;
   varying vec3 vNormal;
   varying vec3 vWorld;
@@ -106,71 +131,103 @@ const FRAG = /* glsl */ `
     vec3 p = vPos;
     vec3 n = normalize(vNormal);
     vec3 view = normalize(cameraPosition - vWorld);
-    float near = dot(p, uManaliDir);
-    float dist = acos(clamp(near, -1.0, 1.0));
+    float facing = max(dot(n, view), 0.0);
+    float lit = 0.35 + 0.65 * smoothstep(-0.4, 0.9, dot(n, uLight));
 
-    // continents, with land always under the Himalaya
-    float boost = 0.24 * exp(-dist * dist * 14.0);
-    float h = fbm(p * 1.55 + vec3(3.1, 0.0, 1.7)) + boost - 0.04;
-    float land = smoothstep(0.0, 0.05, h);
-    float hue = snoise(p * 2.4 + 7.0);
-    vec3 deep = vec3(0.035, 0.09, 0.32);
-    vec3 shallow = vec3(0.07, 0.48, 0.66);
-    vec3 sea = mix(deep, shallow, smoothstep(-0.32, 0.0, h));
-    vec3 emerald = vec3(0.10, 0.52, 0.30);
-    vec3 gold = vec3(0.88, 0.66, 0.28);
-    vec3 rose = vec3(0.86, 0.40, 0.52);
-    vec3 violet = vec3(0.46, 0.34, 0.78);
-    vec3 ground = mix(emerald, gold, smoothstep(0.05, 0.32, h + hue * 0.12));
-    ground = mix(ground, rose, smoothstep(0.25, 0.8, hue) * 0.65);
-    ground = mix(ground, violet, smoothstep(0.45, 0.9, -hue) * 0.45);
-    float lat = abs(p.y);
-    ground = mix(ground, vec3(0.74, 0.77, 0.82), clamp(smoothstep(0.42, 0.55, h - boost) + smoothstep(0.8, 0.92, lat), 0.0, 1.0));
-    vec3 col = mix(sea, ground, land);
-    col = mix(col, vec3(0.72, 0.77, 0.84), smoothstep(0.86, 0.95, lat) * (1.0 - land));
+    // the ocean: deep blue-black, a faint glow toward the limb
+    vec3 col = vec3(0.003, 0.008, 0.016) + vec3(0.006, 0.03, 0.06) * pow(1.0 - facing, 3.0) * lit;
+    // land, softly, under the dots
+    vec2 uv = vec2(atan(p.x, p.z) / 6.2831853 + 0.5, 0.5 - asin(clamp(p.y, -1.0, 1.0)) / 3.1415927);
+    float land = texture2D(uLand, uv).r;
+    col += vec3(0.004, 0.018, 0.03) * land * lit;
 
-    // Manali, drawn as the valley: local east/north coordinates, about 0.2 rad across
-    float region = (1.0 - smoothstep(0.1, 0.24, dist)) * uManali;
-    vec2 q = vec2(dot(p, uEast), dot(p, uNorth)) / 0.2;
-    vec3 qp = vec3(q * 2.2, 4.0);
-    float ridge = ridged(qp);
+    // the valley around Manali, as a holographic map
+    float dist = acos(clamp(dot(p, uManaliDir), -1.0, 1.0));
+    float region = (1.0 - smoothstep(0.08, 0.2, dist)) * uManali;
+    vec2 q = vec2(dot(p, uEast), dot(p, uNorth)) / 0.18;
+    float ridge = ridged(vec3(q * 2.0, 4.0));
     float riverX = sin(q.y * 2.6) * 0.16 + snoise(vec3(q.y * 1.4, 2.0, 9.0)) * 0.08;
     float valley = exp(-pow(q.x - riverX, 2.0) * 9.0);
-    float height = ridge * (1.0 - valley * 0.75);
-    vec3 m = mix(vec3(0.05, 0.24, 0.17), vec3(0.18, 0.48, 0.28), smoothstep(0.15, 0.4, height));
-    m = mix(m, vec3(0.55, 0.46, 0.38), smoothstep(0.45, 0.56, height));
-    m = mix(m, vec3(0.86, 0.88, 0.93), smoothstep(0.6, 0.7, height));
-    float contour = 1.0 - smoothstep(0.0, 0.06, abs(fract(height * 9.0) - 0.5) * 2.0 - 0.9);
-    m += vec3(0.9, 0.75, 0.45) * contour * 0.14 * (1.0 - valley);
+    float height = ridge * (1.0 - valley * 0.8);
+    float line = 1.0 - smoothstep(0.0, 0.08, abs(fract(height * 11.0) - 0.5) * 2.0 - 0.86);
+    float peaks = smoothstep(0.58, 0.72, height);
+    vec3 holo = vec3(0.004, 0.02, 0.04) + vec3(0.06, 0.32, 0.45) * line * (0.35 + height)
+      + vec3(0.55, 0.85, 1.0) * peaks * 0.35;
     float river = exp(-pow(q.x - riverX, 2.0) * 5200.0);
     vec2 cell = floor(q * 14.0);
     vec2 jitter = vec2(hash(cell + 3.1), hash(cell + 7.7)) * 0.6 + 0.2;
     float lights = step(0.8, hash(cell)) * valley * smoothstep(0.16, 0.0, length(fract(q * 14.0) - jitter));
-    // a soft dusk ring frames the valley as it appears
-    col *= 1.0 - 0.35 * uManali * smoothstep(0.1, 0.2, dist) * (1.0 - smoothstep(0.2, 0.42, dist));
-    col = mix(col, m, region);
+    holo += vec3(0.35, 0.95, 1.0) * river * 1.5 + vec3(1.0, 0.72, 0.36) * lights * 1.8;
+    col = mix(col, holo, region);
 
-    // light: soft terminator, a glint on the sea
-    float sun = dot(n, uSun);
-    float lit = 0.12 + 0.8 * smoothstep(-0.2, 0.65, sun);
-    col *= lit;
-    vec3 refl = reflect(-uSun, n);
-    col += vec3(1.0, 0.92, 0.75) * pow(max(dot(refl, view), 0.0), 36.0) * 0.55 * (1.0 - land);
-    // the night side twinkles with towns
-    float night = smoothstep(0.05, -0.3, sun) * land;
-    col += vec3(1.0, 0.7, 0.35) * step(0.93, hash(floor(p.xy * 120.0) + floor(p.z * 60.0))) * night * 0.9;
-
-    // the valley glows: river and village lights are brighter than white, so they bloom
-    col += region * (vec3(0.35, 0.95, 1.0) * river * 1.3 + vec3(1.0, 0.72, 0.36) * lights * 1.8);
-
-    // clouds drift, and part over Manali
-    float cloud = smoothstep(0.18, 0.62, fbm(p * 2.6 + vec3(uTime * 0.012, 0.0, uTime * 0.006)));
-    col = mix(col, vec3(0.92) * (0.2 + lit * 0.82), cloud * 0.66 * (1.0 - region));
-
-    // rim of atmosphere
-    float fres = pow(1.0 - max(dot(n, view), 0.0), 3.0);
-    col += vec3(0.30, 0.58, 1.0) * fres * (0.4 + lit) * 0.7;
+    // the rim: cyan light along the edge (brighter than white at its peak, so it blooms a little)
+    float rim = pow(1.0 - facing, 3.2);
+    col += vec3(0.16, 0.58, 0.95) * rim * (0.5 + lit) * 0.55;
     gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
+// Continents as dots. Each dot twinkles a little; dots fade on the far side and under the valley.
+const DOT_VERT = /* glsl */ `
+  attribute float seed;
+  uniform float uPixel;
+  uniform float uScale;
+  uniform float uTime;
+  uniform float uManali;
+  uniform vec3 uManaliDir;
+  varying float vA;
+  varying vec3 vWorldN;
+  varying vec3 vWorld;
+  void main() {
+    vec3 dir = normalize(position);
+    float dist = acos(clamp(dot(dir, uManaliDir), -1.0, 1.0));
+    vA = (0.55 + 0.45 * sin(uTime * (0.6 + seed) + seed * 40.0)) * (1.0 - (1.0 - smoothstep(0.06, 0.2, dist)) * uManali);
+    vec4 w = modelMatrix * vec4(position, 1.0);
+    vWorld = w.xyz;
+    vWorldN = normalize(mat3(modelMatrix) * dir);
+    vec4 mv = viewMatrix * w;
+    gl_PointSize = clamp(uScale / -mv.z, 1.1, 4.0) * uPixel;
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+const DOT_FRAG = /* glsl */ `
+  varying float vA;
+  varying vec3 vWorldN;
+  varying vec3 vWorld;
+  void main() {
+    float d = length(gl_PointCoord - 0.5) * 2.0;
+    float a = smoothstep(1.0, 0.35, d);
+    float facing = dot(vWorldN, normalize(cameraPosition - vWorld));
+    float edge = smoothstep(-0.05, 0.35, facing);
+    vec3 c = mix(vec3(0.16, 0.6, 0.92), vec3(0.55, 0.9, 1.0), smoothstep(0.8, 1.0, vA));
+    gl_FragColor = vec4(c * a * vA * edge * 0.36, 1.0);
+  }
+`;
+
+// Flight paths: a faint line with a bright pulse travelling toward Manali.
+const ARC_VERT = /* glsl */ `
+  attribute float along;
+  attribute float offset;
+  varying float vAlong;
+  varying float vOffset;
+  void main() {
+    vAlong = along;
+    vOffset = offset;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const ARC_FRAG = /* glsl */ `
+  uniform float uTime;
+  uniform float uOpacity;
+  varying float vAlong;
+  varying float vOffset;
+  void main() {
+    float head = fract(uTime * 0.16 + vOffset);
+    float behind = head - vAlong;
+    float pulse = behind >= 0.0 ? exp(-behind * 14.0) : 0.0;
+    float ends = smoothstep(0.0, 0.05, vAlong) * smoothstep(1.0, 0.95, vAlong);
+    vec3 c = vec3(0.35, 0.8, 1.0) * (0.1 + pulse * 1.2) * ends;
+    gl_FragColor = vec4(c * uOpacity, 1.0);
   }
 `;
 
@@ -185,18 +242,14 @@ const HALO_VERT = /* glsl */ `
   }
 `;
 const HALO_FRAG = /* glsl */ `
-  uniform vec3 uSun;
   uniform float uOpacity;
   varying vec3 vNormal;
   varying vec3 vWorld;
   void main() {
-    vec3 view = normalize(cameraPosition - vWorld);
-    float rim = dot(normalize(vNormal), view);
-    // back faces of a shell 1.16× the planet: rim is 0 at the shell's edge and about -0.5 at the
-    // planet's edge, so the glow rises from nothing to its brightest against the planet
-    float glow = pow(smoothstep(0.0, -0.5, rim), 2.2);
-    float lit = 0.35 + 0.65 * smoothstep(-0.5, 0.8, dot(normalize(vNormal), uSun));
-    gl_FragColor = vec4(mix(vec3(0.25, 0.55, 1.0), vec3(0.62, 0.42, 1.0), 0.35) * glow * lit * 0.85 * uOpacity, 1.0);
+    float rim = dot(normalize(vNormal), normalize(cameraPosition - vWorld));
+    // a thin shell: the glow rises from its edge to the globe's edge, then hides behind the globe
+    float glow = pow(smoothstep(0.0, -0.32, rim), 3.0);
+    gl_FragColor = vec4(vec3(0.16, 0.55, 0.95) * glow * 0.3 * uOpacity, 1.0);
   }
 `;
 
@@ -240,17 +293,93 @@ export type Planet = {
   };
   /** spin and tilt that put Manali at the centre of the face toward us */
   facing: { spin: number; tilt: number };
+  dispose: () => void;
 };
 
-export function makePlanet(): Planet {
+/** Points spread evenly over the sphere (a Fibonacci lattice), kept where the land mask is white. */
+function landDots(mask: HTMLImageElement, count: number) {
+  const w = mask.naturalWidth;
+  const h = mask.naturalHeight;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const g = canvas.getContext("2d", { willReadFrequently: true })!;
+  g.drawImage(mask, 0, 0);
+  const px = g.getImageData(0, 0, w, h).data;
+  const pos: number[] = [];
+  const seeds: number[] = [];
+  const golden = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < count; i++) {
+    const y = 1 - ((i + 0.5) / count) * 2;
+    const r = Math.sqrt(1 - y * y);
+    const t = golden * i;
+    const x = Math.cos(t) * r;
+    const z = Math.sin(t) * r;
+    const lon = Math.atan2(x, z);
+    const lat = Math.asin(y);
+    const u = Math.min(w - 1, Math.floor((lon / (2 * Math.PI) + 0.5) * w));
+    const v = Math.min(h - 1, Math.floor((0.5 - lat / Math.PI) * h));
+    if (px[(v * w + u) * 4] < 128) continue;
+    const k = PLANET_RADIUS * 1.003;
+    pos.push(x * k, y * k, z * k);
+    seeds.push(((i * 2654435761) % 1000) / 1000);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("seed", new THREE.Float32BufferAttribute(seeds, 1));
+  return geo;
+}
+
+/** Great-circle arcs from each city to Manali, lifted off the surface in the middle. */
+function flightPaths() {
+  const pos: number[] = [];
+  const along: number[] = [];
+  const offset: number[] = [];
+  const index: number[] = [];
+  const steps = 64;
+  let base = 0;
+  CITIES.forEach(([lat, lon], c) => {
+    const a = toDir(lat * DEG, lon * DEG);
+    const angle = a.angleTo(manaliDir);
+    const lift = 0.015 + angle * 0.045;
+    const sin = Math.sin(angle);
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps;
+      // spherical interpolation along the great circle
+      const p = a
+        .clone()
+        .multiplyScalar(Math.sin((1 - t) * angle) / sin)
+        .add(manaliDir.clone().multiplyScalar(Math.sin(t * angle) / sin));
+      const k = PLANET_RADIUS * (1.004 + lift * Math.sin(Math.PI * t));
+      pos.push(p.x * k, p.y * k, p.z * k);
+      along.push(t);
+      offset.push((c * 0.37) % 1);
+      if (s) index.push(base + s - 1, base + s);
+    }
+    base += steps + 1;
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("along", new THREE.Float32BufferAttribute(along, 1));
+  geo.setAttribute("offset", new THREE.Float32BufferAttribute(offset, 1));
+  geo.setIndex(index);
+  return geo;
+}
+
+export async function makePlanet(): Promise<Planet> {
+  const mask = await new THREE.ImageLoader().loadAsync("/journey/earth-land.png");
+  const landTex = new THREE.Texture(mask);
+  landTex.needsUpdate = true;
+  landTex.colorSpace = THREE.NoColorSpace;
+
   const time = { value: 0 };
   const manali = { value: 0 };
   const marker = { value: 0 };
   const halo = { value: 1 };
   const pixel = { value: 1 };
-  const sun = { value: SUN };
   const east = new THREE.Vector3(0, 1, 0).cross(manaliDir).normalize();
   const north = manaliDir.clone().cross(east).normalize();
+  const md = { value: manaliDir };
 
   const root = new THREE.Group();
   const tilt = new THREE.Group();
@@ -259,28 +388,57 @@ export function makePlanet(): Planet {
   tilt.add(spin);
 
   const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(PLANET_RADIUS, 160, 120),
+    new THREE.SphereGeometry(PLANET_RADIUS, 128, 96),
     new THREE.ShaderMaterial({
-      vertexShader: VERT,
-      fragmentShader: FRAG,
+      vertexShader: SPHERE_VERT,
+      fragmentShader: SPHERE_FRAG,
       uniforms: {
         uTime: time,
         uManali: manali,
-        uSun: sun,
-        uManaliDir: { value: manaliDir },
+        uManaliDir: md,
         uEast: { value: east },
         uNorth: { value: north },
+        uLight: { value: new THREE.Vector3(-0.5, 0.45, 0.75).normalize() },
+        uLand: { value: landTex },
       },
     }),
   );
   spin.add(sphere);
 
+  const dots = new THREE.Points(
+    landDots(mask, 130000),
+    new THREE.ShaderMaterial({
+      vertexShader: DOT_VERT,
+      fragmentShader: DOT_FRAG,
+      uniforms: { uPixel: pixel, uScale: { value: 40 }, uTime: time, uManali: manali, uManaliDir: md },
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthWrite: false,
+    }),
+  );
+  dots.renderOrder = 2;
+  spin.add(dots);
+
+  const arcs = new THREE.LineSegments(
+    flightPaths(),
+    new THREE.ShaderMaterial({
+      vertexShader: ARC_VERT,
+      fragmentShader: ARC_FRAG,
+      uniforms: { uTime: time, uOpacity: halo },
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthWrite: false,
+    }),
+  );
+  arcs.renderOrder = 3;
+  spin.add(arcs);
+
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(PLANET_RADIUS * 1.16, 96, 64),
+    new THREE.SphereGeometry(PLANET_RADIUS * 1.08, 96, 64),
     new THREE.ShaderMaterial({
       vertexShader: HALO_VERT,
       fragmentShader: HALO_FRAG,
-      uniforms: { uSun: sun, uOpacity: halo },
+      uniforms: { uOpacity: halo },
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
       transparent: true,
@@ -290,22 +448,14 @@ export function makePlanet(): Planet {
   root.add(atmosphere);
 
   const markGeo = new THREE.BufferGeometry();
-  const at = manaliDir.clone().multiplyScalar(PLANET_RADIUS * 1.004);
-  markGeo.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute([at.x, at.y, at.z], 3),
-  );
+  const at = manaliDir.clone().multiplyScalar(PLANET_RADIUS * 1.006);
+  markGeo.setAttribute("position", new THREE.Float32BufferAttribute([at.x, at.y, at.z], 3));
   const mark = new THREE.Points(
     markGeo,
     new THREE.ShaderMaterial({
       vertexShader: MARK_VERT,
       fragmentShader: MARK_FRAG,
-      uniforms: {
-        uOpacity: marker,
-        uTime: time,
-        uPixel: pixel,
-        uSize: { value: 96 },
-      },
+      uniforms: { uOpacity: marker, uTime: time, uPixel: pixel, uSize: { value: 96 } },
       transparent: true,
       depthWrite: false,
       depthTest: false,
@@ -322,5 +472,6 @@ export function makePlanet(): Planet {
     marker: mark,
     uniforms: { time, manali, marker, halo, pixel },
     facing: { spin: -MANALI.lon, tilt: MANALI.lat },
+    dispose: () => landTex.dispose(),
   };
 }

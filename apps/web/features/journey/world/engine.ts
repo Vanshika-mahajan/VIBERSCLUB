@@ -79,7 +79,7 @@ export async function createWorld(
   const fore = makeForeground(grassTex);
   meadowScene.add(meadow.group, door.group, fore.group);
   const cosmos = makeCosmos();
-  const planet = makePlanet();
+  const planet = await makePlanet();
   cosmos.scene.add(planet.root);
 
   const cosmosTarget = new THREE.WebGLRenderTarget(1, 1, {
@@ -233,6 +233,7 @@ export async function createWorld(
         });
       }
       for (const t of [photo, frameTex, leafTex, grassTex]) t.dispose();
+      planet.dispose();
       cosmosTarget.dispose();
       composer.dispose();
       renderer.dispose();
