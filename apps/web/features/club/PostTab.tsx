@@ -4,23 +4,48 @@ import { useMemo, useState } from "react";
 import { interpret } from "@/features/discover/interpret";
 import { discover } from "@/features/discover/rank";
 import { places } from "@/lib/demo/data";
-import { actions, useDemo } from "@/lib/demo/store";
+import { actions, lastChangeKept, useDemo } from "@/lib/demo/store";
+import { PHOTO_TYPES, shrinkPhoto, PhotoError } from "@/lib/demo/photos";
 import { firstName, vibers } from "@/lib/demo/people";
 import { toast } from "@/components/ui";
 import { PostCard } from "./Explore";
 import { Icon, Photo } from "./shared";
 import s from "./club.module.css";
 
+type Kind = "thread" | "photo";
+
 /**
- * Post: say what you're up to. The keywords in a post (read the same way Discover reads a thought)
- * find the Vibers who are into the same things, live while you type.
+ * Post: say what you're up to, as a thread (text) or a photo with a caption. The keywords in a post
+ * (read the same way Discover reads a thought) find the Vibers who are into the same things, live
+ * while you type.
  */
-export function PostTab({ onSeeCommunity }: { onSeeCommunity: () => void }) {
+export function PostTab({
+  onSeeCommunity,
+  title = "Post your vibe",
+}: {
+  onSeeCommunity: () => void;
+  title?: string;
+}) {
   const mine = useDemo((st) => st.posts);
   const liked = useDemo((st) => st.liked);
   const blocked = useDemo((st) => st.blocked);
   const [text, setText] = useState("");
   const [placeId, setPlaceId] = useState("");
+  const [kind, setKind] = useState<Kind>("thread");
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [preparing, setPreparing] = useState(false);
+  const pick = async (file?: File) => {
+    if (!file) return;
+    setPreparing(true);
+    try {
+      setPhoto(await shrinkPhoto(file));
+    } catch (e) {
+      toast(e instanceof PhotoError ? e.message : "That photo could not be added.");
+    } finally {
+      setPreparing(false);
+    }
+  };
+  const ready = kind === "photo" ? !!photo : !!text.trim();
 
   // what to match on: the draft while typing, otherwise my latest post
   const source = text.trim() || mine[0]?.text || "";
@@ -52,7 +77,7 @@ export function PostTab({ onSeeCommunity }: { onSeeCommunity: () => void }) {
       >
         <div>
           <h2 id="post-title" className={s.h2}>
-            Post your vibe
+            {title}
           </h2>
           <p className={`${s.muted} ${s.small}`} style={{ margin: "4px 0 0" }}>
             What are you up to, or looking for? We read the keywords and find
@@ -63,24 +88,79 @@ export function PostTab({ onSeeCommunity }: { onSeeCommunity: () => void }) {
           className={`${s.card} ${s.composer}`}
           onSubmit={(e) => {
             e.preventDefault();
-            const p = actions.post(text, placeId || undefined);
+            const p = actions.post(
+              text,
+              placeId || undefined,
+              kind === "photo" ? (photo ?? undefined) : undefined,
+            );
             if (!p) return;
             setText("");
             setPlaceId("");
+            setPhoto(null);
             toast(
-              matches.length
-                ? `Posted. ${matches.length} Vibers match it.`
-                : "Posted.",
+              !lastChangeKept()
+                ? "Posted, but this browser is out of room: it will be gone after a reload."
+                : matches.length
+                  ? `Posted. ${matches.length} Vibers match it.`
+                  : "Posted.",
             );
           }}
         >
+          <div className={s.segment} role="group" aria-label="What to post">
+            {(["thread", "photo"] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={kind === k}
+                onClick={() => setKind(k)}
+              >
+                {k === "thread" ? "Thread" : "Photo"}
+              </button>
+            ))}
+          </div>
+          {kind === "photo" && (
+            <div className={s.photoPick}>
+              {photo ? (
+                <figure className={s.photoPreview}>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a photo picked on this device */}
+                  <img src={photo} alt="The photo you picked" />
+                  <button
+                    type="button"
+                    className={s.ghost}
+                    onClick={() => setPhoto(null)}
+                  >
+                    Change photo
+                  </button>
+                </figure>
+              ) : (
+                <label className={s.photoDrop}>
+                  <Icon name="plus" size={22} />
+                  <span>{preparing ? "Preparing the photo…" : "Choose a photo"}</span>
+                  <input
+                    type="file"
+                    accept={PHOTO_TYPES}
+                    className="sr-only"
+                    aria-label="Choose a photo"
+                    onChange={(e) => {
+                      void pick(e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          )}
           <label className="sr-only" htmlFor="post-text">
-            Your post
+            {kind === "photo" ? "Caption" : "Your post"}
           </label>
           <textarea
             id="post-text"
             className={s.textarea}
-            placeholder="Sunrise trek to Lamadugh on Saturday, then pancakes in Old Manali. Anyone?"
+            placeholder={
+              kind === "photo"
+                ? "Say something about it (optional)"
+                : "Sunrise trek to Lamadugh on Saturday, then pancakes in Old Manali. Anyone?"
+            }
             maxLength={1000}
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -130,7 +210,7 @@ export function PostTab({ onSeeCommunity }: { onSeeCommunity: () => void }) {
               type="submit"
               className={s.btn}
               data-tone="rose"
-              disabled={!text.trim()}
+              disabled={!ready || preparing}
             >
               <Icon name="send" size={16} /> Post
             </button>

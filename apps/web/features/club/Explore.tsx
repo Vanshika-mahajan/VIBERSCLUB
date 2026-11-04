@@ -285,7 +285,7 @@ export function PostCard({
             </button>
           )}
         </div>
-        <p>{post.text}</p>
+        {post.text && <p>{post.text}</p>}
         {keys.length > 0 && (
           <div className={s.chips} style={{ gap: 5 }} aria-label="Keywords">
             {keys.slice(0, 5).map((k) => (

@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HomeSections } from "@/features/home/HomeSections";
 import { places } from "@/lib/demo/data";
 import { useDemo } from "@/lib/demo/store";
 import { allEvents } from "@/lib/demo/people";
-import { PostTab } from "./PostTab";
 import { useDeck } from "./shared";
 import s from "./club.module.css";
 
@@ -55,7 +53,6 @@ function Ridges() {
  * Discover and Explore have their own pages in the pill bar.
  */
 export function ClubHome() {
-  const router = useRouter();
   const me = useDemo((st) => st.me);
   const hosted = useDemo((st) => st.hosted);
   const itineraries = useDemo((st) => st.itineraries);
@@ -116,7 +113,19 @@ export function ClubHome() {
       </header>
 
       <HomeSections
-        post={<PostTab onSeeCommunity={() => router.push("/discover")} />}
+        post={
+          <Link href="/profile#ignite" className={`${s.card} ${s.ignite}`}>
+            <span>
+              <span className={s.igniteTitle}>Ignite the vibe</span>
+              <span className={`${s.muted} ${s.small}`}>
+                Post a thread or a photo. Its keywords find your people.
+              </span>
+            </span>
+            <span className={s.btn} data-tone="rose" aria-hidden="true">
+              Post
+            </span>
+          </Link>
+        }
       />
     </div>
   );

@@ -1,28 +1,26 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Avatar, Empty, PageHeader, Section, Toggle, toast } from "@/components/ui";
+import { Avatar, PageHeader, Section, Toggle, toast } from "@/components/ui";
+import { PostTab } from "@/features/club/PostTab";
+import club from "@/features/club/club.module.css";
 import { hashtag, interpret } from "@/features/discover/interpret";
-import { allEvents, viberById } from "@/lib/demo/people";
 import { actions, useDemo } from "@/lib/demo/store";
+import { Albums } from "./Albums";
+import { ProfileLists } from "./ProfileLists";
 import { areas, categories, intents, interests, type AreaId, type IntentId } from "@/lib/taxonomy";
 
 const MAX_INTERESTS = 12;
 
 export function ProfileScreen() {
+  const router = useRouter();
   const me = useDemo((s) => s.me);
-  const liked = useDemo((s) => s.liked);
-  const saved = useDemo((s) => s.saved);
-  const blocked = useDemo((s) => s.blocked);
-  const rsvps = useDemo((s) => s.rsvps);
-  const hosted = useDemo((s) => s.hosted);
   // null = not edited yet, so the box shows the saved vibe
   const [draft, setDraft] = useState<string | null>(null);
   const vibe = draft ?? me.vibe;
   const thought = useMemo(() => interpret(vibe), [vibe]);
   const fresh = thought.interests.filter((i) => !me.interests.includes(i));
-  const myEvents = allEvents(hosted).filter((e) => rsvps[e.id] || e.hostId === "me");
 
   const saveVibe = () => {
     const text = vibe.trim().slice(0, 280);
@@ -41,21 +39,8 @@ export function ProfileScreen() {
   const toggleIntent = (id: IntentId) =>
     actions.updateMe({ intents: me.intents.includes(id) ? me.intents.filter((x) => x !== id) : [...me.intents, id] });
 
-  const people = (ids: string[]) =>
-    ids.filter((id) => viberById[id]).length ? (
-      <ul className="flex flex-wrap gap-3">
-        {ids
-          .filter((id) => viberById[id])
-          .map((id) => (
-            <li key={id} className="flex items-center gap-2 text-sm font-semibold">
-              <Avatar name={viberById[id].name} src={viberById[id].photoUrl} size={34} /> {viberById[id].name}
-            </li>
-          ))}
-      </ul>
-    ) : null;
-
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <PageHeader kicker="Profile" title="Your profile">
         What others see is your first name, general area, vibe and interests. Never your exact location.
       </PageHeader>
@@ -99,7 +84,14 @@ export function ProfileScreen() {
         </div>
       </section>
 
-      <Section title="Your vibe">
+      <Albums />
+
+      {/* posting: a thread or a photo with a caption; the keywords find people like you */}
+      <div id="ignite" className={`${club.club} mt-10 scroll-mt-6`}>
+        <PostTab title="IGNITE THE VIBE" onSeeCommunity={() => router.push("/discover#community")} />
+      </div>
+
+      <Section title="Your vibe line">
         <div className="card p-5">
           <label htmlFor="vibe" className="font-bold">
             In a line or two, what are you here for?
@@ -127,7 +119,7 @@ export function ProfileScreen() {
         </div>
       </Section>
 
-      <Section title={`Interests (${me.interests.length}/${MAX_INTERESTS})`}>
+      <Section title={`WHAT'S YOUR VIBE? (${me.interests.length}/${MAX_INTERESTS})`}>
         <div className="card space-y-4 p-5">
           {categories.map((c) => (
             <fieldset key={c.id}>
@@ -164,41 +156,9 @@ export function ProfileScreen() {
         </div>
       </Section>
 
-      <Section title="Your plans">
-        {myEvents.length ? (
-          <ul className="card divide-y divide-line">
-            {myEvents.map((e) => (
-              <li key={e.id}>
-                <Link href={`/events/${e.id}`} className="flex justify-between gap-3 p-4 font-semibold hover:bg-sand">
-                  {e.title}
-                  <small className="text-muted">{e.hostId === "me" ? "Hosting" : rsvps[e.id] === "going" ? "Going" : "Waitlist"}</small>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Empty>
-            No plans yet. <Link href="/events" className="link">Find an event</Link>
-          </Empty>
-        )}
+      <Section title="Your lists">
+        <ProfileLists />
       </Section>
-
-      <Section title="Liked">{people(liked) ?? <p className="text-sm text-muted">Vibers you like in Discover show up here.</p>}</Section>
-      <Section title="Saved">{people(saved) ?? <p className="text-sm text-muted">Save Vibers to come back to them later.</p>}</Section>
-      {blocked.length > 0 && (
-        <Section title="Blocked">
-          <ul className="space-y-2">
-            {blocked.map((id) => (
-              <li key={id} className="flex items-center justify-between gap-3">
-                <span className="font-semibold">{viberById[id]?.name ?? id}</span>
-                <button type="button" className="btn-ghost btn-sm" onClick={() => actions.unblock(id)}>
-                  Unblock
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
 
       <Section title="Demo">
         <button

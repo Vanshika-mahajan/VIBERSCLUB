@@ -46,8 +46,9 @@ test("the pitch journey: vibe → discover → like → connect → chat → RSV
 
   // 6. it all survives a reload, and shows on your profile
   await page.goto("/profile");
-  await expect(page.getByRole("link", { name: /Sunrise walk to Jogini falls/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Hampta Pass/ })).toContainText("Waitlist");
+  const plans = page.getByRole("listbox", { name: "Your plans" });
+  await expect(plans.getByRole("option", { name: /Sunrise walk to Jogini falls/ })).toBeVisible();
+  await expect(plans.getByRole("option", { name: /Hampta Pass/ })).toContainText("Waitlist");
   await page.goto("/chats");
   await expect(page.getByRole("link", { name: /Meera Kapoor/ })).toContainText("Hot springs tomorrow morning?");
 });

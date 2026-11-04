@@ -14,6 +14,17 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the restructure, Phase 3: Profile (2026-11-04)
+- IGNITE THE VIBE (`features/club/PostTab.tsx`, now on the profile at `#ignite`): post a Thread or a Photo with a caption; same posting and keyword matching as before. Photos are shrunk in the browser (`lib/demo/photos.ts`). Home links to it instead of holding its own composer. The vibe line editor stays, as "Your vibe line".
+- "Interests" heading is now "WHAT'S YOUR VIBE?" (contents unchanged).
+- `components/reactbits/AnimatedList.*` + `features/profile/ProfileLists.tsx`: one animated list per kind with Hugeicons (`@hugeicons/react` 1.1.10, `@hugeicons/core-free-icons` 4.3.5, pinned); a row opens what it holds.
+- Albums (`features/profile/Albums.tsx`, `profile.module.css`, store `albums` + actions): round highlight covers, a full-screen viewer (progress bars, tap or swipe, arrows, swipe down or Escape to close, pauses on hold, no auto-advance with reduced motion), and an editor (name, add, remove, reorder, cover, delete). Public by design; sample Vibers have no albums.
+- Store: `post()` takes an optional photo; `lastChangeKept()` tells when the browser is out of room for photos.
+- Gotcha: React StrictMode runs effects twice in development, so a dialog's close event can arrive after it opened again; onClose handlers ignore a close when the dialog is open.
+
+## Tests executed (restructure Phase 3, 2026-11-04, in the cloud workspace)
+Vitest 84 passed. E2E all passed except the two "API OK" checks (need the API running). New: photo post, album make/watch/edit, profile lists. Typecheck and ESLint clean.
+
 ## Files created or modified in the restructure, Phase 2: Discover (2026-11-04)
 - Discover is pure black on its page only: `discover.module.css` tokens set to black-page values, `sphere.ts` has a `dark` option (black ground, wine glow, ivory orbits), and the Community section uses `.night` in `club.module.css`. The universe keeps light paper (`universe.module.css` restores its tokens).
 - `features/club/ProfileOverview.tsx`: a click (or Enter) on a gallery card, or "Open <name>", opens the Viber's overview in place: photo, name, role, travel status and area, what you share, bio, hashtags, what they are here for, View full profile and Connect (a like; mutual-only chat still applies). `CircularGallery.jsx` local edit: Enter on a card reports the click when openOnClick is off.

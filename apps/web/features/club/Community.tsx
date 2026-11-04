@@ -398,7 +398,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
         ref={dialog}
         className={s.match}
         aria-labelledby="match-title"
-        onClose={() => setMatch(null)}
+        onClose={(e) => !e.currentTarget.open && setMatch(null)}
       >
         {match && (
           <>

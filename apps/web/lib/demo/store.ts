@@ -19,6 +19,10 @@ import {
  */
 export type Connection = "requested" | "incoming" | "connected";
 
+/** a public photo album on my profile, like a highlight: photos are shrunk data URLs in the demo */
+export type AlbumPhoto = { id: string; url: string };
+export type Album = { id: string; title: string; coverId: string; photos: AlbumPhoto[]; createdAt: number };
+
 export type DemoState = {
   version: 1;
   me: Me;
@@ -35,6 +39,8 @@ export type DemoState = {
   /** the club home: what I posted (its keywords find matching Vibers) and my itineraries */
   posts: Post[];
   itineraries: Itinerary[];
+  /** public photo albums on my profile (M2 moves the photos to Storage) */
+  albums: Album[];
 };
 
 export const initialState = (): DemoState => ({
@@ -52,6 +58,7 @@ export const initialState = (): DemoState => ({
   hosted: [],
   posts: [],
   itineraries: [],
+  albums: [],
 });
 
 const KEY = "vibers.demo.v1";
@@ -73,16 +80,22 @@ function load() {
   }
 }
 
+let kept = true;
 function set(fn: (s: DemoState) => DemoState) {
   load();
   state = fn(state);
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
+    kept = true;
   } catch {
-    /* storage can be blocked; the demo then lasts until reload */
+    /* storage can be blocked or full (photos are large); the demo then lasts until reload */
+    kept = false;
   }
   listeners.forEach((l) => l());
 }
+
+/** whether the last change was saved in this browser (false when storage is blocked or full) */
+export const lastChangeKept = () => kept;
 
 export function getState(): DemoState {
   load();
@@ -211,14 +224,16 @@ export const actions = {
       rsvps: { ...s.rsvps, [event.id]: "going" },
     }));
   },
-  post(text: string, placeId?: string): Post | null {
+  /** a thread (text), or a photo with an optional caption */
+  post(text: string, placeId?: string, photoUrl?: string): Post | null {
     const clean = text.trim().slice(0, 1000);
-    if (!clean) return null;
+    if (!clean && !photoUrl) return null;
     const p: Post = {
       id: crypto.randomUUID(),
       authorId: "me",
       text: clean,
       placeId,
+      photoUrl,
       minutesAgo: 0,
       sample: false,
     };
@@ -327,6 +342,34 @@ export const actions = {
   },
   reset() {
     set(() => initialState());
+  },
+  /** albums: highlights on my profile, public to other Vibers */
+  createAlbum(title: string, photos: string[]): Album | null {
+    const clean = title.trim().slice(0, 40);
+    if (!clean || !photos.length) return null;
+    const list = photos.map((url) => ({ id: crypto.randomUUID(), url }));
+    const album: Album = { id: crypto.randomUUID(), title: clean, coverId: list[0].id, photos: list, createdAt: Date.now() };
+    set((s) => ({ ...s, albums: [...s.albums, album] }));
+    return album;
+  },
+  updateAlbum(id: string, patch: { title?: string; coverId?: string; photos?: AlbumPhoto[] }) {
+    set((s) => ({
+      ...s,
+      albums: s.albums.map((a) => {
+        if (a.id !== id) return a;
+        const next = { ...a, ...patch, title: (patch.title ?? a.title).trim().slice(0, 40) || a.title };
+        // the cover must be one of the photos; the first one stands in when it was removed
+        if (!next.photos.some((p) => p.id === next.coverId)) next.coverId = next.photos[0]?.id ?? "";
+        return next;
+      }),
+    }));
+  },
+  addAlbumPhotos(id: string, urls: string[]) {
+    const add = urls.map((url) => ({ id: crypto.randomUUID(), url }));
+    set((s) => ({ ...s, albums: s.albums.map((a) => (a.id === id ? { ...a, photos: [...a.photos, ...add] } : a)) }));
+  },
+  deleteAlbum(id: string) {
+    set((s) => ({ ...s, albums: s.albums.filter((a) => a.id !== id) }));
   },
 };
 

@@ -44,7 +44,8 @@ export function ProfileOverview({
       ref={ref}
       className={s.ov}
       aria-labelledby="ov-name"
-      onClose={onClose}
+      // a close that arrives after it opened again (StrictMode runs effects twice) is stale
+      onClose={(e) => !e.currentTarget.open && onClose()}
       onClick={(e) => {
         // a click on the dark around the card closes it
         if (e.target === e.currentTarget) ref.current?.close();
