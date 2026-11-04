@@ -70,11 +70,11 @@ export function Itinerary() {
         ) : (
           <div className={s.empty}>
             <p className={s.h3} style={{ color: "var(--ink)" }}>
-              No plans yet
+              Your itinerary is missing a few people.
             </p>
             <p>
-              Start your own below, or pick a ready-made plan from Vibers Club
-              or another Viber.
+              Start your own below, or borrow a plan from Vibers Club or another
+              Viber.
             </p>
           </div>
         )}

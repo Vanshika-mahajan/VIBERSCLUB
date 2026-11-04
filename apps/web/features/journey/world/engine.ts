@@ -6,7 +6,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { gsap } from "@/lib/motion/gsap";
 import { makeCosmos } from "./cosmos";
 import { makeDoor } from "./door";
-import { DOOR, PHOTO_ASPECT, PHOTO_FOV } from "./layout";
+import { DOOR, JAMB_DEPTH, PHOTO_ASPECT, PHOTO_FOV } from "./layout";
 import { makeNightland } from "./nightland";
 import { makePlanet, PLANET_RADIUS } from "./planet";
 import { cameraAt, initialParams, type WorldParams } from "./params";
@@ -86,7 +86,9 @@ export async function createWorld(
   const planet = await makePlanet(maxAniso);
   cosmos.scene.add(planet.root);
 
-  // multisampled targets: smooth edges on the door, the grass and the globe
+  // multisampled targets: smooth edges on the door, the grass and the globe. The cosmos is only seen
+  // through the doorway (under its light) until we cross, so it renders a little smaller there.
+  const COSMOS_SCALE = 0.8;
   const cosmosTarget = new THREE.WebGLRenderTarget(1, 1, {
     type: THREE.HalfFloatType,
     samples: 4,
@@ -109,25 +111,32 @@ export async function createWorld(
 
   let width = 0;
   let height = 0;
-  const resize = () => {
+  // the most pixels per CSS pixel we draw; lowered a step at a time if the device can't keep up
+  let maxRatio = 2;
+  let ratio = 1;
+  const resize = (force = false) => {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
-    if (!w || !h || (w === width && h === height)) return;
+    if (!w || !h || (!force && w === width && h === height)) return;
     width = w;
     height = h;
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    ratio = Math.min(window.devicePixelRatio || 1, maxRatio);
     renderer.setPixelRatio(ratio);
     renderer.setSize(w, h, false);
     composer.setPixelRatio(ratio);
     composer.setSize(w, h);
-    cosmosTarget.setSize(Math.round(w * ratio), Math.round(h * ratio));
+    cosmosTarget.setSize(
+      Math.round(w * ratio * COSMOS_SCALE),
+      Math.round(h * ratio * COSMOS_SCALE),
+    );
+    // the doorway samples the cosmos by screen position: in the drawing buffer's pixels
     door.uniforms.res.value.set(Math.round(w * ratio), Math.round(h * ratio));
     cosmos.uniforms.pixel.value = ratio;
     planet.uniforms.pixel.value = ratio;
     night.uniforms.pixel.value = ratio;
     camera.aspect = w / h;
   };
-  const observer = new ResizeObserver(resize);
+  const observer = new ResizeObserver(() => resize());
   observer.observe(canvas);
   resize();
 
@@ -188,9 +197,10 @@ export async function createWorld(
       const tanV = Math.tan((camera.fov / 2) * DEG);
       const share = (p.planet * Math.min(width, height)) / height; // radius over half the height
       const alpha = Math.atan(share * tanV);
+      // close enough to fill the screen with the valley, never inside the atmosphere
       const dist = Math.max(
         PLANET_RADIUS / Math.sin(alpha),
-        PLANET_RADIUS * 1.08,
+        PLANET_RADIUS * 1.045,
       );
       planet.root.position.set(
         camera.position.x,
@@ -204,19 +214,65 @@ export async function createWorld(
       planet.uniforms.time.value = elapsed;
     }
 
-    crossed = camera.position.z < DOOR.z - 0.05;
+    // crossed once we're past the light at the far end of the doorway's reveal
+    crossed = camera.position.z < DOOR.z - JAMB_DEPTH - 0.05;
     if (crossed) {
       renderPass.scene = cosmos.scene;
+      cosmos.uniforms.pixel.value = ratio;
+      planet.uniforms.pixel.value = ratio;
     } else {
       renderPass.scene = meadowScene;
       if (p.leaf > 0.001) {
+        // stars keep their size in the smaller render
+        cosmos.uniforms.pixel.value = ratio * COSMOS_SCALE;
+        planet.uniforms.pixel.value = ratio * COSMOS_SCALE;
         renderer.setRenderTarget(cosmosTarget);
         renderer.render(cosmos.scene, camera);
         renderer.setRenderTarget(null);
       }
     }
     composer.render(dt);
+    if (!manual) watch(deltaMs);
   };
+
+  // Keep it smooth: if frames run long for a while, draw fewer pixels (one step, then wait and see).
+  // Never steps back up during the journey, so the picture doesn't pump.
+  const STEPS = [2, 1.6, 1.3, 1];
+  let slow = 0;
+  let cooldown = 0;
+  const watch = (deltaMs: number) => {
+    if (cooldown > 0) {
+      cooldown -= deltaMs;
+      return;
+    }
+    // long frames from a hidden tab or a pause are not the GPU's fault
+    if (deltaMs > 250) return;
+    slow = deltaMs > 24 ? slow + 1 : Math.max(0, slow - 2);
+    if (slow < 12) return;
+    slow = 0;
+    const next = STEPS.find(
+      (r) => r < Math.min(maxRatio, window.devicePixelRatio || 1),
+    );
+    if (next === undefined) return;
+    maxRatio = next;
+    resize(true);
+    cooldown = 1500;
+  };
+
+  // Warm up: draw every scene once, unseen, with the door open and the sphere in view, so shaders are
+  // compiled and textures are on the GPU before the visitor's first click. Nothing gets built mid-swing.
+  {
+    const saved = { ...params };
+    await renderer.compileAsync(meadowScene, camera).catch(() => undefined);
+    await renderer.compileAsync(cosmos.scene, camera).catch(() => undefined);
+    Object.assign(params, { leaf: 0.5, light: 1, rays: 1, planet: 0.6 });
+    frame(16);
+    Object.assign(params, { travel: 1 });
+    frame(16);
+    Object.assign(params, saved);
+    elapsed = 0;
+    frame(16);
+  }
   gsap.ticker.add(tick);
 
   return {

@@ -1,42 +1,44 @@
 @import "tailwindcss";
 
-/* Vibers Club look: an alpine travel club. Forest green brand on warm ivory, sage for soft surfaces,
-   burnt terracotta for the moments that matter (discover, like, connect), alpine gold for curated
-   and special details. Light only for now.
+/* Vibers Club look, in ARPIT's palette (2026-11-04): Arctic Daisy paper, Golden Clover for soft
+   surfaces and highlights, Olive Petal for structure, Rose Blush for warmth and Peach Blossom for the
+   moments that matter (like, join, post). None of the five is dark enough for text, so text and filled
+   buttons use their deeper partners (olive ink, peach ink), all AA on the palette's surfaces.
+   The semantic names below are kept so every page picks the palette up without changes.
    `static` emits every token as a CSS variable, so the Discover module and canvas can read them too. */
 @theme static {
-  /* brand */
-  --color-brand: #173d35;
-  --color-brand-hover: #23544a;
-  --color-sage: #dce7de;
-  --color-sage-deep: #c3d6c8;
-  /* accent: terracotta is decorative (dots, hearts, glows); accent is its deeper shade, safe for text and filled buttons */
-  --color-terracotta: #d97757;
-  --color-accent: #b5532f;
-  --color-accent-hover: #9c4526;
-  --color-accent-wash: #f8e7de;
-  /* highlight: gold fills carry ink text; gold-ink is the readable shade for text */
-  --color-gold: #e7bc69;
-  --color-gold-ink: #7a5a12;
-  --color-gold-wash: #f7ecd3;
-  /* surfaces */
-  --color-canvas: #f8f6f0;
-  --color-surface: #fffdf9;
-  --color-raised: #ffffff;
-  --color-sand: #f0ece2;
+  /* brand: deep olive for structure, filled buttons and the nav */
+  --color-brand: #4a4a36;
+  --color-brand-hover: #3d3d27;
+  --color-sage: #ece6c0;
+  --color-sage-deep: #d7ce93;
+  /* accent: Rose Blush is decorative (dots, hearts, glows); peach ink is safe for text and filled buttons */
+  --color-terracotta: #d8a48f;
+  --color-accent: #7d4a4e;
+  --color-accent-hover: #683c40;
+  --color-accent-wash: #f2dcd2;
+  /* highlight: Golden Clover fills carry ink text; gold-ink is the readable shade for text */
+  --color-gold: #d7ce93;
+  --color-gold-ink: #5c5c3d;
+  --color-gold-wash: #efebce;
+  /* surfaces: Arctic Daisy */
+  --color-canvas: #f7f4e3;
+  --color-surface: #fffdf3;
+  --color-raised: #fffef8;
+  --color-sand: #efebce;
   /* text and lines */
-  --color-ink: #242b28;
-  --color-ink2: #3c4440;
-  --color-muted: #686c64;
-  --color-silver: #a3a69c;
-  --color-line: rgba(36, 43, 40, 0.1);
-  --color-line2: rgba(36, 43, 40, 0.18);
+  --color-ink: #2e2e22;
+  --color-ink2: #4a4a36;
+  --color-muted: #66664e;
+  --color-silver: #a3a380;
+  --color-line: rgba(61, 61, 39, 0.12);
+  --color-line2: rgba(61, 61, 39, 0.2);
   /* status */
   --color-ok: #2e7350;
   --color-warn: #8a5d0c;
   --color-danger: #b42318;
   --color-danger-hover: #961d13;
-  --color-focus: #b5532f;
+  --color-focus: #7d4a4e;
 
   /* the club home palette: Olive Petal, Golden Clover, Arctic Daisy, Rose Blush, Peach Blossom (with darker partners for text) */
   --color-olive: #a3a380;
@@ -51,11 +53,14 @@
   --color-peach: #bb8588;
   --color-peach-ink: #7d4a4e;
 
-  --font-sans: "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
-  /* shadows are tinted with the forest green, never blue-grey */
-  --shadow-soft: 0 18px 50px -22px rgba(23, 61, 53, 0.32), 0 2px 6px rgba(36, 43, 40, 0.05);
-  --shadow-card: 0 10px 30px -20px rgba(23, 61, 53, 0.38), 0 1px 2px rgba(36, 43, 40, 0.04);
+  /* shadows are tinted with olive, never blue-grey */
+  --shadow-soft:
+    0 18px 50px -22px rgba(61, 61, 39, 0.32), 0 2px 6px rgba(46, 46, 34, 0.05);
+  --shadow-card:
+    0 10px 30px -20px rgba(61, 61, 39, 0.38), 0 1px 2px rgba(46, 46, 34, 0.04);
 }
 
 :root {

@@ -22,8 +22,8 @@ const THRESHOLD = 110;
  * Community: Vibers like me, one card at a time. Drag right (or press →) to like, left (←) to pass,
  * up (↑) to save them for later. A like that is mutual opens a "say hi" moment.
  */
-export function Community() {
-  const deck = useDeck();
+export function Community({ vibe = "" }: { vibe?: string }) {
+  const deck = useDeck(vibe);
   const saved = useDemo((st) => st.saved);
   const liked = useDemo((st) => st.liked);
   const connections = useDemo((st) => st.connections);
@@ -87,8 +87,19 @@ export function Community() {
               className={`${s.muted} ${s.small}`}
               style={{ margin: "4px 0 0" }}
             >
-              Picked from your vibe and your posts.{" "}
-              {deck.length ? `${deck.length} to meet.` : ""}
+              {vibe ? (
+                <>
+                  Picked for &ldquo;{vibe}&rdquo;.{" "}
+                  <Link href="/home?tab=community" className={s.inline}>
+                    Use my profile instead
+                  </Link>
+                </>
+              ) : (
+                <>
+                  Picked from your vibe and your posts.{" "}
+                  {deck.length ? `${deck.length} to meet.` : ""}
+                </>
+              )}
             </p>
           </div>
         </div>

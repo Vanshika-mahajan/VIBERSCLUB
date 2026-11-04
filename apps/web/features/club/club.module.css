@@ -8,7 +8,7 @@
   --line: rgba(61, 61, 39, 0.12);
   --line2: rgba(61, 61, 39, 0.2);
   --ink: var(--color-olive-ink);
-  --soft: #6b6b4e;
+  --soft: #5f5f47;
   color: var(--ink);
 }
 /* the whole page takes the palette's paper, behind the shared app layout */
@@ -110,6 +110,13 @@
 }
 .title em {
   font-style: italic;
+  color: var(--color-peach-ink);
+}
+.sly {
+  margin: 12px 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
   color: var(--color-peach-ink);
 }
 .lede {
@@ -246,6 +253,12 @@
   font-size: 1.02rem;
   font-weight: 800;
   letter-spacing: -0.01em;
+}
+.inline {
+  color: var(--color-peach-ink);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .muted {
   color: var(--soft);

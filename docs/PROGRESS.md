@@ -14,6 +14,21 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the journey and palette pass (2026-11-04)
+ARPIT's four points, agreed in discussion before any code: dive into Manali instead of pulling back to orbiting profiles, suggestions under "What's on your mind?", a smooth and less flat door, and his palette across the site (night door scene stays moonlit; text in any readable colour). Plus sly lines in the Vibers Club voice.
+- `timelines/discovery.ts`, `scenes/Discovery.tsx`, `discovery.module.css`, `useJourney.ts`, `world/params.ts`: after the spin slows, one exponential dive into the Manali valley (no pull-back, no orbiting cards, no row); warm light rises and the journey lands on `/home?tab=community&vibe=<thought>`. Phases are now idle, opening, cosmos, manali, arrive.
+- `features/club/shared.tsx`, `Community.tsx`, `ClubHome.tsx`: the door thought ranks Community ("Picked for ...", with "Use my profile instead").
+- `scenes/ThoughtInput.tsx`, `journey.module.css`: eight ideas for different travellers (first time here, off the usual trail, treks and sunrises, slow cafés, workation, bonfires and music, yoga and quiet, snow and adventure). A tap fills the line and focuses it; nothing is sent.
+- `world/engine.ts`: warm-up before the first click (shaders compiled, textures uploaded, every scene drawn once unseen), the cosmos rendered at 80% while seen through the door, and automatic resolution steps (2, 1.6, 1.3, 1) if frames run long. `world/cosmos.ts`: the galaxy haze is drawn in the sky shader instead of 2,600 overlapping wide points (the heaviest part of the open).
+- `world/door.ts`, `world/layout.ts`, `timelines/world.ts`: a thicker leaf with rounded edges; a face shader with hinge shadow, a sheen that slides as it turns and warm light on the latch edge; a lit reveal (inner walls 0.32 m deep) so the doorway has depth; the door unlatches then swings with weight; the camera moves in one unbroken push.
+- `app/globals.css`, `app/layout.tsx`: the site tokens now carry the palette (Arctic Daisy surfaces, Golden Clover highlights, Olive for structure and buttons, Rose Blush decoration, Peach ink for key actions); every page and the sidebar follow. The night door scene keeps its own gold.
+- `world/nightland.ts`, `public/journey/day*.webp`: the day scene tinted toward Clover and Olive; the CSS day stills re-rendered.
+- Lines: door page "Some doors lead to rooms. This one leads to your people."; arrival and home "Travel solo. Just not alone."; empty itinerary "Your itinerary is missing a few people."
+- `features/journey/match.ts` and `scenes/ProfileCard.tsx` are no longer used by the journey; left in place until ARPIT OKs removing them.
+
+## Tests executed (journey and palette pass, 2026-11-04, in the cloud workspace)
+Vitest 84 passed. E2E 70 passed (journey CSS and 3D, club, demo, discover, universe, motion, home); the two "API OK" checks fail because the API isn't running here. Typecheck, ESLint and Prettier clean. Smoothness on a real GPU can't be measured in this workspace (software rendering only).
+
 ## Files created or modified in the club home (2026-11-04)
 ARPIT asked for the Vibers Club home in his palette (Olive Petal #A3A380, Golden Clover #D7CE93, Arctic Daisy #EFEBCE, Rose Blush #D8A48F, Peach Blossom #BB8588) with tabs for Events, Community (swipe to like, pass or save for later), Explore (places and similar posts), My itinerary (your own, or a template by Vibers Club or another Viber) and Post (keywords in a post find matching Vibers).
 - `app/home/page.tsx`, `features/club/ClubHome.tsx` (new): hero with greeting, four counts that jump to their tab and soft ridges in the palette; a sticky tab bar (arrow keys work); the open tab is in the URL (`/home?tab=community`).

@@ -87,9 +87,21 @@ export function useMyThought(): Thought {
   }, [me, posts]);
 }
 
-/** Vibers ranked for me, without anyone I've already liked, passed, saved or blocked */
-export function useDeck() {
-  const thought = useMyThought();
+/**
+ * Vibers ranked for me, without anyone I've already liked, passed, saved or blocked. `vibe` is what
+ * I typed at the door: when it names something, it leads the ranking over my profile.
+ */
+export function useDeck(vibe = "") {
+  const mine = useMyThought();
+  const thought = useMemo(() => {
+    const t = vibe.trim() ? interpret(vibe) : null;
+    if (!t || !t.interests.length) return mine;
+    return {
+      ...t,
+      intents: t.intents.length ? t.intents : mine.intents,
+      area: t.area ?? mine.area,
+    };
+  }, [vibe, mine]);
   const liked = useDemo((st) => st.liked);
   const passed = useDemo((st) => st.passed);
   const saved = useDemo((st) => st.saved);

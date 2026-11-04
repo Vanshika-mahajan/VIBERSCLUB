@@ -67,16 +67,19 @@ export function ClubHome() {
   const pathname = usePathname();
   const q = params.get("tab");
   const tab: TabId = isTab(q) ? q : "events";
+  // what was typed at the door, if the journey brought us here
+  const vibe = (params.get("vibe") ?? "").slice(0, 200);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const me = useDemo((st) => st.me);
   const hosted = useDemo((st) => st.hosted);
   const itineraries = useDemo((st) => st.itineraries);
-  const deck = useDeck();
+  const deck = useDeck(vibe);
   const weekEvents = allEvents(hosted).filter((e) => e.dayOffset < 7).length;
 
   const go = (id: TabId, focus = false) => {
-    router.replace(`${pathname}?tab=${id}`, { scroll: false });
+    const keep = vibe ? `&vibe=${encodeURIComponent(vibe)}` : "";
+    router.replace(`${pathname}?tab=${id}${keep}`, { scroll: false });
     if (focus) tabRefs.current[id]?.focus();
   };
   const onKey = (e: KeyboardEvent) => {
@@ -122,6 +125,7 @@ export function ClubHome() {
           <h1 className={s.title}>
             Hi {me.name}, your Manali has <em>people</em> in it.
           </h1>
+          <p className={s.sly}>Travel solo. Just not alone.</p>
           <p className={s.lede}>
             Meet Vibers who share your vibe, join what&apos;s on, find places
             worth the walk and plan your days, all in one place.
@@ -179,7 +183,7 @@ export function ClubHome() {
         className={s.panel}
       >
         {tab === "events" && <Events />}
-        {tab === "community" && <Community />}
+        {tab === "community" && <Community vibe={vibe} />}
         {tab === "explore" && <Explore />}
         {tab === "itinerary" && <Itinerary />}
         {tab === "post" && <PostTab onSeeCommunity={() => jump("community")} />}

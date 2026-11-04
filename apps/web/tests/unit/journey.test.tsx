@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// the journey hands over to the club home with the router; jsdom has no app router
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
+}));
 import { JourneyScreen } from "@/features/journey/JourneyScreen";
 
 const stage = () => document.querySelector("[data-phase]")!;

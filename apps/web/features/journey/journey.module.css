@@ -5,8 +5,9 @@
   --ivory: #fbf7ee;
   --ivory-soft: rgba(251, 247, 238, 0.78);
   --night-green: #0f2418;
-  --gold: var(--color-gold);
-  --forest: var(--color-brand);
+  /* the night keeps its own gold; the day takes the club palette (below) */
+  --gold: #e7bc69;
+  --forest: #3d3d27;
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -418,7 +419,8 @@
 /* ---------- day: the same place in warm, hazy sunlight (the Landscape look) ---------- */
 
 .journey[data-mode="day"] {
-  background: #c9bb93;
+  --gold: #d7ce93;
+  background: #d7ce93;
 }
 .journey[data-mode="day"] .headline {
   color: var(--forest);
@@ -426,23 +428,23 @@
 }
 .journey[data-mode="day"] .brand,
 .journey[data-mode="day"] .skipLink {
-  color: #23301f;
+  color: #3d3d27;
   text-shadow: 0 1px 12px rgba(255, 248, 230, 0.6);
 }
 .journey[data-mode="day"] .skipLink {
-  text-decoration-color: rgba(35, 48, 31, 0.4);
+  text-decoration-color: rgba(61, 61, 39, 0.4);
 }
 .journey[data-mode="day"] .mode {
-  color: #23301f;
-  border-color: rgba(35, 48, 31, 0.3);
+  color: #3d3d27;
+  border-color: rgba(61, 61, 39, 0.3);
   background: rgba(255, 248, 230, 0.4);
 }
 .journey[data-mode="day"] .scrim {
   background:
     linear-gradient(
       to top,
-      rgba(22, 32, 18, 0.72) 0%,
-      rgba(22, 32, 18, 0.36) 22%,
+      rgba(46, 46, 30, 0.72) 0%,
+      rgba(46, 46, 30, 0.36) 22%,
       transparent 42%
     ),
     linear-gradient(to bottom, rgba(255, 248, 230, 0.3), transparent 22%);
@@ -478,7 +480,8 @@
   top: clamp(72px, 14svh, 150px);
   padding: 0 20px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   pointer-events: none;
 }
 
@@ -496,6 +499,26 @@
   text-shadow:
     0 2px 24px rgba(0, 0, 0, 0.75),
     0 0 42px rgba(190, 30, 40, 0.35);
+}
+.tagline {
+  margin: 14px 0 0;
+  font-size: clamp(0.86rem, 1.4vw, 1rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: var(--ivory-soft);
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.7);
+  animation: taglineIn 1.2s 1.1s both cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes taglineIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.journey[data-mode="day"] .tagline {
+  color: #3d3d27;
+  text-shadow: 0 1px 18px rgba(255, 248, 230, 0.8);
 }
 .line {
   display: block !important;
@@ -580,9 +603,82 @@
   border-bottom-color: #ffc9a8;
 }
 
+/* ideas to start from: soft glass pills on the meadow; a tap fills the line */
+/* left of the button: the hint (only when there is one) above one row of ideas that scrolls sideways */
+.lead {
+  flex: 1;
+  min-width: 0;
+}
+.suggest {
+  display: flex;
+  gap: 7px;
+  margin: 0;
+  padding: 2px 24px 2px 2px;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, #000 88%, transparent);
+}
+.suggest::-webkit-scrollbar {
+  display: none;
+}
+.suggest li {
+  flex: none;
+}
+.chip {
+  padding: 7px 13px;
+  border: 1px solid rgba(251, 247, 238, 0.28);
+  border-radius: 999px;
+  background: rgba(14, 12, 20, 0.42);
+  color: var(--ivory);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    border-color 0.25s,
+    transform 0.25s;
+}
+.chip:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(251, 247, 238, 0.6);
+  background: rgba(14, 12, 20, 0.6);
+}
+.chip[aria-pressed="true"] {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.chip:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.journey[data-mode="day"] .chip {
+  border-color: rgba(61, 61, 39, 0.18);
+  background: rgba(247, 244, 227, 0.62);
+  color: #3d3d27;
+}
+.journey[data-mode="day"] .chip:hover:not(:disabled) {
+  border-color: #a3a380;
+  background: rgba(247, 244, 227, 0.85);
+}
+.journey[data-mode="day"] .chip[aria-pressed="true"] {
+  border-color: #bb8588;
+  background: #f2dcd2;
+  color: #7d4a4e;
+}
+
 .actions {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin-top: 12px;
@@ -590,10 +686,12 @@
 
 .hint {
   margin: 0;
-  min-height: 1.2em;
   font-size: 0.82rem;
   color: #ffe2cf;
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
+}
+.hint:not(:empty) {
+  margin-bottom: 8px;
 }
 
 .cta {
@@ -670,10 +768,14 @@
 
 /* phones: the door sits a little higher; the thought takes the full width under it */
 @media (max-width: 640px) {
+  .suggest {
+    margin-right: -20px;
+  }
+  /* ideas first, then the button */
   .actions {
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-items: stretch;
-    gap: 4px;
+    gap: 6px;
   }
   .cta {
     justify-content: flex-end;
@@ -681,6 +783,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .tagline {
+    animation: none;
+  }
+  .chip,
   .underline,
   .arrow {
     transition: none;
