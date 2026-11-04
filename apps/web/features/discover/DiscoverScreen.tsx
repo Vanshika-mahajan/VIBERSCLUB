@@ -12,6 +12,7 @@ import { ProfilePanel } from "./ProfilePanel";
 import { useCalm } from "./useCalm";
 import { Sphere, initials, type Formed, type Slot, type SphereItem } from "./sphere";
 import type { Corrections, DiscoveryResult, Viber, WorldCard } from "./types";
+import { playSound } from "@/lib/sound";
 
 const sampleAdapter = createSampleAdapter();
 
@@ -292,6 +293,7 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
     else toast(`You liked ${first(v)}. If they like you back, you can connect.`);
   }
   function connect(v: Viber) {
+    playSound("connect");
     actions.requestConnection(v.id);
     toast(likedMe.includes(v.id) ? `${first(v)} accepted. Say hello in Chats.` : `Request sent to ${first(v)}.`);
   }

@@ -10,6 +10,7 @@ import { discover } from "@/features/discover/rank";
 import { firstName, viberById } from "@/lib/demo/people";
 import { actions, useDemo } from "@/lib/demo/store";
 import { areas, interestById, intents } from "@/lib/taxonomy";
+import { playSound } from "@/lib/sound";
 
 /** A Viber's full profile: everything they show, what you share, and like, save, pass or connect. */
 export function FullProfile({ id }: { id: string }) {
@@ -37,6 +38,7 @@ export function FullProfile({ id }: { id: string }) {
   const isSaved = saved.includes(id);
   const shared = new Set(match?.shared ?? []);
   const connect = () => {
+    playSound("connect");
     const { mutual } = actions.like(id);
     if (mutual) {
       actions.requestConnection(id);

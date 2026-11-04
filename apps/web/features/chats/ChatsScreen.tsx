@@ -8,6 +8,7 @@ import type { ChatMessage } from "@/lib/demo/data";
 import { firstName, viberById } from "@/lib/demo/people";
 import { actions, useDemo } from "@/lib/demo/store";
 import { areas } from "@/lib/taxonomy";
+import { playSound } from "@/lib/sound";
 
 const ago = (m: number) => (m < 1 ? "now" : m < 60 ? `${m} min` : m < 60 * 24 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} d`);
 const none: ChatMessage[] = [];
@@ -85,7 +86,7 @@ export function ChatsScreen() {
                       <button type="button" className="btn-ghost btn-sm" onClick={() => (actions.declineConnection(id), toast("Request declined. They won't be told."))}>
                         Decline
                       </button>
-                      <button type="button" className="btn btn-sm" onClick={() => (actions.acceptConnection(id), toast(`You and ${firstName(v)} are connected.`))}>
+                      <button type="button" className="btn btn-sm" onClick={() => (playSound("connect"), actions.acceptConnection(id), toast(`You and ${firstName(v)} are connected.`))}>
                         Accept
                       </button>
                     </span>

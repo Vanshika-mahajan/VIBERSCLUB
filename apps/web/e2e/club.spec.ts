@@ -223,7 +223,7 @@ test("profile: make an album, watch it, change it", async ({ page }) => {
   const editor = page.getByRole("dialog", { name: "New album" });
   await editor.getByLabel("Name").fill("Hampta");
   await editor.getByLabel("Add photos").setInputFiles([await png(page, "#51202c"), await png(page, "#2f4736")]);
-  await expect(editor.getByRole("img")).toHaveCount(2);
+  await expect(editor.getByRole("img", { name: /^Photo \d/ })).toHaveCount(2);
   await editor.getByRole("button", { name: "Make photo 2 the cover" }).click();
   await editor.getByRole("button", { name: "Add to profile" }).click();
   await page.getByRole("button", { name: "Hampta, 2 photos" }).click();

@@ -14,6 +14,15 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the restructure, Phase 5: Sound (2026-11-04)
+- `lib/sound.ts`: one sound engine and the `useSound()` hook. Tones are made in the browser with the Web Audio API (no audio files): soft sine and triangle notes through a warm low-pass. Ten sounds: tap, nav, open, close, select, deselect, post, connect, add, remove. Nothing plays until the person has tapped or typed; one sound at a time (a new one fades the last); the same sound twice within 70 ms plays once. Volume and on/off are kept in this browser (`vc-sound`); off by default for people whose device asks for reduced motion.
+- `components/SoundEffects.tsx` (in the layout) plays sounds by convention: `data-sound="name"` on anything clicked, pill bar links (nav), toggles with `aria-pressed` (select/deselect: interests, saves, likes, chips), things with `aria-expanded` (open/close: the profile menu), submit buttons and `.btn` (tap), and every `<dialog>` opening or closing (profile overview, albums). `data-sound="none"` opts out.
+- Called directly where no click is involved: posting (post), likes, connection requests and accepts (connect), itinerary drops, Add menus and Add to plan (add), removing a day or a plan (remove).
+- Profile menu: a "Sounds" switch and a volume slider.
+
+## Tests executed (restructure Phase 5, 2026-11-04, in the cloud workspace)
+Vitest 91 passed (new `sound.test.ts`: silent before interaction, no double play, every sound exists, mute and volume persist, off for reduced motion). E2E 89 passed, 1 skipped, the two "API OK" checks failed as usual. New `e2e/sound.spec.ts`: quiet on arrival, a nav tap plays, muting from the profile menu stops sounds and survives a reload. The album test now counts only the photos (it sometimes counted icons). Typecheck and ESLint clean.
+
 ## Files created or modified in the restructure, Phase 4: Itinerary in Explore (2026-11-04)
 - Data (`lib/demo/club.ts`): an itinerary now has `visibility` (public or private), an optional `startDate` (otherwise it is just a duration), `travelStyle`, `notes`, and each stop an `activity`. Sample plans are public; mine, and copies, start private.
 - Store (`lib/demo/store.ts`): `updateItinerary`, `updateStop`, `insertStop` (a dropped place lands where it was dropped; its time is 90 minutes after the stop before it, or 10:00), `moveStop` (reorder or move to another day), `removeDay` (the last day stays).

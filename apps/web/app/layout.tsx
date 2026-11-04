@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/fraunces";
 import { AppNav } from "@/components/AppNav";
+import { SoundEffects } from "@/components/SoundEffects";
 import { Toaster } from "@/components/ui";
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
         <AppNav />
+        <SoundEffects />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-[72px] pb-32 md:px-10 md:pt-10">
           {children}
         </main>

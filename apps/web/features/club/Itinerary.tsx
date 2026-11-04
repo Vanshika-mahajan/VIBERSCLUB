@@ -256,7 +256,7 @@ function TemplateGallery({ onUse, mine }: { onUse: (p: Plan) => void; mine: Plan
           )}
         </dl>
         <div>
-          <button type="button" className={s.btn} onClick={() => onUse(p)}>
+          <button type="button" className={s.btn} data-sound="add" onClick={() => onUse(p)}>
             {mineShown ? "Make a copy" : "Use this plan"}
           </button>
         </div>

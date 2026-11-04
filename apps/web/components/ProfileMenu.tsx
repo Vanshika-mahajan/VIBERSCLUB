@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Avatar } from "@/components/ui";
 import { useDemo } from "@/lib/demo/store";
 import { isActive, menuItems } from "@/lib/nav";
+import { playSound, useSound } from "@/lib/sound";
 
 /** The round avatar at the top right: opens a small menu with my profile, chats and events. */
 export function ProfileMenu() {
@@ -17,6 +18,7 @@ export function ProfileMenu() {
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const menuId = useId();
+  const sound = useSound();
 
   // a link in the menu changes the page: close it on the way
   const [shownFor, setShownFor] = useState(pathname);
@@ -86,6 +88,37 @@ export function ProfileMenu() {
               </li>
             ))}
           </ul>
+          <div className="vc-profile__sound">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={sound.enabled}
+              className="vc-profile__row w-full"
+              data-sound="none"
+              onClick={() => {
+                sound.setEnabled(!sound.enabled);
+                if (!sound.enabled) playSound("select");
+              }}
+            >
+              Sounds
+              <span className="vc-profile__switch" aria-hidden="true" />
+            </button>
+            {sound.enabled && (
+              <label className="vc-profile__volume">
+                <span className="sr-only">Sound volume</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={Math.round(sound.volume * 100)}
+                  onChange={(e) => sound.setVolume(Number(e.target.value) / 100)}
+                  onPointerUp={() => playSound("tap")}
+                  onKeyUp={() => playSound("tap")}
+                />
+              </label>
+            )}
+          </div>
         </div>
       )}
     </div>

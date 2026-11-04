@@ -6,6 +6,7 @@ import { places } from "@/lib/demo/data";
 import { actions, useDemo } from "@/lib/demo/store";
 import { areas } from "@/lib/taxonomy";
 import { toast } from "@/components/ui";
+import { playSound } from "@/lib/sound";
 import { Icon, Photo } from "./shared";
 import s from "./club.module.css";
 
@@ -51,11 +52,13 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
     const stopId = e.dataTransfer.getData(STOP);
     if (placeId) {
       actions.insertStop(plan.id, dayId, placeId, index);
+      playSound("add");
       toast(`${placeName(placeId)} added.`);
     } else if (stopId) {
       // the dragged stop was still counted when measuring; it leaves its old place first
       const from = plan.days.find((d) => d.id === dayId)?.stops.findIndex((x) => x.id === stopId) ?? -1;
       actions.moveStop(plan.id, stopId, dayId, from !== -1 && from < index ? index - 1 : index);
+      playSound("tap");
     }
   };
 
@@ -82,6 +85,7 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
               onClick={() => {
                 if (!window.confirm(`Delete "${plan.title}"? This can't be undone.`)) return;
                 actions.deleteItinerary(plan.id);
+                playSound("remove");
                 toast(`"${plan.title}" deleted.`);
               }}
             >
@@ -148,6 +152,7 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
                     key={v}
                     type="button"
                     aria-pressed={visibility === v}
+                    data-sound="select"
                     onClick={() => {
                       actions.updateItinerary(plan.id, { visibility: v });
                       toast(v === "public" ? "Public: other Vibers can find and copy it." : "Private: only you can see it.");
@@ -193,6 +198,7 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
                     onClick={() => {
                       if (d.stops.length && !window.confirm(`Remove day ${i + 1} and its ${d.stops.length} stops?`)) return;
                       actions.removeDay(plan.id, d.id);
+                      playSound("remove");
                     }}
                   >
                     Remove day
@@ -253,6 +259,7 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
                       <button
                         type="button"
                         className={s.mini2}
+                        data-sound="tap"
                         aria-label={`Move ${placeName(st.placeId)} earlier`}
                         disabled={j === 0}
                         onClick={() => actions.moveStop(plan.id, st.id, d.id, j - 1)}
@@ -262,6 +269,7 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
                       <button
                         type="button"
                         className={s.mini2}
+                        data-sound="tap"
                         aria-label={`Move ${placeName(st.placeId)} later`}
                         disabled={j === d.stops.length - 1}
                         onClick={() => actions.moveStop(plan.id, st.id, d.id, j + 1)}
@@ -277,6 +285,7 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
                             const to = plan.days.find((x) => x.id === e.target.value);
                             if (!to) return;
                             actions.moveStop(plan.id, st.id, to.id, to.stops.length);
+                            playSound("tap");
                             toast(`Moved to day ${plan.days.indexOf(to) + 1}.`);
                           }}
                         >
@@ -293,6 +302,7 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
                       <button
                         type="button"
                         className={s.mini2}
+                        data-sound="remove"
                         aria-label={`Remove ${placeName(st.placeId)} from day ${i + 1}`}
                         onClick={() => actions.removeStop(plan.id, d.id, st.id)}
                       >
@@ -309,7 +319,7 @@ export function ItineraryBuilder({ plan }: { plan: Plan }) {
 
         {plan.days.length < 14 && (
           <div>
-            <button type="button" className={s.ghost} onClick={() => actions.addDay(plan.id)}>
+            <button type="button" className={s.ghost} data-sound="add" onClick={() => actions.addDay(plan.id)}>
               <Icon name="plus" size={16} /> Add a day
             </button>
           </div>
@@ -371,6 +381,7 @@ function PlacesTray({ plan }: { plan: Plan }) {
               onChange={(e) => {
                 if (!e.target.value) return;
                 actions.insertStop(plan.id, e.target.value, p.id);
+                playSound("add");
                 toast(`${p.name} added to day ${plan.days.findIndex((d) => d.id === e.target.value) + 1}.`);
               }}
             >
@@ -405,12 +416,14 @@ export function AddToPlan({ placeId, name }: { placeId: string; name: string }) 
         if (v === "new") {
           const it = actions.createItinerary("", 1);
           actions.insertStop(it.id, it.days[0].id, placeId);
+          playSound("add");
           toast(`${name} is day 1 of a new plan, in Itinerary.`);
           return;
         }
         const [itId, dayId] = v.split("|");
         const it = mine.find((x) => x.id === itId);
         actions.insertStop(itId, dayId, placeId);
+        playSound("add");
         toast(`${name} added to "${it?.title}", day ${(it?.days.findIndex((d) => d.id === dayId) ?? 0) + 1}.`);
       }}
     >

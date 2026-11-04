@@ -25,6 +25,7 @@ import {
   useDeck,
 } from "./shared";
 import s from "./club.module.css";
+import { playSound } from "@/lib/sound";
 
 const noop = () => () => {};
 
@@ -64,6 +65,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
     window.setTimeout(() => {
       setLeaving(null);
       if (verdict === "like") {
+        playSound("connect");
         const { mutual } = actions.like(m.viber.id);
         if (mutual) setMatch(m.viber);
         else
@@ -312,6 +314,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
                       aria-label={`Like ${v.name}`}
                       onClick={() => {
                         actions.toggleSave(v.id);
+                        playSound("connect");
                         const { mutual } = actions.like(v.id);
                         if (mutual) setMatch(v);
                         else toast(`You liked ${firstName(v)}.`);
@@ -425,7 +428,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
                 href={`/chats?with=${match.id}`}
                 className={s.btn}
                 data-tone="rose"
-                onClick={() => actions.requestConnection(match.id)}
+                onClick={() => (playSound("connect"), actions.requestConnection(match.id))}
               >
                 Say hi to {firstName(match)}
               </Link>

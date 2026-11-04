@@ -312,3 +312,51 @@ body:not(:has(> .vc-pillbar)) > main {
     padding-bottom: 3rem;
   }
 }
+
+/* sounds on or off, and how loud, at the foot of the profile menu */
+.vc-profile__sound {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-line);
+}
+.vc-profile__sound .vc-profile__row {
+  cursor: pointer;
+  text-align: left;
+}
+.vc-profile__switch {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--color-recess);
+  box-shadow: inset 0 0 0 1px var(--color-line2);
+  transition: background 0.2s;
+}
+.vc-profile__switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--color-muted);
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+[aria-checked="true"] > .vc-profile__switch {
+  background: var(--color-brand);
+}
+[aria-checked="true"] > .vc-profile__switch::after {
+  transform: translateX(14px);
+  background: var(--color-ink);
+}
+.vc-profile__volume {
+  display: block;
+  padding: 4px 12px 10px;
+}
+.vc-profile__volume input {
+  width: 100%;
+  accent-color: var(--color-accent);
+}

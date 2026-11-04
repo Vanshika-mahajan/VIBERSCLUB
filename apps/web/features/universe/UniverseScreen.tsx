@@ -18,6 +18,7 @@ import { roomFor, sampleRooms, type Room } from "./sample-rooms";
 import { sampleScreens, type Screen } from "./sample-screens";
 import { ago, orbitsFor, screenUid } from "./tiers";
 import u from "./universe.module.css";
+import { playSound } from "@/lib/sound";
 
 const sampleAdapter = createSampleAdapter();
 
@@ -257,6 +258,7 @@ export function UniverseScreen({ adapter = sampleAdapter, screens = sampleScreen
     toast(mutual ? `You and ${first(v)} like each other. You can send a connection request.` : `You liked ${first(v)}. If they like you back, you can connect.`);
   }
   function connect(v: Viber) {
+    playSound("connect");
     actions.requestConnection(v.id);
     toast(likedMe.includes(v.id) ? `${first(v)} accepted. Say hello in Chats.` : `Request sent to ${first(v)}.`);
   }

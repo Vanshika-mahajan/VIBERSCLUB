@@ -11,6 +11,7 @@ import { toast } from "@/components/ui";
 import { PostCard } from "./Explore";
 import { Icon, Photo } from "./shared";
 import s from "./club.module.css";
+import { playSound } from "@/lib/sound";
 
 type Kind = "thread" | "photo";
 
@@ -94,6 +95,7 @@ export function PostTab({
               kind === "photo" ? (photo ?? undefined) : undefined,
             );
             if (!p) return;
+            playSound("post");
             setText("");
             setPlaceId("");
             setPhoto(null);
@@ -299,6 +301,7 @@ export function PostTab({
                     data-kind={liked.includes(m.viber.id) ? "like" : undefined}
                     onClick={() => {
                       if (liked.includes(m.viber.id)) return;
+                      playSound("connect");
                       const { mutual } = actions.like(m.viber.id);
                       toast(
                         mutual
