@@ -34,23 +34,23 @@ function Ridges() {
     >
       <path
         d="M0 120 L120 70 L210 104 L330 38 L450 96 L560 52 L690 110 L820 46 L940 92 L1060 58 L1200 98 V190 H0Z"
-        fill="#d7ce93"
+        style={{ fill: "var(--color-plum)" }}
         opacity="0.55"
       />
       <path
         d="M0 150 L140 104 L250 132 L380 86 L520 140 L640 98 L780 142 L900 104 L1040 136 L1200 112 V190 H0Z"
-        fill="#bb8588"
-        opacity="0.38"
+        style={{ fill: "var(--color-leaf)" }}
+        opacity="0.6"
       />
       <path
         d="M0 170 L160 138 L300 160 L460 128 L600 166 L760 136 L900 168 L1060 140 L1200 160 V190 H0Z"
-        fill="#a3a380"
-        opacity="0.8"
+        style={{ fill: "var(--color-moss)" }}
+        opacity="0.95"
       />
       <path
         d="M0 182 C200 168 400 186 600 176 S1000 170 1200 180 V190 H0Z"
-        fill="#5c5c3d"
-        opacity="0.55"
+        style={{ fill: "var(--color-ivy)" }}
+        opacity="0.95"
       />
     </svg>
   );

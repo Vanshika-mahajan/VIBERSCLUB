@@ -23,7 +23,7 @@ const TRY = [
   "Workation buddies with good wifi",
 ];
 // category hues keep their old ids; on screen they read forest, terracotta and gold
-const HUE_COLOR = { blue: "#2F6B5C", violet: "#D97757", cyan: "#D9A548" } as const;
+const HUE_COLOR = { blue: "#2F4736", violet: "#6B3543", cyan: "#B88792" } as const;
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 const first = (v: Viber) => v.name.split(" ")[0];

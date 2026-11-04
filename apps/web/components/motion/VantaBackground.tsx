@@ -99,7 +99,7 @@ export function VantaBackground({ effect = "fog", options, className = "", child
   return (
     <div
       ref={ref}
-      className={`relative isolate overflow-hidden bg-[radial-gradient(120%_90%_at_20%_10%,var(--color-sage)_0%,var(--color-canvas)_55%,var(--color-gold-wash)_100%)] ${className}`}
+      className={`relative isolate overflow-hidden bg-[radial-gradient(120%_90%_at_20%_10%,var(--color-accent-wash)_0%,var(--color-canvas)_55%,var(--color-mist)_100%)] ${className}`}
     >
       {children}
     </div>

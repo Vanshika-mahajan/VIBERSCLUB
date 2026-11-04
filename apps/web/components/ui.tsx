@@ -13,7 +13,7 @@ export function Avatar({ name, src, size = 44, className = "" }: { name: string;
   const [failed, setFailed] = useState(false);
   return (
     <span
-      className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full border-2 border-surface bg-sage font-extrabold text-ink2 ${className}`}
+      className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full border-2 border-surface bg-accent-wash font-extrabold text-ink2 ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.34 }}
       aria-hidden="true"
     >
@@ -30,7 +30,7 @@ export function Avatar({ name, src, size = 44, className = "" }: { name: string;
 export function Cover({ src, className = "", children }: { src?: string; className?: string; children?: ReactNode }) {
   const [failed, setFailed] = useState(false);
   return (
-    <div className={`relative overflow-hidden bg-gradient-to-br from-sage via-sand to-gold-wash ${className}`}>
+    <div className={`relative overflow-hidden bg-gradient-to-br from-accent-wash via-sand to-mist ${className}`}>
       {src && !failed && (
         // eslint-disable-next-line @next/next/no-img-element -- sample photos from a CDN
         <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" ref={checkBroken(() => setFailed(true))} onError={() => setFailed(true)} />
@@ -41,7 +41,7 @@ export function Cover({ src, className = "", children }: { src?: string; classNa
 }
 
 export function SampleBadge() {
-  return <span className="inline-flex h-5 items-center rounded-full bg-gold-wash px-2 text-[0.62rem] font-extrabold tracking-[0.08em] text-gold-ink uppercase">Sample</span>;
+  return <span className="inline-flex h-5 items-center rounded-full bg-mist px-2 text-[0.62rem] font-extrabold tracking-[0.08em] text-moss uppercase">Sample</span>;
 }
 
 export function PageHeader({ kicker, title, children }: { kicker?: string; title: ReactNode; children?: ReactNode }) {

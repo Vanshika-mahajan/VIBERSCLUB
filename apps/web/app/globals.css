@@ -1,66 +1,70 @@
 @import "tailwindcss";
 
-/* Vibers Club look, in ARPIT's palette (2026-11-04): Arctic Daisy paper, Golden Clover for soft
-   surfaces and highlights, Olive Petal for structure, Rose Blush for warmth and Peach Blossom for the
-   moments that matter (like, join, post). None of the five is dark enough for text, so text and filled
-   buttons use their deeper partners (olive ink, peach ink), all AA on the palette's surfaces.
-   The semantic names below are kept so every page picks the palette up without changes.
-   `static` emits every token as a CSS variable, so the Discover module and canvas can read them too. */
+/* Vibers Club look: Winewood Whisper (2026-11-04). Burgundy is the identity (Mulberry Wine for brand,
+   Black Cherry for depth and text), forest green is the second world (Shadowed Ivy, Mossed Green), and
+   Plum Bloom and Dusky Leaf are kept for interactive accents. Pages sit on warm light neutrals mixed from
+   the palette, so the dark colours stay special. Dusky Leaf never carries text on a dark surface (under
+   3:1); every text pairing here is at least 4.5:1.
+   `static` emits every token as a CSS variable, so CSS modules and canvas code can read them too.
+   No apostrophes in comments inside this block: Tailwind drops every token after one. */
 @theme static {
-  /* brand: deep olive for structure, filled buttons and the nav */
-  --color-brand: #4a4a36;
-  --color-brand-hover: #3d3d27;
-  --color-sage: #ece6c0;
-  --color-sage-deep: #d7ce93;
-  /* accent: Rose Blush is decorative (dots, hearts, glows); peach ink is safe for text and filled buttons */
-  --color-terracotta: #d8a48f;
-  --color-accent: #7d4a4e;
-  --color-accent-hover: #683c40;
-  --color-accent-wash: #f2dcd2;
-  /* highlight: Golden Clover fills carry ink text; gold-ink is the readable shade for text */
-  --color-gold: #d7ce93;
-  --color-gold-ink: #5c5c3d;
-  --color-gold-wash: #efebce;
-  /* surfaces: Arctic Daisy */
-  --color-canvas: #f7f4e3;
-  --color-surface: #fffdf3;
-  --color-raised: #fffef8;
-  --color-sand: #efebce;
-  /* text and lines */
-  --color-ink: #2e2e22;
-  --color-ink2: #4a4a36;
-  --color-muted: #66664e;
-  --color-silver: #a3a380;
-  --color-line: rgba(61, 61, 39, 0.12);
-  --color-line2: rgba(61, 61, 39, 0.2);
-  /* status */
-  --color-ok: #2e7350;
-  --color-warn: #8a5d0c;
-  --color-danger: #b42318;
-  --color-danger-hover: #961d13;
-  --color-focus: #7d4a4e;
+  /* the palette, by name */
+  --color-cherry: #2a1016;
+  --color-mulberry: #51202c;
+  --color-plum: #6b3543;
+  --color-ivy: #18231d;
+  --color-moss: #2f4736;
+  --color-leaf: #586759;
 
-  /* the club home palette: Olive Petal, Golden Clover, Arctic Daisy, Rose Blush, Peach Blossom (with darker partners for text) */
-  --color-olive: #a3a380;
-  --color-olive-deep: #5c5c3d;
-  --color-olive-ink: #3d3d27;
-  --color-clover: #d7ce93;
-  --color-clover-wash: #ece6c0;
-  --color-daisy: #efebce;
-  --color-daisy-soft: #f7f4e3;
-  --color-blush: #d8a48f;
-  --color-blush-wash: #f2dcd2;
-  --color-peach: #bb8588;
-  --color-peach-ink: #7d4a4e;
+  /* brand: Mulberry for filled buttons, the nav and links; Black Cherry when pressed or deeper */
+  --color-brand: #51202c;
+  --color-brand-hover: #2a1016;
+  --color-brand-deep: #2a1016;
+  /* accent: Plum for hover, selected chips and the moments that matter (like, join, post) */
+  --color-accent: #6b3543;
+  --color-accent-hover: #51202c;
+  --color-accent-wash: #f1e4e5;
+  /* rose: a light Plum for decoration only (dots, underlines, glows), never text */
+  --color-rose: #b88792;
+  --color-rose-wash: #f1e4e5;
+  /* forest: the second world, for immersive bands, place heroes and the cards on them */
+  --color-forest: #18231d;
+  --color-forest-surface: #2f4736;
+  --color-support: #586759;
+  /* mist: pale greens mixed from Dusky Leaf, for quiet fills and alternate sections */
+  --color-mist: #e4e8e1;
+  --color-mist-deep: #c9d2c6;
+  /* surfaces: warm ivory with a trace of Mulberry */
+  --color-canvas: #f6f1eb;
+  --color-surface: #fbf8f4;
+  --color-raised: #fdfbf8;
+  --color-sand: #ede3dc;
+  /* text and lines on light */
+  --color-ink: #2a1016;
+  --color-ink2: #42262d;
+  --color-muted: #5e4a4e;
+  --color-silver: #a39498;
+  --color-line: rgba(42, 16, 22, 0.12);
+  --color-line2: rgba(42, 16, 22, 0.2);
+  /* text on dark */
+  --color-on-dark: #f6f1eb;
+  --color-on-wine: #e6c3c9;
+  --color-on-forest: #c9d2c6;
+  /* status, warmed to sit with the palette */
+  --color-ok: #2f6a45;
+  --color-warn: #8a5a12;
+  --color-danger: #a3231c;
+  --color-danger-hover: #861c16;
+  --color-focus: #6b3543;
 
   --font-sans:
     "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
-  /* shadows are tinted with olive, never blue-grey */
+  /* shadows are tinted with Black Cherry, never blue-grey */
   --shadow-soft:
-    0 18px 50px -22px rgba(61, 61, 39, 0.32), 0 2px 6px rgba(46, 46, 34, 0.05);
+    0 18px 50px -22px rgba(42, 16, 22, 0.32), 0 2px 6px rgba(42, 16, 22, 0.05);
   --shadow-card:
-    0 10px 30px -20px rgba(61, 61, 39, 0.38), 0 1px 2px rgba(46, 46, 34, 0.04);
+    0 10px 30px -20px rgba(42, 16, 22, 0.36), 0 1px 2px rgba(42, 16, 22, 0.04);
 }
 
 :root {
@@ -75,7 +79,7 @@ body {
 }
 
 ::selection {
-  background: var(--color-gold-wash);
+  background: var(--color-mist);
   color: var(--color-ink);
 }
 
@@ -97,14 +101,14 @@ body {
   }
   .chip[aria-pressed="true"],
   .chip[aria-selected="true"] {
-    @apply border-brand/25 bg-sage text-brand;
+    @apply border-brand/25 bg-accent-wash text-brand;
   }
   .btn {
     @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-brand px-5 font-extrabold text-white transition hover:bg-brand-hover disabled:pointer-events-none disabled:opacity-45;
   }
   /* the warm call to action: one per screen, for discovering people */
   .btn-accent {
-    @apply bg-accent shadow-[0_10px_24px_-12px_rgba(181,83,47,0.7)] hover:bg-accent-hover;
+    @apply bg-accent shadow-[0_10px_24px_-12px_rgba(107,53,67,0.7)] hover:bg-accent-hover;
   }
   .btn-danger {
     @apply bg-danger hover:bg-danger-hover;
@@ -119,7 +123,7 @@ body {
     @apply text-xs font-extrabold tracking-[0.12em] text-muted uppercase;
   }
   .link {
-    @apply font-bold text-brand decoration-terracotta decoration-2 underline-offset-4 hover:underline;
+    @apply font-bold text-brand decoration-rose decoration-2 underline-offset-4 hover:underline;
   }
   .field {
     @apply w-full rounded-xl border border-line2 bg-raised px-3 py-2.5 outline-none focus:border-brand focus:ring-3 focus:ring-brand/15;
@@ -134,5 +138,32 @@ body {
   /* one word in a headline, set in italic terracotta */
   .accent-word {
     @apply font-display font-medium text-accent italic;
+  }
+}
+
+/* arriving from the door: the club home settles in out of the journey's last frame, which is this
+   same page colour, so the hand-off reads as one move. Set and cleared by the journey screen. */
+@keyframes vc-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.99);
+  }
+}
+html[data-arrived] body > nav,
+html[data-arrived] body > main {
+  animation: vc-arrive 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+html[data-arrived] body > main {
+  animation-delay: 0.08s;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-arrived] body > nav,
+  html[data-arrived] body > main {
+    animation: vc-fade 0.3s ease-out both;
+  }
+}
+@keyframes vc-fade {
+  from {
+    opacity: 0;
   }
 }

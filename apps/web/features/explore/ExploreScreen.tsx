@@ -73,7 +73,7 @@ export function ExploreScreen() {
                       </button>
                     </div>
                     <p className="text-sm text-ink2">{p.blurb}</p>
-                    <p className="rounded-2xl bg-sage/60 p-3 text-sm text-ink2">
+                    <p className="rounded-2xl bg-accent-wash/60 p-3 text-sm text-ink2">
                       <b>Local tip:</b> {p.tip}
                     </p>
                   </div>

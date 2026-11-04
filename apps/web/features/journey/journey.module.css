@@ -7,7 +7,7 @@
   --night-green: #0f2418;
   /* the night keeps its own gold; the day takes the club palette (below) */
   --gold: #e7bc69;
-  --forest: #3d3d27;
+  --forest: var(--color-ink);
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -419,8 +419,8 @@
 /* ---------- day: the same place in warm, hazy sunlight (the Landscape look) ---------- */
 
 .journey[data-mode="day"] {
-  --gold: #d7ce93;
-  background: #d7ce93;
+  --gold: var(--color-plum);
+  background: var(--color-sand);
 }
 .journey[data-mode="day"] .headline {
   color: var(--forest);
@@ -428,15 +428,15 @@
 }
 .journey[data-mode="day"] .brand,
 .journey[data-mode="day"] .skipLink {
-  color: #3d3d27;
+  color: var(--color-ink);
   text-shadow: 0 1px 12px rgba(255, 248, 230, 0.6);
 }
 .journey[data-mode="day"] .skipLink {
-  text-decoration-color: rgba(61, 61, 39, 0.4);
+  text-decoration-color: rgba(42, 16, 22, 0.4);
 }
 .journey[data-mode="day"] .mode {
-  color: #3d3d27;
-  border-color: rgba(61, 61, 39, 0.3);
+  color: var(--color-ink);
+  border-color: rgba(42, 16, 22, 0.3);
   background: rgba(255, 248, 230, 0.4);
 }
 .journey[data-mode="day"] .scrim {
@@ -517,7 +517,7 @@
   }
 }
 .journey[data-mode="day"] .tagline {
-  color: #3d3d27;
+  color: var(--color-ink);
   text-shadow: 0 1px 18px rgba(255, 248, 230, 0.8);
 }
 .line {
@@ -662,18 +662,18 @@
   cursor: default;
 }
 .journey[data-mode="day"] .chip {
-  border-color: rgba(61, 61, 39, 0.18);
-  background: rgba(247, 244, 227, 0.62);
-  color: #3d3d27;
+  border-color: rgba(42, 16, 22, 0.16);
+  background: rgba(246, 241, 235, 0.66);
+  color: var(--color-ink);
 }
 .journey[data-mode="day"] .chip:hover:not(:disabled) {
-  border-color: #a3a380;
-  background: rgba(247, 244, 227, 0.85);
+  border-color: var(--color-plum);
+  background: rgba(246, 241, 235, 0.88);
 }
 .journey[data-mode="day"] .chip[aria-pressed="true"] {
-  border-color: #bb8588;
-  background: #f2dcd2;
-  color: #7d4a4e;
+  border-color: var(--color-plum);
+  background: var(--color-plum);
+  color: var(--color-on-dark);
 }
 
 .actions {

@@ -14,6 +14,18 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the Winewood Whisper pass (2026-11-04)
+ARPIT asked for three things: fix a black flash after Enter, replace the quote screen at the end of the dive with a clean transition, and move the whole site to his Winewood Whisper palette (plan approved: https://claude.ai/artifact/Sf2oLK7crdUpoxuFYjQuYJ).
+- `world/engine.ts`: the automatic resolution step now only runs while the door is shut. Resizing the drawing buffer mid-journey is the likely cause of the black flash he recorded (Safari on Mac; not reproducible here, Chromium only).
+- `timelines/discovery.ts`, `scenes/Discovery.tsx`, `discovery.module.css`, `JourneyScreen.tsx`, `app/globals.css`: no quote screen. While still diving, the valley opens from the centre into the home page colour; the journey marks the page (`html[data-arrived]`) and the club home settles in (fade, 14 px rise) out of that same colour.
+- `app/globals.css`: new tokens (cherry, mulberry, plum, ivy, moss, leaf; brand, accent, rose, forest, mist, on-dark and friends; ivory neutrals; Cherry-tinted shadows). Old palette names (olive, clover, daisy, blush, peach, sage, terracotta, gold) renamed in every file that used them.
+- `features/club/*`: the hero is a burgundy dusk over forest ridges; Mulberry active tab and buttons; Plum selected chips and hover; profile photo fallbacks in Moss and Ivy.
+- `features/discover/*`, `features/universe/*`, `app/manifest.ts`, `app/layout.tsx`: canvas and sphere colours moved from the old teal and terracotta to the palette.
+- `features/journey/journey.module.css`: the day door UI (headline, chips, focus) in Cherry and Plum; the night scene unchanged.
+
+## Tests executed (Winewood Whisper pass, 2026-11-04, in the cloud workspace)
+Vitest 84 passed. E2E 70 passed; the two "API OK" checks fail because the API isn't running here. Typecheck and ESLint clean. Transition checked frame by frame in the CSS path.
+
 ## Files created or modified in the journey and palette pass (2026-11-04)
 ARPIT's four points, agreed in discussion before any code: dive into Manali instead of pulling back to orbiting profiles, suggestions under "What's on your mind?", a smooth and less flat door, and his palette across the site (night door scene stays moonlit; text in any readable colour). Plus sly lines in the Vibers Club voice.
 - `timelines/discovery.ts`, `scenes/Discovery.tsx`, `discovery.module.css`, `useJourney.ts`, `world/params.ts`: after the spin slows, one exponential dive into the Manali valley (no pull-back, no orbiting cards, no row); warm light rises and the journey lands on `/home?tab=community&vibe=<thought>`. Phases are now idle, opening, cosmos, manali, arrive.

@@ -17,7 +17,7 @@ export function EventCard({ e, compact = false }: { e: DemoEvent; compact?: bool
   return (
     <Link href={`/events/${e.id}`} className="card group block overflow-hidden transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-soft">
       <Cover src={e.photoUrl} className={compact ? "h-28" : "h-36"}>
-        <span className={`absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-extrabold shadow-card ${e.priceInr > 0 ? "bg-gold text-ink" : "bg-surface/95 text-brand"}`}>{price(e)}</span>
+        <span className={`absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-extrabold shadow-card ${e.priceInr > 0 ? "bg-mist-deep text-ink" : "bg-surface/95 text-brand"}`}>{price(e)}</span>
         {rsvp && (
           <span className="absolute top-3 right-3 rounded-full bg-brand px-2.5 py-1 text-xs font-extrabold text-white">{rsvp === "going" ? "You're going" : "On waitlist"}</span>
         )}

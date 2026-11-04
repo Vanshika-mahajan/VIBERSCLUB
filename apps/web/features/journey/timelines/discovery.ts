@@ -72,14 +72,15 @@ export function buildDiscovery(
       .to(p, { manali: 1, duration: 1.6, ease: "sine.inOut" }, 3.7)
       .to(p, { marker: 1, duration: 0.7, ease: "power2.out" }, 4.6)
       .to(p, { marker: 0, duration: 0.8, ease: "power1.in" }, 6.1)
-      // warm light rises out of the valley; the home page is waiting underneath it
-      .call(() => advance("arrive"), undefined, 6.9)
+      // still falling into the valley, it opens out into the home page's own colour, from the centre
+      .call(() => advance("arrive"), undefined, 6.6)
       .fromTo(
         d.arrive,
-        { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.9, ease: "sine.in" },
-        6.9,
+        { autoAlpha: 0, "--r": "-30%" },
+        { autoAlpha: 1, duration: 0.5, ease: "sine.out" },
+        6.6,
       )
+      .to(d.arrive, { "--r": "110%", duration: 1.2, ease: "power2.in" }, 6.6)
   );
 }
 
@@ -94,7 +95,12 @@ export function buildDiscoveryStill(
     .set(p, { planet: 1.4, planetY: 0, spin: 0, manali: 1, marker: 1 })
     .fromTo(d.root, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 })
     .call(() => advance("arrive"), undefined, 1.8)
-    .fromTo(d.arrive, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, 1.8);
+    .fromTo(
+      d.arrive,
+      { autoAlpha: 0, "--r": "110%" },
+      { autoAlpha: 1, duration: 0.4 },
+      1.8,
+    );
 }
 
 /**

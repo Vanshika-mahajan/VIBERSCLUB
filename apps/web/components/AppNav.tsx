@@ -8,8 +8,8 @@ import { isActive, moreItems, navItems } from "@/lib/nav";
 function Mark() {
   return (
     <span className="relative block h-9 w-9 overflow-hidden rounded-xl bg-brand shadow-soft" aria-hidden="true">
-      <i className="absolute inset-[7px] rotate-[-30deg] rounded-full border-[1.5px] border-sage border-r-transparent" />
-      <i className="absolute inset-[12px] rotate-[30deg] rounded-full border-[1.5px] border-gold border-l-transparent" />
+      <i className="absolute inset-[7px] rotate-[-30deg] rounded-full border-[1.5px] border-accent-wash border-r-transparent" />
+      <i className="absolute inset-[12px] rotate-[30deg] rounded-full border-[1.5px] border-mist-deep border-l-transparent" />
     </span>
   );
 }
@@ -30,7 +30,7 @@ export function AppNav() {
           aria-current={active ? "page" : undefined}
           className={`relative flex h-14 items-center px-3 text-sm md:h-auto md:rounded-xl md:px-4 md:py-3 ${
             active
-              ? "font-extrabold text-brand before:absolute before:inset-x-3 before:top-0 before:h-0.5 before:rounded-full before:bg-terracotta md:bg-sage/70 md:before:hidden"
+              ? "font-extrabold text-brand before:absolute before:inset-x-3 before:top-0 before:h-0.5 before:rounded-full before:bg-rose md:bg-accent-wash/70 md:before:hidden"
               : "font-semibold text-muted hover:text-brand md:hover:bg-sand"
           }`}
         >

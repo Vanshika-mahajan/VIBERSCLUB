@@ -184,8 +184,8 @@ function TemplateList({
                     style={{
                       display: "grid",
                       placeItems: "center",
-                      background: "var(--color-olive-deep)",
-                      color: "var(--color-daisy)",
+                      background: "var(--color-moss)",
+                      color: "var(--color-sand)",
                     }}
                     aria-hidden="true"
                   >

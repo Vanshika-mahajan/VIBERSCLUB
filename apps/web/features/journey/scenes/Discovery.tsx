@@ -51,9 +51,7 @@ export function Discovery({ ref, world3d }: Props) {
         <span className={s.placeDot} aria-hidden="true" />
         Manali, India
       </p>
-      <div ref={arrive} className={s.arrive} aria-hidden="true">
-        <p className={s.arriveLine}>Travel solo. Just not alone.</p>
-      </div>
+      <div ref={arrive} className={s.arrive} aria-hidden="true" />
     </section>
   );
 }

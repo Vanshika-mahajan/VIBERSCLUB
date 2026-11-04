@@ -111,7 +111,10 @@ export function JourneyScreen() {
         ? buildDiscoveryStill(params, d, advance)
         : buildDiscovery(params, d, advance);
       // the light has filled the screen: the club home takes over
-      tl.eventCallback("onComplete", () => router.push(arrivalHref(thought)));
+      tl.eventCallback("onComplete", () => {
+        arriveHome();
+        router.push(arrivalHref(thought));
+      });
       running.current = tl;
       if (process.env.NODE_ENV !== "production")
         (
@@ -234,6 +237,17 @@ export function JourneyScreen() {
       </p>
     </div>
   );
+}
+
+/**
+ * The journey ends on the home page's own background; this marks the page so the club home settles in
+ * out of it (see "arriving" in globals.css) instead of popping in. The root element outlives the route
+ * change, so the mark is still there when the new page paints, and comes off once it has settled.
+ */
+function arriveHome() {
+  const root = document.documentElement;
+  root.dataset.arrived = "";
+  window.setTimeout(() => delete root.dataset.arrived, 1400);
 }
 
 function SunIcon() {

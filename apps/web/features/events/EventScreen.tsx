@@ -79,7 +79,7 @@ export function EventScreen({ id }: { id: string }) {
           <p className="text-sm text-ink2">
             <b>Meet at:</b> {e.meetingPoint}, {areas[e.area].label}
           </p>
-          {e.priceInr > 0 && <p className="rounded-2xl bg-sage/60 p-3 text-sm text-ink2">The host collects payment directly. Vibers Club doesn&apos;t take money in this version.</p>}
+          {e.priceInr > 0 && <p className="rounded-2xl bg-accent-wash/60 p-3 text-sm text-ink2">The host collects payment directly. Vibers Club doesn&apos;t take money in this version.</p>}
           {mine ? (
             <p className="font-bold text-ok">You&apos;re hosting this.</p>
           ) : rsvp ? (

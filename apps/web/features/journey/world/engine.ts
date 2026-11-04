@@ -236,11 +236,13 @@ export async function createWorld(
   };
 
   // Keep it smooth: if frames run long for a while, draw fewer pixels (one step, then wait and see).
-  // Never steps back up during the journey, so the picture doesn't pump.
+  // Only while the door is still shut: resizing the drawing buffer mid-journey made Safari flash black
+  // for about a second, so the resolution is settled before Enter and then held. Never steps back up.
   const STEPS = [2, 1.6, 1.3, 1];
   let slow = 0;
   let cooldown = 0;
   const watch = (deltaMs: number) => {
+    if (params.leaf > 0.001 || params.travel > 0.001 || crossed) return;
     if (cooldown > 0) {
       cooldown -= deltaMs;
       return;

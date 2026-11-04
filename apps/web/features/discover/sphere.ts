@@ -80,9 +80,9 @@ const PERSON_AR = 0.77;
 const WORLD_AR = 1.36;
 const SCREEN_AR = 1.5;
 // warm alpine palette, matching the theme tokens in app/globals.css
-const KIND_COL: Record<string, string> = { event: "#D97757", place: "#2F6B5C" };
-const PEARL = ["#E9F0E9", "#F6EEE1", "#F4E7DD", "#EEF0E4"];
-const INK = "#242B28";
+const KIND_COL: Record<string, string> = { event: "#6B3543", place: "#2F4736" };
+const PEARL = ["#EDE3DC", "#F6F1EB", "#F1E4E5", "#E4E8E1"];
+const INK = "#2A1016";
 const FONT = "Manrope, system-ui, sans-serif";
 
 /** tier mode orbits: [tier, radius, angular speed, tilt a, tilt b, card scale]. Inner bands turn fastest. */
@@ -99,7 +99,7 @@ const TIER_RINGS: [number, number, number, number, number, number][] = [
   [2, 2.64, -0.66, 1.4, -0.2, 0.86],
 ];
 const SWARM = 2400;
-const SWARM_COL = ["#173D35", "#2F6B5C", "#D97757", "#E7BC69", "#B9A58E", "#C9D6CC"];
+const SWARM_COL = ["#18231D", "#2F4736", "#6B3543", "#B88792", "#A39498", "#C9D2C6"];
 
 export type SpherePerson = { uid: string; title: string; photoUrl?: string; pos?: string };
 export type SphereWorld = { uid: string; kind: "event" | "place"; photoUrl?: string };
@@ -276,10 +276,10 @@ function personSprite(sc: number, img: HTMLImageElement | undefined, name: strin
   else {
     const gr = g.createLinearGradient(x, y, x + bw, y + bh);
     gr.addColorStop(0, PEARL[seed % 4]);
-    gr.addColorStop(1, "#DCE2D6");
+    gr.addColorStop(1, "#E4E8E1");
     g.fillStyle = gr;
     g.fillRect(x, y, bw, bh);
-    g.fillStyle = "rgba(23,61,53,.55)";
+    g.fillStyle = "rgba(24,35,29,.55)";
     g.font = `700 ${bw * 0.34}px ${FONT}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
@@ -322,11 +322,11 @@ function worldSprite(sc: number, img: HTMLImageElement | undefined, kind: string
   else {
     const gr = g.createLinearGradient(x, y, x + bw, y + bh);
     gr.addColorStop(0, PEARL[seed % 4]);
-    gr.addColorStop(1, "#D8DFD2");
+    gr.addColorStop(1, "#E4E8E1");
     g.fillStyle = gr;
     g.fillRect(x, y, bw, bh);
   }
-  g.fillStyle = KIND_COL[kind] ?? "#E7BC69";
+  g.fillStyle = KIND_COL[kind] ?? "#B88792";
   g.globalAlpha = 0.95;
   g.fillRect(x + b, y + bh - b - bh * 0.1, bw - 2 * b, bh * 0.1);
   g.restore();
@@ -371,7 +371,7 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
   g.shadowColor = "rgba(23,52,45,.24)";
   g.shadowBlur = bh * 0.3;
   g.shadowOffsetY = bh * 0.1;
-  g.fillStyle = "#FFFDF9";
+  g.fillStyle = "#FBF8F4";
   rrect(g, x, y, bw, bh, r);
   g.fill();
   g.restore();
@@ -384,7 +384,7 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     else {
       const gr = g.createLinearGradient(x, y, x + bw, y + bh);
       gr.addColorStop(0, PEARL[seed % 4]);
-      gr.addColorStop(1, "#CBD6CC");
+      gr.addColorStop(1, "#C9D2C6");
       g.fillStyle = gr;
       g.fillRect(x, y, bw, bh);
     }
@@ -401,20 +401,20 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     g.font = `600 ${bh * 0.095}px ${FONT}`;
     g.fillText(wrap(g, `${e.author} · ${e.meta}`, bw - p * 2, 1)[0], x + p, y + bh - p);
   } else {
-    g.fillStyle = "#D97757";
+    g.fillStyle = "#6B3543";
     g.fillRect(x, y, bw, bh * 0.035);
     const ar = bh * 0.1;
     g.fillStyle = PEARL[seed % 4];
     g.beginPath();
     g.arc(x + p + ar, y + p + ar, ar, 0, TAU);
     g.fill();
-    g.fillStyle = "#173D35";
+    g.fillStyle = "#18231D";
     g.font = `800 ${ar * 0.9}px ${FONT}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
     g.fillText(initials(e.author), x + p + ar, y + p + ar + ar * 0.05);
     g.textAlign = "left";
-    g.fillStyle = "#686C64";
+    g.fillStyle = "#5E4A4E";
     g.font = `700 ${bh * 0.09}px ${FONT}`;
     g.fillText(wrap(g, e.author, bw - p * 3 - ar * 2, 1)[0], x + p * 1.6 + ar * 2, y + p + ar);
     g.fillStyle = INK;
@@ -423,11 +423,11 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     const lines = wrap(g, e.title, bw - p * 2, 2);
     lines.forEach((l, i) => g.fillText(l, x + p, y + p + ar * 2 + bh * 0.07 + i * bh * 0.155));
     if (e.snippet) {
-      g.fillStyle = "#686C64";
+      g.fillStyle = "#5E4A4E";
       g.font = `500 ${bh * 0.098}px ${FONT}`;
       g.fillText(wrap(g, "“" + e.snippet + "”", bw - p * 2, 1)[0], x + p, y + p + ar * 2 + bh * 0.1 + lines.length * bh * 0.155);
     }
-    g.fillStyle = "#B5532F";
+    g.fillStyle = "#51202C";
     g.font = `800 ${bh * 0.09}px ${FONT}`;
     g.textBaseline = "alphabetic";
     g.fillText(e.meta, x + p, y + bh - p * 0.8);
@@ -487,10 +487,10 @@ function glowSprite() {
   const c = mk(160, 160);
   const g = ctx(c);
   const gr = g.createRadialGradient(80, 80, 6, 80, 80, 80);
-  gr.addColorStop(0, "rgba(231,188,105,.6)");
-  gr.addColorStop(0.35, "rgba(217,119,87,.26)");
-  gr.addColorStop(0.7, "rgba(231,188,105,.10)");
-  gr.addColorStop(1, "rgba(231,188,105,0)");
+  gr.addColorStop(0, "rgba(184,135,146,.6)");
+  gr.addColorStop(0.35, "rgba(107,53,67,.26)");
+  gr.addColorStop(0.7, "rgba(184,135,146,.10)");
+  gr.addColorStop(1, "rgba(184,135,146,0)");
   g.fillStyle = gr;
   g.fillRect(0, 0, 160, 160);
   return c;
@@ -905,9 +905,9 @@ export class Sphere {
     const g = ctx(c);
     g.scale(d, d);
     const gr = g.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.5, Math.max(W, H) * 0.78);
-    gr.addColorStop(0, "#FFFEFA");
-    gr.addColorStop(0.5, "#F8F6F0");
-    gr.addColorStop(1, "#EBE7DC");
+    gr.addColorStop(0, "#FDFBF8");
+    gr.addColorStop(0.5, "#F6F1EB");
+    gr.addColorStop(1, "#EDE3DC");
     g.fillStyle = gr;
     g.fillRect(0, 0, W, H);
     // faint sage and gold tints in the corners and soft sunlight from the upper right
@@ -917,8 +917,8 @@ export class Sphere {
     g.fillStyle = t1;
     g.fillRect(0, 0, W, H);
     const t2 = g.createRadialGradient(W * 0.95, H * 0.95, 0, W * 0.95, H * 0.95, W * 0.5);
-    t2.addColorStop(0, "rgba(231,188,105,.12)");
-    t2.addColorStop(1, "rgba(231,188,105,0)");
+    t2.addColorStop(0, "rgba(184,135,146,.12)");
+    t2.addColorStop(1, "rgba(184,135,146,0)");
     g.fillStyle = t2;
     g.fillRect(0, 0, W, H);
     g.save();
@@ -1172,8 +1172,8 @@ export class Sphere {
     g.translate(cx, cy + S * 1.62);
     g.scale(1, 0.12);
     const sh = g.createRadialGradient(0, 0, 0, 0, 0, S * 1.1);
-    sh.addColorStop(0, `rgba(23,61,53,${0.16 * sphA})`);
-    sh.addColorStop(1, "rgba(23,61,53,0)");
+    sh.addColorStop(0, `rgba(24,35,29,${0.16 * sphA})`);
+    sh.addColorStop(1, "rgba(24,35,29,0)");
     g.fillStyle = sh;
     g.fillRect(-S * 1.2, -S * 1.2, S * 2.4, S * 2.4);
     g.restore();
@@ -1208,7 +1208,7 @@ export class Sphere {
           }
         }
         const lit = this.searching && ring.tier !== undefined && ring.tier < 2 ? (ring.tier === 0 ? 1 : 0.5) : 0;
-        g.strokeStyle = lit ? `rgba(217,119,87,${(0.12 + 0.12 * lit) * sphA})` : `rgba(140,145,132,${0.15 * sphA})`;
+        g.strokeStyle = lit ? `rgba(107,53,67,${(0.12 + 0.12 * lit) * sphA})` : `rgba(140,145,132,${0.15 * sphA})`;
         g.stroke(back);
         g.strokeStyle = lit ? `rgba(181,83,47,${(0.24 + 0.24 * lit) * sphA})` : `rgba(104,112,100,${0.28 * sphA})`;
         g.stroke(front);
@@ -1242,7 +1242,7 @@ export class Sphere {
       o[i * 4 + 3] = p.k;
     }
     const dustPass = (near: boolean) => {
-      const colors = ["#2F5A4F", "#D97757", "#E7BC69", "#A9ADA2"];
+      const colors = ["#2F4736", "#6B3543", "#B88792", "#586759"];
       for (let ci = 0; ci < 4; ci++) {
         g.fillStyle = colors[ci];
         for (let i = 0; i < nd; i++) {
@@ -1441,7 +1441,7 @@ export class Sphere {
       it.drawn = true;
       if (hv) {
         g.globalAlpha = 0.9;
-        g.strokeStyle = "rgba(217,119,87,.85)";
+        g.strokeStyle = "rgba(107,53,67,.85)";
         g.lineWidth = 1.6;
         const ww = w * xs;
         g.strokeRect(sx - ww / 2 - 1, sy - h / 2 - 1, ww + 2, h + 2);
@@ -1525,7 +1525,7 @@ export class Sphere {
     for (let i = H.length - 1; i > 0; i--) {
       const f = i / H.length;
       g.globalAlpha = (1 - f) * 0.55;
-      g.strokeStyle = f < 0.5 ? "#E7BC69" : "#D97757";
+      g.strokeStyle = f < 0.5 ? "#B88792" : "#6B3543";
       g.lineWidth = Math.max(1, h * 0.34 * (1 - f));
       g.beginPath();
       g.moveTo(H[i].x, H[i].y);
@@ -1585,14 +1585,14 @@ export class Sphere {
     const r = S * (0.7 + (1 - b) * 1.8);
     const gr = g.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
     gr.addColorStop(0, `rgba(255,253,249,${0.5 * b})`);
-    gr.addColorStop(0.8, `rgba(231,188,105,${0.25 * b})`);
-    gr.addColorStop(1, "rgba(231,188,105,0)");
+    gr.addColorStop(0.8, `rgba(184,135,146,${0.25 * b})`);
+    gr.addColorStop(1, "rgba(184,135,146,0)");
     g.fillStyle = gr;
     g.beginPath();
     g.arc(cx, cy, r, 0, TAU);
     g.fill();
     g.globalAlpha = b * 0.8;
-    g.strokeStyle = "#D97757";
+    g.strokeStyle = "#6B3543";
     g.lineWidth = 1.5 + 3 * b;
     g.beginPath();
     g.arc(cx, cy, r, 0, TAU);
@@ -1608,7 +1608,7 @@ export class Sphere {
     g.lineWidth = 1;
     g.setLineDash([2, 5]);
     g.lineDashOffset = -this.t * 14;
-    g.strokeStyle = `rgba(23,61,53,${0.3 * sphA})`;
+    g.strokeStyle = `rgba(24,35,29,${0.3 * sphA})`;
     const top = lit.sort((a, b) => a.zc - b.zc).slice(0, 12);
     for (const a of top) {
       const near = top

@@ -73,37 +73,25 @@
     0 0 16px 4px rgba(255, 196, 120, 0.7);
 }
 
-/* ---------- arriving: warm light out of the valley, in the club's palette ---------- */
+/* ---------- arriving: the valley opens into the home page's own background ---------- */
 
+/* No words here: the light grows out of the valley in the page colour of the club home, so the
+   hand-off to it is a dissolve, not a stop. --r is the radius of the clear centre (GSAP tweens it). */
 .arrive {
+  --r: -30%;
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
   opacity: 0;
   visibility: hidden;
-  background:
-    radial-gradient(60% 50% at 50% 60%, #fbf3dc 0%, transparent 70%),
-    radial-gradient(
-      70% 90% at 85% 0%,
-      rgba(216, 164, 143, 0.55),
-      transparent 60%
-    ),
-    radial-gradient(
-      60% 80% at 0% 10%,
-      rgba(215, 206, 147, 0.7),
-      transparent 60%
-    ),
-    var(--color-daisy-soft);
-}
-.arriveLine {
-  margin: 0;
-  padding: 0 24px;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 500;
-  font-size: clamp(1.6rem, 4vw, 2.8rem);
-  letter-spacing: -0.02em;
-  text-align: center;
-  color: #3d3d27;
+  background: var(--color-canvas);
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 58%,
+    #000 var(--r),
+    transparent calc(var(--r) + 45%)
+  );
+  mask-image: radial-gradient(
+    circle at 50% 58%,
+    #000 var(--r),
+    transparent calc(var(--r) + 45%)
+  );
 }
