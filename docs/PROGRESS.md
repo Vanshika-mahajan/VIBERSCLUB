@@ -14,7 +14,20 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
-## Files created or modified in the first page, milestone 3 (2026-11-04)
+## Files created or modified in the first page, milestone 3 rebuilt in 3D (2026-11-04)
+ARPIT found the CSS transition cheap and chose a real three.js scene. The CSS version stays as the fallback.
+- `features/journey/world/`: `engine.ts` (renderer, bloom, one loop on the GSAP ticker, cosmos render target, full dispose), `meadow.ts` (the photo projected onto ground and backdrop so the idle frame matches it exactly), `door.ts` (leaf on its hinge, light in the doorway showing the cosmos through it, shafts of light), `cosmos.ts` (galaxy band and stars), `foreground.ts` (grass and pollen), `layout.ts`, `params.ts`, `support.ts` (who gets 3D: WebGL2, no reduced motion, no data saver, enough cores and memory, and at least 24 fps measured; `?world=3d` or `?world=css` picks by hand).
+- `features/journey/scenes/WorldCanvas.tsx`: lazy-loads three.js, checks the frame rate, fades the canvas in over the CSS scene.
+- `features/journey/timelines/world.ts`: the 3D opening, about 5.8 s.
+- `JourneyScreen.tsx`, `journey.module.css`: plays the 3D timeline when the world is ready, otherwise CSS or the still version.
+- Tests: `e2e/journey-3d.spec.ts` (3D takes over and plays, Escape skips, slow devices and reduced motion get CSS, Enter the app); `e2e/journey.spec.ts` now runs the CSS version with WebGL off.
+
+## Tests executed (milestone 3 in 3D, 2026-11-04, in the cloud workspace)
+- Vitest: 73 passed. Typecheck and lint clean.
+- Playwright: 52 passed. `home.spec.ts` (2 cases) fails only because the API on :8000 and its database are not running in this workspace.
+- Transition rendered frame by frame (no GPU here) on desktop and phone and reviewed; videos in project files `journey/m3-3d`.
+
+## Files created or modified in the first page, milestone 3, CSS version (2026-11-04)
 - `public/journey/door-frame.webp` and `door-leaf.webp`: the door split into its frame (with an empty doorway) and the leaf (replaces `door.webp`).
 - `features/journey/scenes/DoorScene.tsx`: two identical stages (behind and in front of the cosmos) on camera rigs; doorway, light, spill on the grass, dusk veil, leaf and seam exposed to the timeline; `freeze()` stops parallax.
 - `features/journey/scenes/CosmosBackdrop.tsx`: midnight sky with a Milky Way band and three depths of CSS stars, seen through the doorway (placeholder for the three.js scene in milestone 4).

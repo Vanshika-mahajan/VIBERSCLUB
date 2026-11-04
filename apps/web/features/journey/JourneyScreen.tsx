@@ -2,14 +2,17 @@
 
 import "@fontsource-variable/fraunces/wght-italic.css";
 import Link from "next/link";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import SplitText from "@/components/reactbits/SplitText";
 import { gsap, useGSAP } from "@/lib/motion/gsap";
 import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
 import { CosmosBackdrop } from "./scenes/CosmosBackdrop";
 import { DoorScene, type DoorSceneHandle } from "./scenes/DoorScene";
 import { ThoughtInput } from "./scenes/ThoughtInput";
+import { WorldCanvas } from "./scenes/WorldCanvas";
 import { buildDoorOpening, buildDoorOpeningStill } from "./timelines/door";
+import { buildWorldOpening } from "./timelines/world";
+import type { World } from "./world/engine";
 import { useJourney, type Phase } from "./useJourney";
 import s from "./journey.module.css";
 
@@ -34,22 +37,29 @@ export function JourneyScreen() {
   const copy = useRef<HTMLDivElement>(null);
   const ground = useRef<HTMLDivElement>(null);
   const skipButton = useRef<HTMLButtonElement>(null);
+  const worldScrim = useRef<HTMLDivElement>(null);
   const running = useRef<gsap.core.Timeline | null>(null);
+  // the 3D world, once its first frame is on screen; until then (or without WebGL) the CSS scene plays
+  const [world, setWorld] = useState<World | null>(null);
 
   // scene two: the door opens
   useGSAP(
     () => {
       if (phase !== "opening" || !door.current || !cosmos.current) return;
-      const parts = {
-        ...door.current,
-        cosmos: cosmos.current,
-        ui: [top.current!, copy.current!, ground.current!],
-      };
-      const tl = prefersReducedMotion()
-        ? buildDoorOpeningStill(parts)
-        : buildDoorOpening(parts);
+      const ui = [top.current!, copy.current!, ground.current!];
+      const parts = { ...door.current, cosmos: cosmos.current, ui };
+      const tl = world
+        ? buildWorldOpening(world, [...ui, worldScrim.current!])
+        : prefersReducedMotion()
+          ? buildDoorOpeningStill(parts)
+          : buildDoorOpening(parts);
       tl.eventCallback("onComplete", () => advance("cosmos"));
       running.current = tl;
+      // development only: lets the review script step through the timeline frame by frame
+      if (process.env.NODE_ENV !== "production")
+        (
+          window as unknown as { __journeyTl?: gsap.core.Timeline }
+        ).__journeyTl = tl;
     },
     { dependencies: [phase], scope: root },
   );
@@ -73,8 +83,15 @@ export function JourneyScreen() {
   }, [phase]);
 
   return (
-    <div ref={root} className={s.journey} data-phase={phase}>
+    <div
+      ref={root}
+      className={s.journey}
+      data-phase={phase}
+      data-world={world ? "3d" : "css"}
+    >
       <DoorScene ref={door} between={<CosmosBackdrop ref={cosmos} />} />
+      <WorldCanvas onReady={setWorld} />
+      <div ref={worldScrim} className={`${s.scrim} ${s.worldScrim}`} />
 
       <header ref={top} className={s.top}>
         <span className={s.brand}>Vibers Club</span>
