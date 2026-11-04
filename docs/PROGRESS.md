@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-10-26
+**Last updated:** 2026-11-04
 
 ## Completed milestones
 - Phase 0 to 2: discovery, PRD, blueprint, ADR-0001 to ADR-0019 (all Accepted; ADR-0013 pending user validation).
@@ -13,6 +13,18 @@
 
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
+
+## Files created or modified in frontend motion, step 1 (2026-11-04)
+- Libraries (exact versions): `gsap` 3.15.0 with `@gsap/react` 2.1.2 (ScrollTrigger, SplitText), `lenis` 1.3.27, `vanta` 0.5.24 with `three` 0.186.1.
+- `apps/web/lib/motion/gsap.ts`: registers GSAP plugins once. `lib/motion/useReducedMotion.ts`: the device's reduced-motion setting.
+- `apps/web/components/motion/SmoothScroll.tsx` (Lenis driven by GSAP's clock, for marketing pages only), `Reveal.tsx` (fade up on scroll, once), `VantaBackground.tsx` (Vanta effect in brand colours, loads three.js only where used, gradient fallback).
+- `apps/web/components/reactbits/`: React Bits components copied in (SplitText first), with the licence and how to add more.
+- `apps/web/app/lab` and `features/lab/MotionLab.tsx`: unlinked test bench at `/lab`.
+- Tests: `tests/unit/motion.test.tsx`, `e2e/motion.spec.ts`; `tests/setup.ts` gains a matchMedia stub for GSAP.
+
+## Tests executed (frontend motion step 1, 2026-11-04, in the cloud workspace)
+- Vitest: 70 passed. Typecheck and lint clean.
+- Playwright (phone and desktop): motion, universe, discover and demo specs, 26 passed. API-backed home spec not run (no API here).
 
 ## Files created or modified in the home universe, step 2 (2026-10-26)
 - `apps/web/features/discover/sphere.ts`: `pull()` sends cards into the core on accelerating, swinging paths with motion-blur copies and a burst ring as each one lands; `unpull()` and `setBackdrop()` (the universe keeps turning, slower and fainter, behind a room).
