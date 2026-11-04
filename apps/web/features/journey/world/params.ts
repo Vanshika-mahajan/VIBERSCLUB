@@ -26,6 +26,24 @@ export type WorldParams = {
   lookY: number;
   /** idle life: camera breathing, grass wind, pollen. 0 stops it */
   life: number;
+
+  // ---- in the cosmos (both the 3D and the CSS version read these) ----
+  /** the sphere's radius on screen, as a share of half the screen's shorter side; 0 hides it */
+  planet: number;
+  /** the sphere's centre above the screen's centre, as a share of half the screen's height */
+  planetY: number;
+  /** extra turns still to spin, radians; 0 = Manali faces us */
+  spin: number;
+  /** 0 globe … 1 the surface around Manali drawn as the valley */
+  manali: number;
+  /** the glowing marker on Manali */
+  marker: number;
+  /** the profile cards appear around the sphere, 0 … 1 */
+  cards: number;
+  /** where the cards are on their orbit, radians */
+  orbit: number;
+  /** 0 orbiting … 1 settled into the row */
+  settle: number;
 };
 
 export const initialParams = (): WorldParams => ({
@@ -40,7 +58,24 @@ export const initialParams = (): WorldParams => ({
   lookX: 0,
   lookY: 0,
   life: 1,
+  planet: 0,
+  planetY: 0,
+  spin: 0,
+  manali: 0,
+  marker: 0,
+  cards: 0,
+  orbit: 0,
+  settle: 0,
 });
+
+/** Where the sphere sits on a w × h screen, in CSS pixels (the 3D and CSS versions agree on this). */
+export function planetOnScreen(p: WorldParams, w: number, h: number) {
+  return {
+    x: w / 2,
+    y: h / 2 - (p.planetY * h) / 2,
+    r: (p.planet * Math.min(w, h)) / 2,
+  };
+}
 
 /** The flight path: forward to the doorway's centre, levelling the gaze on the way. */
 export function cameraAt(travel: number) {

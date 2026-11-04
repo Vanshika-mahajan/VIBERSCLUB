@@ -40,7 +40,7 @@ test("the 3D scene takes over and the door starts to open", async ({
   expect(errors).toEqual([]);
 });
 
-test("Escape skips the 3D opening into the cosmos", async ({ page }) => {
+test("Escape skips the 3D journey to the Vibers", async ({ page }) => {
   await page.goto("/?world=3d");
   const stage = page.locator("[data-phase]");
   await expect(stage).toHaveAttribute("data-world", "3d", { timeout: 30000 });
@@ -50,10 +50,11 @@ test("Escape skips the 3D opening into the cosmos", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(stage).toHaveAttribute("data-phase", "opening");
   await page.keyboard.press("Escape");
-  // a 0.4 s fast-forward; slow frames stretch it here
-  await expect(stage).toHaveAttribute("data-phase", "cosmos", {
-    timeout: 30000,
+  // a 0.4 s fast-forward through the door, then straight to the result; slow frames stretch it here
+  await expect(stage).toHaveAttribute("data-phase", "settled", {
+    timeout: 45000,
   });
+  await expect(page.getByRole("article")).toHaveCount(6);
 });
 
 test("a device that can't keep 3D smooth gets the CSS version", async ({

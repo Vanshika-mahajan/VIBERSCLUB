@@ -82,9 +82,12 @@ test.describe("the door opens", () => {
       .first()
       .evaluate((el) => getComputedStyle(el).transform);
     expect(turned).not.toBe("none");
-    await expect(stage).toHaveAttribute("data-phase", "cosmos", {
-      timeout: 6000,
-    });
+    // through the doorway: the cosmos, then the sphere and Manali
+    await expect(stage).toHaveAttribute(
+      "data-phase",
+      /cosmos|manali|orbit|settled/,
+      { timeout: 6000 },
+    );
     // the cosmos now fills the screen, the meadow is gone
     const cosmos = page.locator("[data-cosmos]");
     await expect(cosmos).toBeVisible();
@@ -92,7 +95,7 @@ test.describe("the door opens", () => {
     expect(clip === "none" || /inset\(0px( 0px)*\)/.test(clip)).toBe(true);
   });
 
-  test("Skip and Escape jump straight to the cosmos", async ({ page }) => {
+  test("Escape jumps straight to the Vibers", async ({ page }) => {
     await page.goto("/");
     await page
       .getByLabel("What’s on your mind?")
@@ -102,15 +105,15 @@ test.describe("the door opens", () => {
     await page.keyboard.press("Escape");
     await expect(page.locator("[data-phase]")).toHaveAttribute(
       "data-phase",
-      "cosmos",
-      { timeout: 1500 },
+      "settled",
+      { timeout: 3000 },
     );
   });
 });
 
 test.describe("door with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
-  test("the door does not swing; the cosmos fades in", async ({ page }) => {
+  test("the door does not swing; the result fades in", async ({ page }) => {
     await page.goto("/");
     await page
       .getByLabel("What’s on your mind?")
@@ -118,13 +121,88 @@ test.describe("door with reduced motion", () => {
     await page.keyboard.press("Enter");
     await expect(page.locator("[data-phase]")).toHaveAttribute(
       "data-phase",
-      "cosmos",
-      { timeout: 1500 },
+      "settled",
+      { timeout: 4000 },
     );
+    await expect(
+      page.getByRole("heading", { name: "Your vibe has a universe." }),
+    ).toBeVisible();
     const leaf = await page
       .locator("[class*=leaf]")
       .first()
       .evaluate((el) => getComputedStyle(el).transform);
     expect(leaf).toBe("none");
+  });
+});
+
+test.describe("the Vibers", () => {
+  test("Skip lands on the result: cards in a row, Connect and View profile work", async ({
+    page,
+  }) => {
+    await page.route("**/images.pexels.com/**", (r) => r.abort());
+    await page.goto("/");
+    await page
+      .getByLabel("What’s on your mind?")
+      .fill("Looking for people who love mountain adventures");
+    await page.keyboard.press("Enter");
+    await page.getByRole("button", { name: /Skip intro/ }).click();
+    const stage = page.locator("[data-phase]");
+    await expect(stage).toHaveAttribute("data-phase", "settled", {
+      timeout: 4000,
+    });
+    // the heading takes focus so the result is where keyboard users start
+    const heading = page.getByRole("heading", {
+      name: "Your vibe has a universe.",
+    });
+    await expect(heading).toBeFocused();
+    await expect(
+      page.getByText(
+        "Here are some Vibers who might see the world the way you do.",
+        { exact: true },
+      ),
+    ).toBeVisible();
+    // six Vibers, matched to the thought: they share treks or hikes with it
+    const cards = page.getByRole("article");
+    await expect(cards).toHaveCount(6);
+    await expect(cards.first().getByText("You share")).toBeVisible();
+    await expect(cards.first()).toContainText(/Treks|Day hikes|Paragliding/);
+    // the first card sits in the row, untransformed, and its buttons work
+    const transform = await page
+      .locator("li:has(article)")
+      .first()
+      .evaluate((el) => getComputedStyle(el).transform);
+    expect(transform).toBe("none");
+    const connect = cards.first().getByRole("button", { name: "Connect" });
+    await connect.click();
+    await expect(
+      cards.first().getByRole("button", { name: "Request sent" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await cards.first().getByRole("button", { name: "View profile" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Close" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(
+      page.getByRole("link", { name: /Explore more Vibers/ }),
+    ).toHaveAttribute("href", "/universe");
+  });
+
+  test("the whole journey plays through to the row on its own", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    await page.route("**/images.pexels.com/**", (r) => r.abort());
+    await page.goto("/");
+    await page
+      .getByLabel("What’s on your mind?")
+      .fill("Hidden cafés in Old Manali");
+    await page.keyboard.press("Enter");
+    const stage = page.locator("[data-phase]");
+    for (const phase of ["manali", "orbit", "settled"])
+      await expect(stage).toHaveAttribute("data-phase", phase, {
+        timeout: 20000,
+      });
+    await expect(page.getByText("Manali, India")).toBeAttached();
+    await expect(page.getByRole("article")).toHaveCount(6);
   });
 });

@@ -9,6 +9,7 @@ import { makeDoor } from "./door";
 import { makeForeground } from "./foreground";
 import { DOOR, PHOTO_ASPECT, PHOTO_FOV } from "./layout";
 import { makeMeadow } from "./meadow";
+import { makePlanet, PLANET_RADIUS } from "./planet";
 import { cameraAt, initialParams, type WorldParams } from "./params";
 
 export type World = {
@@ -48,7 +49,10 @@ async function load(
  * bloom; while the door is open, the cosmos renders first into a texture the doorway shows. When the
  * camera crosses the doorway, the cosmos is rendered directly and the meadow is dropped.
  */
-export async function createWorld(canvas: HTMLCanvasElement): Promise<World> {
+export async function createWorld(
+  canvas: HTMLCanvasElement,
+  params: WorldParams = initialParams(),
+): Promise<World> {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -66,7 +70,6 @@ export async function createWorld(canvas: HTMLCanvasElement): Promise<World> {
     load("/journey/grass.webp", loader, maxAniso),
   ]);
 
-  const params = initialParams();
   const camera = new THREE.PerspectiveCamera(PHOTO_FOV, 1, 0.05, 3000);
   camera.rotation.order = "YXZ";
 
@@ -76,6 +79,8 @@ export async function createWorld(canvas: HTMLCanvasElement): Promise<World> {
   const fore = makeForeground(grassTex);
   meadowScene.add(meadow.group, door.group, fore.group);
   const cosmos = makeCosmos();
+  const planet = makePlanet();
+  cosmos.scene.add(planet.root);
 
   const cosmosTarget = new THREE.WebGLRenderTarget(1, 1, {
     type: THREE.HalfFloatType,
@@ -109,6 +114,7 @@ export async function createWorld(canvas: HTMLCanvasElement): Promise<World> {
     cosmosTarget.setSize(Math.round(w * ratio), Math.round(h * ratio));
     door.uniforms.res.value.set(Math.round(w * ratio), Math.round(h * ratio));
     cosmos.uniforms.pixel.value = ratio;
+    planet.uniforms.pixel.value = ratio;
     fore.uniforms.pixel.value = ratio;
     camera.aspect = w / h;
   };
@@ -162,6 +168,28 @@ export async function createWorld(canvas: HTMLCanvasElement): Promise<World> {
     fore.uniforms.wind.value = p.life;
     fore.uniforms.life.value = p.life;
     cosmos.uniforms.time.value = elapsed;
+
+    // the sphere: sized and placed on screen by the params, at whatever distance gives that size
+    planet.root.visible = p.planet > 0.002;
+    if (planet.root.visible) {
+      const tanV = Math.tan((camera.fov / 2) * DEG);
+      const share = (p.planet * Math.min(width, height)) / height; // radius over half the height
+      const alpha = Math.atan(share * tanV);
+      const dist = Math.max(
+        PLANET_RADIUS / Math.sin(alpha),
+        PLANET_RADIUS * 1.08,
+      );
+      planet.root.position.set(
+        camera.position.x,
+        camera.position.y + p.planetY * dist * tanV,
+        camera.position.z - dist,
+      );
+      planet.spin.rotation.y = planet.facing.spin + p.spin;
+      planet.tilt.rotation.x = planet.facing.tilt;
+      planet.uniforms.manali.value = p.manali;
+      planet.uniforms.marker.value = p.marker;
+      planet.uniforms.time.value = elapsed;
+    }
 
     crossed = camera.position.z < DOOR.z - 0.05;
     if (crossed) {

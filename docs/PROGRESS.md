@@ -14,6 +14,22 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Files created or modified in the first page, milestones 4 to 9 (2026-11-04)
+ARPIT asked to build the remaining milestones straight through and review the finished page.
+- `features/journey/world/planet.ts`: the colourful sphere, drawn entirely by shader (noise continents in emerald, gold and rose, teal seas, clouds, atmosphere); around Manali the surface turns into the valley (ridges, contours, the Beas river, village lights); a pulsing marker. `engine.ts` places it from the shared params.
+- `features/journey/world/params.ts`: params for the sphere (size, height, spin, Manali, marker) and the cards (appear, orbit, settle), and `planetOnScreen()`, which both versions use so the DOM lines up with the 3D sphere.
+- `features/journey/timelines/discovery.ts`: scenes three to five (about 12 s): the sphere arrives spinning fast and slows; the dive into Manali; back out with the Vibers orbiting; the cards settle into the row. A still version for reduced motion, and the per-frame driver that places the label, the cards and the CSS sphere.
+- `features/journey/scenes/Discovery.tsx`, `ProfileCard.tsx`, `discovery.module.css`: the Manali label, cards (photo, name, area and dates, intro, what you share, hashtags, Connect, View profile), the row, the heading, Explore more Vibers, a profile dialog.
+- `features/journey/match.ts`: mock matching (milestone 9): the thought is read by Discover's rules, widened for broad words (mountains, adventure, like a local), ranked over the sample roster plus two first-page travellers (Aarav, Zoya), topped up with featured people.
+- `public/journey/planet.webp`, `valley.webp`: stills rendered from the 3D sphere for the CSS version.
+- `JourneyScreen.tsx`: owns the params, runs the discovery timeline from the cosmos on, Skip and Escape now go straight to the result, the heading takes focus when the row arrives.
+- Tests: `tests/unit/journey-match.test.ts`; `e2e/journey.spec.ts` (skip to the result and use the cards, the whole journey on its own, reduced motion); `e2e/journey-3d.spec.ts` (Escape to the result in 3D).
+
+## Tests executed (milestones 4 to 9, 2026-11-04, in the cloud workspace)
+- Vitest: 79 passed. Typecheck and lint clean.
+- Playwright: all journey tests pass (26, CSS and 3D, phone and desktop); the full run had 54 passing before one test fix, and `home.spec.ts` (2 cases) fails only because the API and database are not running here.
+- Whole first page rendered frame by frame in 3D on desktop and phone; videos in project files `journey/final`.
+
 ## Files created or modified in the first page, milestone 3 rebuilt in 3D (2026-11-04)
 ARPIT found the CSS transition cheap and chose a real three.js scene. The CSS version stays as the fallback.
 - `features/journey/world/`: `engine.ts` (renderer, bloom, one loop on the GSAP ticker, cosmos render target, full dispose), `meadow.ts` (the photo projected onto ground and backdrop so the idle frame matches it exactly), `door.ts` (leaf on its hinge, light in the doorway showing the cosmos through it, shafts of light), `cosmos.ts` (galaxy band and stars), `foreground.ts` (grass and pollen), `layout.ts`, `params.ts`, `support.ts` (who gets 3D: WebGL2, no reduced motion, no data saver, enough cores and memory, and at least 24 fps measured; `?world=3d` or `?world=css` picks by hand).

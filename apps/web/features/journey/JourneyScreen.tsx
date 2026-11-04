@@ -2,17 +2,25 @@
 
 import "@fontsource-variable/fraunces/wght-italic.css";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SplitText from "@/components/reactbits/SplitText";
 import { gsap, useGSAP } from "@/lib/motion/gsap";
 import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
+import { matchThought } from "./match";
 import { CosmosBackdrop } from "./scenes/CosmosBackdrop";
+import { Discovery, type DiscoveryHandle } from "./scenes/Discovery";
 import { DoorScene, type DoorSceneHandle } from "./scenes/DoorScene";
 import { ThoughtInput } from "./scenes/ThoughtInput";
 import { WorldCanvas } from "./scenes/WorldCanvas";
+import {
+  buildDiscovery,
+  buildDiscoveryStill,
+  makeDriver,
+} from "./timelines/discovery";
 import { buildDoorOpening, buildDoorOpeningStill } from "./timelines/door";
 import { buildWorldOpening } from "./timelines/world";
 import type { World } from "./world/engine";
+import { initialParams } from "./world/params";
 import { useJourney, type Phase } from "./useJourney";
 import s from "./journey.module.css";
 
@@ -20,6 +28,10 @@ import s from "./journey.module.css";
 const ANNOUNCE: Partial<Record<Phase, string>> = {
   opening: "The door opens.",
   cosmos: "You step into the cosmos.",
+  manali: "Manali, India.",
+  orbit: "Vibers appear around Manali.",
+  settled:
+    "Your vibe has a universe. Here are some Vibers who might see the world the way you do.",
 };
 
 /**
@@ -29,7 +41,7 @@ const ANNOUNCE: Partial<Record<Phase, string>> = {
  */
 export function JourneyScreen() {
   const journey = useJourney();
-  const { phase, advance } = journey;
+  const { phase, advance, thought } = journey;
   const root = useRef<HTMLDivElement>(null);
   const door = useRef<DoorSceneHandle>(null);
   const cosmos = useRef<HTMLDivElement>(null);
@@ -39,6 +51,15 @@ export function JourneyScreen() {
   const skipButton = useRef<HTMLButtonElement>(null);
   const worldScrim = useRef<HTMLDivElement>(null);
   const running = useRef<gsap.core.Timeline | null>(null);
+  const discovery = useRef<DiscoveryHandle>(null);
+  // Skip means "take me to the result": every scene after it starts already finished
+  const skipping = useRef(false);
+  // what every timeline animates; the 3D world and the CSS scenes both read it
+  const [params] = useState(initialParams);
+  const cards = useMemo(
+    () => (thought ? matchThought(thought) : []),
+    [thought],
+  );
   // the 3D world, once its first frame is on screen; until then (or without WebGL) the CSS scene plays
   const [world, setWorld] = useState<World | null>(null);
 
@@ -54,6 +75,7 @@ export function JourneyScreen() {
           ? buildDoorOpeningStill(parts)
           : buildDoorOpening(parts);
       tl.eventCallback("onComplete", () => advance("cosmos"));
+      tl.data = "door";
       running.current = tl;
       // development only: lets the review script step through the timeline frame by frame
       if (process.env.NODE_ENV !== "production")
@@ -64,10 +86,50 @@ export function JourneyScreen() {
     { dependencies: [phase], scope: root },
   );
 
+  // scenes three to five: the sphere, Manali, the Vibers in orbit, the row
+  useGSAP(
+    () => {
+      if (phase !== "cosmos" || !discovery.current) return;
+      const d = discovery.current;
+      const tl = prefersReducedMotion()
+        ? buildDiscoveryStill(params, d)
+        : buildDiscovery(params, d, advance);
+      tl.eventCallback("onComplete", () => advance("settled"));
+      running.current = tl;
+      if (process.env.NODE_ENV !== "production")
+        (
+          window as unknown as { __journeyTl?: gsap.core.Timeline }
+        ).__journeyTl = tl;
+      if (skipping.current) tl.progress(1);
+    },
+    { dependencies: [phase], scope: root },
+  );
+
+  // from the cosmos on, one function a frame places the sphere's label and the cards
+  const inCosmos = phase !== "idle" && phase !== "opening";
+  useEffect(() => {
+    if (!inCosmos || !discovery.current) return;
+    const drive = makeDriver(params, discovery.current, !!world);
+    gsap.ticker.add(drive);
+    return () => gsap.ticker.remove(drive);
+  }, [inCosmos, params, world]);
+
+  // once settled, the heading takes focus so keyboard and screen-reader users start at the result
+  useEffect(() => {
+    if (phase === "settled")
+      discovery.current?.head
+        .querySelector<HTMLElement>("h2")
+        ?.focus({ preventScroll: true });
+  }, [phase]);
+
   const skip = useCallback(() => {
+    skipping.current = true;
     const tl = running.current;
-    if (tl && tl.progress() < 1)
+    if (!tl || tl.progress() >= 1) return;
+    // the door finishes quickly; later scenes jump straight to the result
+    if (tl.data === "door")
       tl.tweenTo(tl.duration(), { duration: 0.4, ease: "power1.inOut" });
+    else tl.progress(1);
   }, []);
 
   // Escape skips while a scene is playing; Skip takes focus so keyboard users find it first
@@ -90,8 +152,14 @@ export function JourneyScreen() {
       data-world={world ? "3d" : "css"}
     >
       <DoorScene ref={door} between={<CosmosBackdrop ref={cosmos} />} />
-      <WorldCanvas onReady={setWorld} />
+      <WorldCanvas params={params} onReady={setWorld} />
       <div ref={worldScrim} className={`${s.scrim} ${s.worldScrim}`} />
+      <Discovery
+        ref={discovery}
+        cards={cards}
+        settled={phase === "settled"}
+        world3d={!!world}
+      />
 
       <header ref={top} className={s.top}>
         <span className={s.brand}>Vibers Club</span>
