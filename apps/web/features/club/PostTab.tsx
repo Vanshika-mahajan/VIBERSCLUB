@@ -71,7 +71,7 @@ export function PostTab({
   const chips = reading.chips.filter((c) => c.kind !== "not");
 
   return (
-    <div className={s.postGrid}>
+    <div className={`${s.postGrid} ${s.issue} ${s.postIssue}`}>
       <section
         aria-labelledby="post-title"
         style={{ display: "flex", flexDirection: "column", gap: 18 }}
@@ -183,7 +183,7 @@ export function PostTab({
                 {chips.map((c) => (
                   <span
                     key={`${c.kind}-${c.id}`}
-                    className={s.tag}
+                    className={`${s.tag} ${s.hashed}`}
                     data-tone={c.kind === "area" ? "clover" : undefined}
                     title={c.why}
                   >

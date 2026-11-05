@@ -441,3 +441,34 @@ ARPIT approved demo v5 (Shopify Editions style contents) and asked for it to be 
   - e2e: everything passes except "API OK", which needs the backend on :8000 and is a known failure.
   - The contents, Discover nav and sound specs were updated for the chapter links.
 - **Next:** restyle Discover, Events and Explore, the Discover globe, Post, and What's new (points 4 to 7).
+
+## Points 4 to 7: Discover, Events, Explore, the globe, Post and What's new in the editorial look (2026-11-06)
+
+- **Events, Explore and the faces under Discover** (`.issue` scope in `club.module.css`):
+  - Photographs are toned in sage.
+  - Chips are square and espresso.
+  - Interests read as sage hashtags.
+  - Local tips are a sage rule instead of a green box.
+  - Explore / Itinerary are underlined words.
+  - Pass, like and save are square buttons.
+  - The person card is ruled instead of boxed.
+  - Amber is kept for dates and seat bars.
+- **Discover globe** (`sphere.ts`):
+  - Portraits and places sit in thin espresso frames, with no paper border or shadow.
+  - Photos are toned in sage on the canvas (a "color" blend).
+  - Thread screens and hashtag labels are ivory with an espresso hairline.
+  - The thought bar is square ivory with an espresso hairline and an amber send key. Suggestions and controls are square.
+- **Post (IGNITE THE VIBE):**
+  - A big Syne prompt, and a borderless writing area set in Syne.
+  - Detected keywords appear as sage hashtags.
+  - A thin espresso Post button.
+  - Matching Vibers are ruled rows, and the reason they fit is in sage.
+- **What's new** (`.vc-inbox` in `globals.css`):
+  - Notifications and Chats are underlined words.
+  - Notifications are grouped under People, Your events and For your vibe.
+  - Faces are sage squares, and the unread dot stays amber.
+  - Fixed: a selected chip lost its text under the pointer, which is why the Chats tab looked like a black blob.
+- **Tests:**
+  - Unit tests: 95 passed.
+  - e2e: everything passes except "API OK" (needs the backend).
+  - `club.spec` now allows the second "Vibers like you" heading that chapter V adds.

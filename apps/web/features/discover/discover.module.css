@@ -1322,3 +1322,46 @@
   color: var(--ink2);
   font-weight: 600;
 }
+
+/* ---------- the issue: the thought bar and its controls set like the rest of the magazine ---------- */
+/* square, an espresso hairline on ivory; amber only for the send key */
+.bar {
+  border-radius: 0;
+  background: var(--color-ivory);
+  border-color: var(--color-ink);
+}
+.bar:focus-within {
+  border-color: var(--color-ink);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+.orbit {
+  display: none;
+}
+.go {
+  border-radius: 0;
+  background: var(--color-amber);
+}
+.go:hover {
+  background: var(--color-ink);
+}
+.cb {
+  border-radius: 0;
+  background: var(--color-ivory);
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+.cb[aria-pressed="true"] {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+}
+.tr {
+  border-radius: 0;
+  background: transparent;
+  border-color: var(--color-ink);
+  font-weight: 500;
+  color: var(--color-ink);
+}
+.tr:hover {
+  background: var(--color-ink);
+  color: var(--color-ivory);
+}

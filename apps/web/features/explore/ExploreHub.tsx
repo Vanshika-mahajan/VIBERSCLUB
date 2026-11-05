@@ -40,7 +40,7 @@ export function ExploreHub({ inline = false }: { inline?: boolean }) {
   };
 
   return (
-    <div className={s.club}>
+    <div className={`${s.club} ${s.issue}`}>
       {!inline && (
         <PageHeader kicker="Explore" title="Explore Manali">
           Places worth the walk, day plans by locals, and your own itinerary.

@@ -1689,3 +1689,224 @@ select.mini2 {
 .anchor {
   scroll-margin-top: 24px;
 }
+
+/* ---------- the issue: Discover's faces, Events and Explore as chapters of one magazine ---------- */
+/* photographs toned in sage (their luminosity onto deep sage), hairlines instead of boxes, square
+   type-set controls in espresso, and amber kept for the small jewels (a date, a seat bar) */
+.issue .photo {
+  background: #64754b;
+  isolation: isolate;
+}
+.issue .photo img {
+  mix-blend-mode: luminosity;
+  filter: brightness(0.92) contrast(1.05);
+}
+.issue .photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(30 20 12 / 0.16);
+  pointer-events: none;
+}
+.issue .card {
+  box-shadow: none;
+}
+.issue .chip {
+  padding: 6px 12px;
+  border-radius: 0;
+  border-color: var(--color-ink);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.issue .chip:hover {
+  border-color: var(--color-ink);
+  background: rgb(42 27 19 / 0.06);
+}
+.issue .chip[aria-pressed="true"] {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-ivory);
+}
+/* interests read as hashtags in sage, set in the text, not as pills */
+.issue .tag,
+.issue .tag[data-tone="clover"] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--color-sage-ink);
+  font-weight: 600;
+}
+.issue .tag::before {
+  content: "#";
+  opacity: 0.7;
+}
+.issue .chips:has(> .tag) {
+  gap: 4px 12px;
+}
+.issue .sample {
+  border-radius: 0;
+  border: 1px solid currentColor;
+  background: none;
+  color: var(--color-muted);
+}
+.issue .date {
+  border-radius: 0;
+  background: var(--color-ivory);
+}
+.issue .price {
+  border-radius: 0;
+  background: var(--color-ink);
+  color: var(--color-ivory);
+}
+.issue .seats {
+  background: rgb(42 27 19 / 0.14);
+}
+.issue .tip {
+  padding: 2px 0 2px 12px;
+  border: 0;
+  border-left: 2px solid var(--color-sage);
+  border-radius: 0;
+  background: none;
+  color: var(--color-ink2);
+}
+.issue .tip b {
+  color: var(--color-sage-ink);
+}
+.issue .heart {
+  border-radius: 0;
+}
+.issue .heart[aria-pressed="true"] {
+  background: var(--color-ink);
+  color: var(--color-ivory);
+}
+.issue .empty {
+  border-radius: 0;
+  border-style: solid;
+  border-color: var(--line);
+}
+/* Explore and Itinerary: two words, the current one underlined, not a capsule */
+.issue .segment {
+  gap: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.issue .segment button {
+  padding: 4px 0;
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  text-decoration: underline 1px transparent;
+  text-underline-offset: 6px;
+  transition: color 0.25s, text-decoration-color 0.25s;
+}
+.issue .segment button[aria-pressed="true"] {
+  background: none;
+  color: var(--color-ink);
+  text-decoration-color: currentColor;
+}
+/* the person you are looking at: a page of the issue, ruled above and below, no box */
+.issue .details {
+  border: 0;
+  border-top: 1px solid var(--color-ink);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.issue .details .why {
+  color: var(--color-sage-ink);
+}
+/* pass, like and save: square, espresso */
+.issue .round {
+  border-radius: 0;
+  border-color: var(--color-ink);
+  background: transparent;
+}
+.issue .round[data-kind="like"] {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-ivory);
+}
+.issue .round[data-kind="like"]:hover {
+  background: var(--color-espresso);
+}
+.issue .round[data-kind="save"] {
+  background: transparent;
+  color: var(--color-ink);
+}
+.issue .pill {
+  z-index: 1;
+  border-radius: 0;
+}
+
+/* IGNITE THE VIBE: a big prompt, a borderless page to write on, the keywords found as sage hashtags,
+   and a thin espresso Post */
+.postIssue .h2 {
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+}
+.postIssue .composer {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.postIssue .textarea {
+  min-height: 150px;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-ink);
+  border-radius: 0;
+  background: none;
+  font: 500 1.35rem/1.4 var(--font-display);
+  letter-spacing: -0.01em;
+  resize: none;
+}
+.postIssue .textarea::placeholder {
+  color: var(--color-muted);
+  opacity: 0.6;
+}
+.postIssue .textarea:focus {
+  outline: none;
+  box-shadow: 0 1px 0 var(--color-ink);
+}
+.postIssue .select {
+  padding-left: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line2);
+  border-radius: 0;
+  background: none;
+}
+.postIssue .btn {
+  border: 1px solid var(--color-ink);
+  background: transparent;
+  color: var(--color-ink);
+}
+.postIssue .btn:hover {
+  background: var(--color-ink);
+  color: var(--color-ivory);
+}
+.postIssue .photoDrop {
+  border: 1px solid var(--line2);
+  border-radius: 0;
+  background: none;
+}
+/* a keyword found in your post already carries its # */
+.issue .hashed::before {
+  content: none;
+}
+/* why someone fits: a line in sage, not shouted in amber */
+.issue .why {
+  color: var(--color-sage-ink);
+  font-weight: 600;
+}
+/* a person in a short list: a ruled row, no box */
+.issue .mini {
+  padding: 12px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+}

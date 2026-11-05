@@ -227,6 +227,15 @@ function cover(g: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y:
   const sx = clamp((iw - sw) * (isNaN(px) ? 0.5 : px), 0, iw - sw);
   const sy = clamp((ih - sh) * (isNaN(py) ? 0.3 : py), 0, ih - sh);
   g.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+  // toned in sage, like every photograph in the club: its light and shade, the colour of sage
+  g.save();
+  g.globalCompositeOperation = "color";
+  g.fillStyle = "#64754b";
+  g.fillRect(x, y, w, h);
+  g.globalCompositeOperation = "source-over";
+  g.fillStyle = "rgba(30,20,12,.14)";
+  g.fillRect(x, y, w, h);
+  g.restore();
 }
 export const initials = (n: string) =>
   n
@@ -256,17 +265,9 @@ function personSprite(sc: number, img: HTMLImageElement | undefined, name: strin
   const g = ctx(c);
   const x = bw * pad;
   const y = bh * pad * 0.9;
-  const r = bw * 0.13;
-  const b = bw * 0.055;
-  g.save();
-  g.shadowColor = "rgba(42, 27, 19,.26)";
-  g.shadowBlur = bw * 0.2;
-  g.shadowOffsetY = bw * 0.07;
-  g.fillStyle = "#fff";
-  rrect(g, x, y, bw, bh, r);
-  g.fill();
-  g.restore();
-  g.fillStyle = "#fff";
+  const r = bw * 0.03;
+  const b = bw * 0.03;
+  g.fillStyle = INK;
   rrect(g, x, y, bw, bh, r);
   g.fill();
   g.save();
@@ -286,12 +287,6 @@ function personSprite(sc: number, img: HTMLImageElement | undefined, name: strin
     g.fillText(initials(name), x + bw / 2, y + bh * 0.46);
   }
   g.restore();
-  const gl = g.createLinearGradient(0, y + b, 0, y + bh);
-  gl.addColorStop(0, "rgba(255,255,255,.22)");
-  gl.addColorStop(0.35, "rgba(255,255,255,0)");
-  g.fillStyle = gl;
-  rrect(g, x + b, y + b, bw - 2 * b, bh - 2 * b, r - b * 0.6);
-  g.fill();
   return { c, w: cw, h: ch, bw, bh, pad, down: [soft(c, 3), soft(c, 7)], ar: PERSON_AR };
 }
 
@@ -305,16 +300,11 @@ function worldSprite(sc: number, img: HTMLImageElement | undefined, kind: string
   const g = ctx(c);
   const x = bw * pad;
   const y = bh * pad;
-  const r = bh * 0.16;
-  const b = bh * 0.07;
-  g.save();
-  g.shadowColor = "rgba(42, 27, 19,.22)";
-  g.shadowBlur = bh * 0.28;
-  g.shadowOffsetY = bh * 0.1;
-  g.fillStyle = "#fff";
+  const r = bh * 0.03;
+  const b = bh * 0.04;
+  g.fillStyle = INK;
   rrect(g, x, y, bw, bh, r);
   g.fill();
-  g.restore();
   g.save();
   rrect(g, x + b, y + b, bw - 2 * b, bh - 2 * b, r - b * 0.5);
   g.clip();
@@ -366,15 +356,13 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
   const g = ctx(c);
   const x = bw * pad;
   const y = bh * pad;
-  const r = bh * 0.12;
-  g.save();
-  g.shadowColor = "rgba(42, 27, 19,.24)";
-  g.shadowBlur = bh * 0.3;
-  g.shadowOffsetY = bh * 0.1;
-  g.fillStyle = "#FBF8F4";
+  const r = bh * 0.025;
+  g.fillStyle = "#f7f2e8";
   rrect(g, x, y, bw, bh, r);
   g.fill();
-  g.restore();
+  g.strokeStyle = INK;
+  g.lineWidth = Math.max(1, bh * 0.012);
+  g.stroke();
   g.save();
   rrect(g, x, y, bw, bh, r);
   g.clip();
@@ -449,14 +437,12 @@ function tagSprite(sc: number, label: string, col: string): Sprite {
   const g = ctx(c);
   const x = f * 0.6;
   const y = f * 0.55;
-  g.save();
-  g.shadowColor = "rgba(42, 27, 19,.2)";
-  g.shadowBlur = f * 0.7;
-  g.shadowOffsetY = f * 0.25;
-  g.fillStyle = "#fff";
-  rrect(g, x, y, bw, bh, bh / 2);
+  g.fillStyle = "#f7f2e8";
+  rrect(g, x, y, bw, bh, f * 0.1);
   g.fill();
-  g.restore();
+  g.strokeStyle = INK;
+  g.lineWidth = Math.max(1, f * 0.07);
+  g.stroke();
   g.fillStyle = col;
   g.beginPath();
   g.arc(x + f * 0.95, y + bh / 2, f * 0.34, 0, TAU);
@@ -474,9 +460,9 @@ function tileSprite(sc: number, src: Sprite): Sprite {
   const c = mk(s, s);
   const g = ctx(c);
   g.save();
-  rrect(g, 0, 0, s, s, s * 0.2);
+  rrect(g, 0, 0, s, s, s * 0.04);
   g.clip();
-  g.fillStyle = "#fff";
+  g.fillStyle = INK;
   g.fillRect(0, 0, s, s);
   g.drawImage(src.c, src.w * 0.2, src.h * 0.17, src.w * 0.6, src.w * 0.6, s * 0.06, s * 0.06, s * 0.88, s * 0.88);
   g.restore();

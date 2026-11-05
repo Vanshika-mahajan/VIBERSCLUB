@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Avatar, Empty, PageHeader } from "@/components/ui";
 import { ChatsScreen } from "@/features/chats/ChatsScreen";
 import { notesFor, type Note } from "@/lib/demo/notifications";
@@ -18,7 +18,7 @@ export function Inbox() {
   const setTab = (t: "notes" | "chats") => router.replace(t === "chats" ? "/inbox?tab=chats" : "/inbox", { scroll: false });
 
   return (
-    <div className="max-w-2xl">
+    <div className="vc-inbox max-w-2xl">
       <PageHeader kicker="Inbox" title="What's new">
         Your matches, requests, events and chats, in one place.
       </PageHeader>
@@ -38,7 +38,11 @@ export function Inbox() {
 function Notes() {
   const state = useDemo((s) => s);
   const [now] = useState(() => Date.now());
-  const notes = useMemo(() => notesFor(state, now), [state, now]);
+  // set like the pages of a magazine: the people first, then your events, then what is new for your vibe
+  const notes = useMemo(() => {
+    const order = (n: Note) => GROUP[n.kind][0];
+    return [...notesFor(state, now)].sort((a, b) => order(a) - order(b));
+  }, [state, now]);
   // what is new is marked for this visit, then counted as seen
   const [fresh] = useState(() => new Set(notesFor(getState(), now).filter((n) => !getState().seenNotes.includes(n.id)).map((n) => n.id)));
   useEffect(() => {
@@ -53,9 +57,13 @@ function Notes() {
     );
   return (
     <div role="tabpanel">
-      <ul className="divide-y divide-line2 border-y border-ink" aria-label="Notifications">
-        {notes.map((n) => (
-          <li key={n.id}>
+      <ul className="divide-y divide-line2 border-b border-ink" aria-label="Notifications">
+        {notes.map((n, i) => (
+          <Fragment key={n.id}>
+          {(i === 0 || GROUP[notes[i - 1].kind][1] !== GROUP[n.kind][1]) && (
+            <li className="vc-inbox__head">{GROUP[n.kind][1]}</li>
+          )}
+          <li>
             <Link href={n.href} className="flex items-center gap-3 px-1 py-4 transition hover:bg-raised">
               <NoteMark note={n} />
               <span className="min-w-0 flex-1 text-sm text-ink">{n.text}</span>
@@ -64,11 +72,20 @@ function Notes() {
               )}
             </Link>
           </li>
+          </Fragment>
         ))}
       </ul>
     </div>
   );
 }
+
+const GROUP: Record<Note["kind"], [number, string]> = {
+  match: [0, "People"],
+  request: [0, "People"],
+  event: [1, "Your events"],
+  group: [1, "Your events"],
+  suggest: [2, "For your vibe"],
+};
 
 const LABEL: Record<Note["kind"], string> = { match: "Match", request: "Request", event: "Event", group: "Group", suggest: "For you" };
 

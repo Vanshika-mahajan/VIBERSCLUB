@@ -37,7 +37,7 @@ export function ChatsScreen({ embedded = false }: { embedded?: boolean }) {
   if (group) return <GroupThread event={group.event} status={group.status} onBack={back} />;
 
   return (
-    <div className="max-w-2xl">
+    <div className="vc-inbox max-w-2xl">
       {!embedded && (
         <PageHeader kicker="Mutual only" title="Chats">
           You can message someone only after you both say yes.

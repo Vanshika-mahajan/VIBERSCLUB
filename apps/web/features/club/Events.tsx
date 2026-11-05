@@ -57,7 +57,7 @@ export function Events() {
   }, [hosted, rsvps, blocked, filter, thought]);
 
   return (
-    <section aria-labelledby="events-title">
+    <section aria-labelledby="events-title" className={s.issue}>
       <div className={s.sectionHead}>
         <div>
           <h2 id="events-title" className={s.h2}>

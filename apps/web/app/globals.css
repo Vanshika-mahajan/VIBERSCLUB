@@ -496,3 +496,57 @@ body:not(:has(> .vc-contents)) > main {
     scroll-margin-top: 112px;
   }
 }
+
+/* a selected chip keeps its ivory type under the pointer (the hover colour used to hide it) */
+.chip[aria-pressed="true"]:hover,
+.chip[aria-selected="true"]:hover {
+  color: var(--color-on-cta);
+}
+
+/* What's new: the tabs are words, the current one underlined; rows are ruled; faces are sage-toned
+   squares; the unread mark stays a small amber dot */
+.vc-inbox [role="tablist"] {
+  gap: 22px;
+}
+.vc-inbox [role="tablist"] .chip {
+  height: auto;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--color-muted);
+  font: 700 1.15rem/1.1 var(--font-display);
+  letter-spacing: -0.01em;
+  text-decoration: underline 1px transparent;
+  text-underline-offset: 6px;
+}
+.vc-inbox .vc-inbox [role="tablist"] .chip {
+  font-size: 0.95rem;
+}
+.vc-inbox [role="tablist"] .chip:hover {
+  color: var(--color-ink);
+}
+.vc-inbox [role="tablist"] .chip[aria-selected="true"] {
+  background: none;
+  color: var(--color-ink);
+  text-decoration-color: currentColor;
+}
+.vc-inbox__head {
+  padding: 22px 0 8px;
+  border-top: 1px solid var(--color-ink) !important;
+  color: var(--color-sage-ink);
+  font: 500 0.68rem/1 var(--font-sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.vc-inbox .bg-accent-wash {
+  border: 0;
+  border-radius: 0;
+  background: #55643f;
+  color: var(--color-ivory);
+  isolation: isolate;
+}
+.vc-inbox .bg-accent-wash img {
+  mix-blend-mode: luminosity;
+  filter: brightness(0.92);
+}

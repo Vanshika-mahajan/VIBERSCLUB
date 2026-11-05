@@ -157,7 +157,7 @@ export function Community({ vibe = "" }: { vibe?: string }) {
   );
 
   return (
-    <div className={s.community}>
+    <div className={`${s.community} ${s.issue}`}>
       <div className={s.deckWrap}>
         <div
           className={s.sectionHead}

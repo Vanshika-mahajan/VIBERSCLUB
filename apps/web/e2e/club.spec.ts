@@ -14,7 +14,8 @@ test("home is one page: the hero, then what used to be Today", async ({
   );
   await expect(page.getByRole("listbox")).toHaveCount(0);
   for (const name of ["Vibers like you", "This week", "Day plans"])
-    await expect(page.getByRole("heading", { name, level: 2 })).toBeVisible();
+    // (chapter V, Discover, has its own "Vibers like you" further down)
+    await expect(page.getByRole("heading", { name, level: 2 }).first()).toBeVisible();
   await page.getByRole("button", { name: /Ignite the vibe/ }).click();
   await expect(page.getByRole("dialog", { name: "Ignite the vibe" })).toBeVisible();
 });
