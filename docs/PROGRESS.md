@@ -472,3 +472,22 @@ ARPIT approved demo v5 (Shopify Editions style contents) and asked for it to be 
   - Unit tests: 95 passed.
   - e2e: everything passes except "API OK" (needs the backend).
   - `club.spec` now allows the second "Vibers like you" heading that chapter V adds.
+
+## Colourful photos, distinct chapter openers, and the final Vibers pair (2026-11-06)
+
+- **Photos:** photographs keep their own colours everywhere. The sage toning is gone from the `.issue` photos, the Discover sphere (`cover()`) and the inbox faces.
+- **Chapter openers:** they draw their picture untoned (`plain()`), with a soft shade at the foot so the title stays readable. Each chapter now has its own picture:
+
+  | Chapter | Picture |
+  | --- | --- |
+  | II Vibers like you | ARPIT's illustration |
+  | III This week | The lantern path by day |
+  | IV Day plans | The meadow |
+  | V Discover | The Earth |
+  | VI Events | The red-moon night |
+  | VII Explore | The illustrated sky |
+
+- **Home opening:** uses ARPIT's final character art. New cut-outs, a new inpainted scene, and new boxes in `Opening.tsx`.
+- **Tests:**
+  - Unit tests: 95 passed.
+  - e2e: passes except "API OK" (needs the backend).

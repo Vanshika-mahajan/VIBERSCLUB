@@ -8,14 +8,14 @@ import s from "./opening.module.css";
     Earth, facing Manali, for chapter I */
 const SCENE = "/home/scene.webp";
 const EARTH = "/home/earth.webp";
-/* the two Vibers were cut out of one 1672 x 941 illustration; these are their boxes in it, and the
+/* the two Vibers were cut out of one 1671 x 941 illustration; these are their boxes in it, and the
    point between their fingertips */
-const GIRL = { x: 191, y: 79, w: 667, h: 760 },
-  BOY = { x: 858, y: 181, w: 762, h: 711 },
-  TOUCH = { x: 858, y: 324 },
+const GIRL = { x: 194, y: 80, w: 657, h: 775 },
+  BOY = { x: 864, y: 165, w: 776, h: 728 },
+  TOUCH = { x: 860, y: 322 },
   PAIR_W = BOY.x + BOY.w - GIRL.x,
   PAIR_H = 813,
-  PAIR_MID = 485;
+  PAIR_MID = 487;
 
 /**
  * The opening of Home, scrubbed by scroll on a sticky stage (the contents sit centred over it):
