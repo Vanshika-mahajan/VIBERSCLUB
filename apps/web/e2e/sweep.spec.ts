@@ -38,7 +38,9 @@ for (const route of routes) {
         errors.push(m.text());
     });
     await page.goto(route, { waitUntil: "load" });
-    await expect(page.locator("h1, h2").first()).toBeVisible({ timeout: 15_000 });
+    // the door's headline animates in, so on the first page it only has to be there
+    if (route === "/") await expect(page.locator("h1").first()).toBeAttached({ timeout: 15_000 });
+    else await expect(page.locator("h1, h2").first()).toBeVisible({ timeout: 15_000 });
     await page.waitForTimeout(800);
 
     const overflow = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

@@ -39,15 +39,14 @@ export function buildWorldOpening(
       .to(p, { life: 0.35, lookX: 0, lookY: 0, duration: 1.2 }, 0.4)
       // 2. the seam flares
       .to(p, { seam: 1, duration: 0.45, ease: "power2.out" }, 0.6)
-      // 3. the door unlatches (a small give), then swings away with weight: slow to start, carried
-      // through, easing as it reaches the wall. Light pours through from the first crack
-      .to(p, { leaf: 0.025, duration: 0.3, ease: "power2.out" }, 0.8)
-      .to(p, { leaf: 1, duration: 2.3, ease: "power3.inOut" }, 1.05)
+      // 3. the door swings away; light pours through from the first crack
+      .to(p, { leaf: 1, duration: 2.1 }, 0.95)
       .to(p, { light: 1, duration: 0.6, ease: "power2.out" }, 1.0)
       .to(p, { seam: 0, duration: 0.5 }, 1.3)
       .to(p, { rays: 1, duration: 1.6, ease: "power2.out" }, 1.05)
-      // 4. one unbroken push: a slow step forward while it opens, gathering into the rush through
-      .to(p, { travel: 1, duration: 3.5, ease: "power2.in" }, 0.9)
+      // 4. a slow step forward while it opens, then the rush through the doorway
+      .to(p, { travel: 0.22, duration: 1.8, ease: "sine.inOut" }, 0.9)
+      .to(p, { travel: 1, duration: 1.8, ease: "power3.in" }, 2.6)
       .to(p, { warp: 16, duration: 0.9, ease: "power2.in" }, 3.35)
       .to(p, { dusk: 1, duration: 1.7, ease: "sine.in" }, 2.5)
       // 5. through the light: it opens from the centre, and the shafts fall away

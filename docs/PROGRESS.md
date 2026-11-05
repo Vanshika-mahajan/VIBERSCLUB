@@ -14,6 +14,20 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## ARPIT's review round (2026-11-04 night): ten changes
+- Door and Earth restored to the version ARPIT approved (commit 8378930): `features/journey`, `public/journey` and their tests were checked out from it. Enter the app still lands on /home.
+- Discover: people come out of the sphere only when you send the thought (Enter, the arrow or a suggestion). While you type, the sphere lights up only the interests it reads.
+- `features/discover/DiscoverWheel.tsx` + `components/reactbits/OptionWheel.*` (restored): a wheel at the side of Discover, "The orbit of thoughts" and "Faces waiting below ↓", hints at the gallery under the globe. Turning it scrolls there with a soft tick (`public/sounds/wheel-tick.wav`, made here; it follows the Sounds setting).
+- Navigation: the pill bar is Home, Discover, Events, Explore. A + beside it (`components/PostButton.tsx`) opens IGNITE THE VIBE as a sheet from any screen; the Home card and old `/profile#ignite` links open it too. `components/TopBar.tsx`: your initial opens your profile; on Home a bell opens `/inbox`. The profile menu is gone (`ProfileMenu.tsx` deleted).
+- Profile: `/profile` (`features/profile/ProfileHome.tsx`) shows your picture, name, numbers, vibe line, albums, posts as a grid, then Your lists (marked "Only you can see this"). The gear opens `/profile/settings` (`ProfileSettings.tsx`, was ProfileScreen): Your profile, YOUR VIBE LINE, WHAT'S YOUR VIBE?, LOOKING FOR, PRIVACY AND SAFETY, Sounds, Demo.
+- Inbox (`features/inbox/Inbox.tsx`, `lib/demo/notifications.ts`): Notifications (matches, requests, your events and their group chats, new events for your vibe; seen ones stop counting) and Chats.
+- Event group chats (`lib/demo/groups.ts`, store `joinedAt`, `groupMessages`, `hiddenGroups`, `sendGroup`, `deleteGroup`): joining an event puts you in its group with everyone going (hosts too). It turns read-only when the event ends and can then be deleted; it disappears at the end of the next day. Sample event days count from the day you joined.
+- Palette: Deep Plum #320B35 (page and brand), Almond Cream #F5F0C9 (type, the main button), Dusty Lavender #9B82B5 (details, hover, soft light) and Soft Butter #FFF3B0 (the + button, new dots, focus rings), with a fine grain. All old Winewood colours were mapped in one pass; Discover is now plum-black (#160419). The door and Earth keep their own look.
+- Backend needed later: notifications (`GET /me/notifications`, mark seen), event group chats (`/events/:id/chat`, closes at the event end), profile posts by user.
+
+## Tests executed (review round, 2026-11-05, in the cloud workspace)
+Vitest 95 passed (new `groups.test.ts`: group chat open, read-only, gone; notifications and seen). E2E 121 passed, 1 skipped, the two "API OK" checks failed as usual. New: typing alone shows no one on Discover; the wheel; the four-tab pill bar; profile and settings; the bell with notifications and a group chat; the + sheet. Typecheck and ESLint clean.
+
 ## Restructure Phase 6: testing and refinement (2026-11-04)
 - New `e2e/sweep.spec.ts` checks every page (/, /home, /discover, /explore and its Itinerary section, /profile, /chats, a chat, /events, an event, /events/new, a full profile, /universe) on a phone, at tablet width and on a desktop. Each page must load with a heading, have no sideways scroll, log no console errors, and pass an axe accessibility scan (WCAG 2.1 A and AA, serious and critical). `SWEEP_SHOTS=1` also saves a screenshot of each page to `.sweep/` (git-ignored) for a look-and-feel review. Adds `@axe-core/playwright` 4.10.2 (dev).
 - Fixed:

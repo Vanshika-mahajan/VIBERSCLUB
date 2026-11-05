@@ -24,6 +24,15 @@ test("a thought brings matching Vibers out of the sphere", async ({ page }) => {
   }
 });
 
+test("typing alone shows no one: people come out only when you send the thought", async ({ page }) => {
+  await page.getByRole("textbox", { name: "What's on your mind?" }).fill("Trek Hampta this weekend");
+  await expect(page.getByText(/Press Enter or the arrow/)).toBeVisible();
+  await page.waitForTimeout(1500);
+  await expect(page.getByRole("list", { name: /Vibers who share your thought/ }).getByRole("button")).toHaveCount(0);
+  await page.getByRole("button", { name: "Show me who is thinking like this" }).click();
+  await expect(page.getByText(/Vibers who share this thought/)).toBeVisible();
+});
+
 test("open a profile, like and save, then pass", async ({ page }) => {
   await page.getByRole("textbox", { name: "What's on your mind?" }).fill("Trek Hampta this weekend");
   await page.keyboard.press("Enter");
@@ -57,4 +66,12 @@ test("the main navigation stays reachable", async ({ page }) => {
   const nav = page.getByRole("navigation", { name: "Main" });
   await nav.getByRole("link", { name: "Explore" }).click();
   await expect(page.getByRole("heading", { name: "Explore Manali", level: 1 })).toBeVisible();
+});
+
+test("the wheel names the sphere and the gallery below, and takes you there", async ({ page }) => {
+  const wheel = page.getByRole("listbox", { name: /Parts of Discover/ });
+  await expect(wheel.getByRole("option", { name: "The orbit of thoughts" })).toHaveAttribute("aria-selected", "true");
+  await wheel.getByRole("option", { name: /Faces waiting below/ }).click();
+  await expect(page.locator("#community")).toBeInViewport({ timeout: 5000 });
+  await expect(wheel.getByRole("option", { name: /Faces waiting below/ })).toHaveAttribute("aria-selected", "true");
 });

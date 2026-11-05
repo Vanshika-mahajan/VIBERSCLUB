@@ -24,7 +24,7 @@ const TRY = [
   "Workation buddies with good wifi",
 ];
 // category hues keep their old ids; on screen they read forest, terracotta and gold
-const HUE_COLOR = { blue: "#2F4736", violet: "#6B3543", cyan: "#B88792" } as const;
+const HUE_COLOR = { blue: "#432556", violet: "#6E4F8A", cyan: "#9B82B5" } as const;
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 const first = (v: Viber) => v.name.split(" ")[0];
@@ -180,21 +180,13 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
     const a = setTimeout(() => {
       adapter.query(text, corr, 40).then((r) => live && setResult(r));
     }, 90);
-    const b = setTimeout(() => {
-      if (!live) return;
-      // on a phone the keyboard stays up until Enter
-      if (!kbRef.current) setSettled(true);
-    }, 720);
+    // people only step out when you send the thought (Enter, the arrow, or a suggestion):
+    // while you type, the sphere just lights up the interests it reads
     return () => {
       live = false;
       clearTimeout(a);
-      clearTimeout(b);
     };
   }, [active, text, corr, adapter]);
-  const kbRef = useRef(kb);
-  useEffect(() => {
-    kbRef.current = kb;
-  }, [kb]);
 
   const result = active ? latest : null;
   const parsing = active && !settled;
@@ -209,11 +201,11 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
     if (!sp) return;
     if (!result || !searching) return sp.setRelevance(null);
     const m = new Map<string, number>();
-    matches.forEach((x, i) => m.set(x.viber.id, i < screen ? 1 : 0.6));
+    if (settled) matches.forEach((x, i) => m.set(x.viber.id, i < screen ? 1 : 0.6));
     result.thought.interests.forEach((id) => m.set("t:" + id, 1));
     result.thought.suggestions.forEach((x) => m.set("t:" + x.id, 0.35));
     sp.setRelevance(m);
-  }, [result, matches, searching, screen, sphereReady]);
+  }, [result, matches, searching, screen, sphereReady, settled]);
 
   useEffect(() => {
     const sp = sphereRef.current;
@@ -333,6 +325,7 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
         </>
       );
     }
+    if (!settled) return <>Press Enter or the arrow to see who is thinking like this.</>;
     if (!matches.length) return <>No one here shares all of that yet. Remove a tag above to widen it.</>;
     if (!formed) return <>Reading your thought…</>;
     return (
@@ -437,10 +430,7 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
                   setSettled(false);
                 }}
                 onFocus={() => narrow && setKb(true)}
-                onBlur={() => {
-                  setKb(false);
-                  if (hasQ) setSettled(true);
-                }}
+                onBlur={() => setKb(false)}
               />
               {hasQ && (
                 <button type="button" className={s.clr} aria-label="Clear what I typed" onClick={() => (reset(), inputRef.current?.focus())}>
@@ -621,7 +611,7 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
 
       {listOpen && (
         <section className={s.listview} aria-label="Discover as a list">
-          {matches.length && searching ? (
+          {matches.length && searching && settled ? (
             <>
               <h2>Vibers who share your thought</h2>
               <p style={{ color: "var(--muted)", margin: 0 }}>Best first. Tap someone to see why they&apos;re here.</p>

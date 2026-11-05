@@ -8,8 +8,8 @@ test.beforeEach(async ({ page }) => {
 test("the pitch journey: vibe → discover → like → connect → chat → RSVP", async ({ page, isMobile }) => {
   // example thoughts (and "Use my vibe") hide on short laptop screens to keep the sphere clear
   if (!isMobile) await page.setViewportSize({ width: 1280, height: 900 });
-  // 1. write a vibe on your profile; the chips follow as you type
-  await page.goto("/profile");
+  // 1. write a vibe in your profile settings; the chips follow as you type
+  await page.goto("/profile/settings");
   const vibe = page.getByLabel(/what are you here for/);
   await vibe.fill("Yoga and hot springs in Vashisht, people to trek with");
   await expect(page.getByLabel("What we read from your vibe").getByText("#Yoga")).toBeVisible();
@@ -72,6 +72,6 @@ test("block someone from a chat and they disappear", async ({ page }) => {
   await page.goto("/chats?with=tashi");
   await page.getByRole("button", { name: "Block" }).click();
   await page.getByRole("button", { name: "Confirm block" }).click();
-  await expect(page.getByRole("heading", { name: "Chats", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What's new", level: 1 })).toBeVisible();
   await expect(page.getByRole("link", { name: /Tashi/ })).toHaveCount(0);
 });

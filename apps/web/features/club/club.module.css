@@ -20,7 +20,7 @@
   background:
     radial-gradient(
       60% 40% at 100% 0%,
-      rgba(107, 53, 67, 0.08),
+      rgba(110, 79, 138, 0.08),
       transparent 70%
     ),
     var(--paper);
@@ -38,7 +38,7 @@
   background:
     radial-gradient(
       80% 90% at 85% 0%,
-      rgba(107, 53, 67, 0.55),
+      rgba(110, 79, 138, 0.55),
       transparent 62%
     ),
     linear-gradient(180deg, var(--color-cherry) 0%, #22100f 100%);
@@ -70,11 +70,11 @@
   background:
     linear-gradient(
       90deg,
-      rgba(31, 12, 17, 0.92) 0%,
-      rgba(31, 12, 17, 0.7) 42%,
-      rgba(31, 12, 17, 0.15) 75%
+      rgba(42, 10, 46, 0.92) 0%,
+      rgba(42, 10, 46, 0.7) 42%,
+      rgba(42, 10, 46, 0.15) 75%
     ),
-    linear-gradient(0deg, rgba(31, 12, 17, 0.85) 0%, transparent 45%);
+    linear-gradient(0deg, rgba(42, 10, 46, 0.85) 0%, transparent 45%);
 }
 .heroInner {
   position: relative;
@@ -123,7 +123,7 @@
   max-width: 30rem;
   font-size: clamp(0.96rem, 1.5vw, 1.04rem);
   line-height: 1.65;
-  color: rgba(243, 235, 221, 0.78);
+  color: rgba(245, 240, 201, 0.78);
 }
 .stats {
   position: relative;
@@ -277,7 +277,7 @@
   transform: scale(0.98);
 }
 .btn[data-tone="rose"] {
-  border: 1px solid rgba(185, 138, 149, 0.28);
+  border: 1px solid rgba(155, 130, 181, 0.28);
   background: var(--color-brand);
   color: var(--color-ink);
 }
@@ -294,7 +294,7 @@
   color: var(--ink);
 }
 .ghost:hover {
-  border-color: rgba(185, 138, 149, 0.6);
+  border-color: rgba(155, 130, 181, 0.6);
   background: var(--color-raised);
 }
 .chips {
@@ -318,18 +318,18 @@
   cursor: pointer;
 }
 .chip:hover {
-  border-color: rgba(185, 138, 149, 0.6);
+  border-color: rgba(155, 130, 181, 0.6);
 }
 .chip[aria-pressed="true"] {
   background: var(--color-brand);
-  border-color: rgba(185, 138, 149, 0.45);
+  border-color: rgba(155, 130, 181, 0.45);
   color: var(--color-ink);
 }
 .tag {
   display: inline-block;
   padding: 3px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(185, 138, 149, 0.22);
+  border: 1px solid rgba(155, 130, 181, 0.22);
   background: var(--color-rose-wash);
   color: var(--color-on-wine);
   font-size: 0.72rem;
@@ -346,7 +346,7 @@
   background:
     radial-gradient(
       80% 80% at 70% 20%,
-      rgba(107, 53, 67, 0.85),
+      rgba(110, 79, 138, 0.85),
       transparent 70%
     ),
     linear-gradient(135deg, var(--color-moss), var(--color-ivy));
@@ -366,7 +366,7 @@
   font-family: var(--font-display);
   font-style: italic;
   font-size: 2.6rem;
-  color: rgba(31, 12, 17, 0.72);
+  color: rgba(42, 10, 46, 0.72);
 }
 .empty {
   padding: 40px 20px;
@@ -507,7 +507,7 @@
   border-radius: 28px;
   background: var(--card);
   border: 1px solid var(--line);
-  box-shadow: 0 30px 60px -36px rgba(8, 2, 4, 0.6);
+  box-shadow: 0 30px 60px -36px rgba(10, 2, 12, 0.6);
   touch-action: none;
   user-select: none;
   will-change: transform;
@@ -526,7 +526,7 @@
   content: "";
   position: absolute;
   inset: 40% 0 0;
-  background: linear-gradient(transparent, rgba(24, 35, 29, 0.72));
+  background: linear-gradient(transparent, rgba(42, 14, 51, 0.72));
 }
 .swipeName {
   position: absolute;
@@ -556,7 +556,7 @@
   z-index: 1;
   padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(31, 12, 17, 0.72);
+  background: rgba(42, 10, 46, 0.72);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -623,7 +623,7 @@
   background: var(--card);
   color: var(--ink);
   cursor: pointer;
-  box-shadow: 0 14px 30px -20px rgba(8, 2, 4, 0.6);
+  box-shadow: 0 14px 30px -20px rgba(10, 2, 12, 0.6);
   transition:
     transform 0.2s,
     background 0.2s;
@@ -634,7 +634,7 @@
 .round[data-kind="like"] {
   width: 68px;
   height: 68px;
-  border: 1px solid rgba(185, 138, 149, 0.35);
+  border: 1px solid rgba(155, 130, 181, 0.35);
   background: var(--color-brand);
   color: var(--color-ink);
 }
@@ -746,7 +746,7 @@
   width: 52px;
   padding: 6px 0;
   border-radius: 14px;
-  background: rgba(31, 12, 17, 0.82);
+  background: rgba(42, 10, 46, 0.82);
   line-height: 1;
 }
 .date b {
@@ -820,8 +820,8 @@
   color: var(--color-ink) !important;
   box-shadow:
     0 0 0 1px var(--line),
-    0 -14px 40px -20px rgba(8, 2, 4, 0.7),
-    0 30px 60px -30px rgba(8, 2, 4, 0.8) !important;
+    0 -14px 40px -20px rgba(10, 2, 12, 0.7),
+    0 30px 60px -30px rgba(10, 2, 12, 0.8) !important;
 }
 .stackPhoto {
   height: 100%;
@@ -898,7 +898,7 @@
   height: 38px;
   border: 0;
   border-radius: 50%;
-  background: rgba(31, 12, 17, 0.72);
+  background: rgba(42, 10, 46, 0.72);
   color: var(--color-accent);
   cursor: pointer;
 }
@@ -1096,7 +1096,7 @@
   cursor: pointer;
 }
 .mineItem[aria-pressed="true"] {
-  border-color: rgba(185, 138, 149, 0.45);
+  border-color: rgba(155, 130, 181, 0.45);
   background: var(--color-brand);
 }
 .create {
@@ -1194,19 +1194,19 @@
   outline-offset: 2px;
 }
 
-/* ---------- Discover at night: the whole page pure black, surfaces just off black ---------- */
+/* ---------- Discover at night: the whole page plum-black, surfaces just above it ---------- */
 .night {
-  --color-canvas: #000000;
-  --color-surface: #0e0a0b;
-  --color-raised: #151012;
-  --color-recess: #0a0708;
-  --color-sand: #1a1214;
-  --color-rose-wash: #2a1016;
-  --paper: #000000;
-  --card: #0e0a0b;
+  --color-canvas: #160419;
+  --color-surface: #1f0823;
+  --color-raised: #270b2b;
+  --color-recess: #120315;
+  --color-sand: #2b0d30;
+  --color-rose-wash: #320b35;
+  --paper: #160419;
+  --card: #1f0823;
 }
 .night::before {
-  background: #000000;
+  background: #160419;
 }
 
 /* ---------- a Viber's overview, opened in place from the gallery ---------- */
@@ -1232,9 +1232,9 @@
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   max-height: calc(100svh - 48px);
   overflow: hidden;
-  border: 1px solid rgba(243, 235, 221, 0.1);
+  border: 1px solid rgba(245, 240, 201, 0.1);
   border-radius: 28px;
-  background: #0e0a0b;
+  background: #1f0823;
   box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.95);
   /* the photo grows out of the gallery: from a small card to the whole overview */
   animation: ovGrow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -1265,7 +1265,7 @@
   font-family: var(--font-display);
   font-style: italic;
   font-size: clamp(1.8rem, 4vw, 2.6rem);
-  color: #f3ebdd;
+  color: #f5f0c9;
 }
 .ovBody {
   position: relative;
@@ -1431,9 +1431,9 @@
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   overflow: hidden;
-  border: 1px solid rgba(243, 235, 221, 0.1);
+  border: 1px solid rgba(245, 240, 201, 0.1);
   border-radius: 28px;
-  background: #0e0a0b;
+  background: #1f0823;
 }
 .fullCard .ovPhoto {
   min-height: 520px;
@@ -1490,7 +1490,7 @@
     background 0.2s;
 }
 .photoDrop:hover {
-  border-color: rgba(185, 138, 149, 0.6);
+  border-color: rgba(155, 130, 181, 0.6);
   background: var(--color-raised);
 }
 .photoDrop:focus-within {
@@ -1536,7 +1536,7 @@
   font-size: 1.4rem;
 }
 .ignite:hover {
-  border-color: rgba(185, 138, 149, 0.4);
+  border-color: rgba(155, 130, 181, 0.4);
 }
 .ignite:focus-visible {
   outline: 2px solid var(--color-focus);
@@ -1581,7 +1581,7 @@
 }
 .day[data-over] {
   border-left-color: var(--color-rose);
-  background: linear-gradient(90deg, rgba(185, 138, 149, 0.08), transparent 60%);
+  background: linear-gradient(90deg, rgba(155, 130, 181, 0.08), transparent 60%);
 }
 .dayDate {
   color: var(--soft);
@@ -1604,7 +1604,7 @@
   margin: 3px 0;
   border-radius: 3px;
   background: var(--color-rose);
-  box-shadow: 0 0 12px rgba(211, 169, 178, 0.6);
+  box-shadow: 0 0 12px rgba(183, 163, 204, 0.6);
 }
 .stopCard {
   display: flex;

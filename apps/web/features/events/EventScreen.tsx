@@ -30,7 +30,7 @@ export function EventScreen({ id }: { id: string }) {
 
   const join = () => {
     const status = actions.rsvp(e);
-    toast(status === "going" ? `You're going to ${e.title}.` : "It's full, so you're on the waitlist. We'll tell you if a seat opens.");
+    toast(status === "going" ? `You're going to ${e.title}, and you're in its group chat.` : "It's full, so you're on the waitlist. We'll tell you if a seat opens.");
   };
 
   return (
@@ -81,10 +81,20 @@ export function EventScreen({ id }: { id: string }) {
           </p>
           {e.priceInr > 0 && <p className="rounded-2xl bg-accent-wash/60 p-3 text-sm text-ink2">The host collects payment directly. Vibers Club doesn&apos;t take money in this version.</p>}
           {mine ? (
-            <p className="font-bold text-ok">You&apos;re hosting this.</p>
+            <div className="space-y-2">
+              <p className="font-bold text-ok">You&apos;re hosting this.</p>
+              <Link href={`/chats?group=${e.id}`} className="btn w-full">
+                Open the group chat
+              </Link>
+            </div>
           ) : rsvp ? (
             <div className="space-y-2">
               <p className="font-bold">{rsvp === "going" ? "You're going." : "You're on the waitlist."}</p>
+              {rsvp === "going" && (
+                <Link href={`/chats?group=${e.id}`} className="btn w-full">
+                  Open the group chat
+                </Link>
+              )}
               <button type="button" className="btn-ghost w-full" onClick={() => (actions.leave(e.id), toast(rsvp === "going" ? "You left the event." : "You left the waitlist."))}>
                 {rsvp === "going" ? "Leave event" : "Leave waitlist"}
               </button>

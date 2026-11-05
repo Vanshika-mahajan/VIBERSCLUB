@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { HomeSections } from "@/features/home/HomeSections";
 import { places } from "@/lib/demo/data";
+import { openPost } from "@/components/PostButton";
 import { useDemo } from "@/lib/demo/store";
 import { allEvents } from "@/lib/demo/people";
 import { useDeck } from "./shared";
@@ -114,7 +115,7 @@ export function ClubHome() {
 
       <HomeSections
         post={
-          <Link href="/profile#ignite" className={`${s.card} ${s.ignite}`}>
+          <button type="button" className={`${s.card} ${s.ignite}`} style={{ width: "100%", textAlign: "left", cursor: "pointer" }} onClick={openPost}>
             <span>
               <span className={s.igniteTitle}>Ignite the vibe</span>
               <span className={`${s.muted} ${s.small}`}>
@@ -124,7 +125,7 @@ export function ClubHome() {
             <span className={s.btn} data-tone="rose" aria-hidden="true">
               Post
             </span>
-          </Link>
+          </button>
         }
       />
     </div>

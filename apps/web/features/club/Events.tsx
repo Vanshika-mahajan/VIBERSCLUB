@@ -193,7 +193,7 @@ export function Events() {
                           const r = actions.rsvp(e);
                           toast(
                             r === "going"
-                              ? `You're going to ${e.title}.`
+                              ? `You're going to ${e.title}, and you're in its group chat.`
                               : `It's full, so you're on the waitlist.`,
                           );
                         }}

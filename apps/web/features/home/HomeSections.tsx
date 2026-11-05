@@ -109,7 +109,7 @@ export function HomeSections({ post }: { post?: ReactNode }) {
               gap={22}
               speed={9}
               depthFade={0.6}
-              fadeColor="#1f0c11"
+              fadeColor="#2a0a2e"
               innerShade={0.35}
               cornerRadius={18}
               captions

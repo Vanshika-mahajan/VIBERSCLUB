@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 
 const notes = (page: import("@playwright/test").Page) => page.evaluate(() => (window as unknown as { __notes: number }).__notes);
 
-test("sounds: quiet on arrival, play on a tap, and can be muted from the profile menu", async ({ page }) => {
+test("sounds: quiet on arrival, play on a tap, and can be muted in settings", async ({ page }) => {
   await page.goto("/home");
   await page.waitForTimeout(300);
   expect(await notes(page)).toBe(0); // nothing plays on its own
@@ -25,23 +25,22 @@ test("sounds: quiet on arrival, play on a tap, and can be muted from the profile
   await expect(page).toHaveURL(/\/explore/);
   await expect.poll(() => notes(page)).toBeGreaterThan(0);
 
-  // turn them off in the profile menu
-  await page.getByRole("button", { name: /Your profile and chats/ }).click();
-  const sw = page.getByRole("switch", { name: "Sounds" });
-  await expect(sw).toHaveAttribute("aria-checked", "true");
+  // turn them off in settings (your profile, then the gear)
+  await page.getByRole("link", { name: "Your profile" }).click();
+  await page.getByRole("link", { name: "Settings" }).click();
+  const sw = page.getByRole("switch", { name: /^Sounds/ });
+  await expect(sw).toBeChecked();
   await expect(page.getByLabel("Sound volume")).toBeVisible();
-  await sw.click();
-  await expect(sw).toHaveAttribute("aria-checked", "false");
+  await sw.click({ force: true });
+  await expect(sw).not.toBeChecked();
 
   const before = await notes(page);
-  await page.keyboard.press("Escape");
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Home" }).click();
   await expect(page).toHaveURL(/\/home/);
   await page.waitForTimeout(300);
   expect(await notes(page)).toBe(before);
 
   // and it stays off after a reload
-  await page.reload();
-  await page.getByRole("button", { name: /Your profile and chats/ }).click();
-  await expect(page.getByRole("switch", { name: "Sounds" })).toHaveAttribute("aria-checked", "false");
+  await page.goto("/profile/settings");
+  await expect(page.getByRole("switch", { name: /^Sounds/ })).not.toBeChecked();
 });

@@ -2,11 +2,11 @@
 
 import "@fontsource-variable/fraunces/wght-italic.css";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SplitText from "@/components/reactbits/SplitText";
 import { gsap, useGSAP } from "@/lib/motion/gsap";
 import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
+import { matchThought } from "./match";
 import { CosmosBackdrop } from "./scenes/CosmosBackdrop";
 import { Discovery, type DiscoveryHandle } from "./scenes/Discovery";
 import { DoorScene, type DoorSceneHandle } from "./scenes/DoorScene";
@@ -30,12 +30,10 @@ const ANNOUNCE: Partial<Record<Phase, string>> = {
   opening: "The door opens.",
   cosmos: "You step into the cosmos.",
   manali: "Manali, India.",
-  arrive: "Welcome to Vibers Club. Here are Vibers who share your vibe.",
+  orbit: "Vibers appear around Manali.",
+  settled:
+    "Your vibe has a universe. Here are some Vibers who might see the world the way you do.",
 };
-
-/** where the journey lands: Discover, with the Vibers ranked by the thought */
-export const arrivalHref = (thought: string) =>
-  `/discover${thought ? `?vibe=${encodeURIComponent(thought)}` : ""}`;
 
 /**
  * The first page. The director (useJourney) owns the phase; each scene's timeline is built when
@@ -59,8 +57,10 @@ export function JourneyScreen() {
   const skipping = useRef(false);
   // what every timeline animates; the 3D world and the CSS scenes both read it
   const [params] = useState(initialParams);
-  const router = useRouter();
-  useEffect(() => router.prefetch("/home"), [router]);
+  const cards = useMemo(
+    () => (thought ? matchThought(thought) : []),
+    [thought],
+  );
   // the 3D world, once its first frame is on screen; until then (or without WebGL) the CSS scene plays
   const [world, setWorld] = useState<World | null>(null);
 
@@ -108,13 +108,9 @@ export function JourneyScreen() {
       if (phase !== "cosmos" || !discovery.current) return;
       const d = discovery.current;
       const tl = prefersReducedMotion()
-        ? buildDiscoveryStill(params, d, advance)
+        ? buildDiscoveryStill(params, d)
         : buildDiscovery(params, d, advance);
-      // the light has filled the screen: the club home takes over
-      tl.eventCallback("onComplete", () => {
-        arriveHome();
-        router.push(arrivalHref(thought));
-      });
+      tl.eventCallback("onComplete", () => advance("settled"));
       running.current = tl;
       if (process.env.NODE_ENV !== "production")
         (
@@ -134,6 +130,14 @@ export function JourneyScreen() {
     return () => gsap.ticker.remove(drive);
   }, [inCosmos, params, world]);
 
+  // once settled, the heading takes focus so keyboard and screen-reader users start at the result
+  useEffect(() => {
+    if (phase === "settled")
+      discovery.current?.head
+        .querySelector<HTMLElement>("h2")
+        ?.focus({ preventScroll: true });
+  }, [phase]);
+
   const skip = useCallback(() => {
     skipping.current = true;
     const tl = running.current;
@@ -145,7 +149,7 @@ export function JourneyScreen() {
   }, []);
 
   // Escape skips while a scene is playing; Skip takes focus so keyboard users find it first
-  const playing = phase !== "idle" && phase !== "arrive";
+  const playing = phase !== "idle" && phase !== "settled";
   useEffect(() => {
     if (!playing) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && skip();
@@ -167,7 +171,12 @@ export function JourneyScreen() {
       <DoorScene ref={door} between={<CosmosBackdrop ref={cosmos} />} />
       <WorldCanvas params={params} onReady={setWorld} />
       <div ref={worldScrim} className={`${s.scrim} ${s.worldScrim}`} />
-      <Discovery ref={discovery} world3d={!!world} />
+      <Discovery
+        ref={discovery}
+        cards={cards}
+        settled={phase === "settled"}
+        world3d={!!world}
+      />
 
       <header ref={top} className={s.top}>
         <span className={s.brand}>Vibers Club</span>
@@ -213,9 +222,6 @@ export function JourneyScreen() {
             className={s.line}
           />
         </h1>
-        <p className={s.tagline}>
-          Some doors lead to rooms. This one leads to your people.
-        </p>
       </div>
 
       <div ref={ground} className={s.ground}>
@@ -237,17 +243,6 @@ export function JourneyScreen() {
       </p>
     </div>
   );
-}
-
-/**
- * The journey ends on the home page's own background; this marks the page so the club home settles in
- * out of it (see "arriving" in globals.css) instead of popping in. The root element outlives the route
- * change, so the mark is still there when the new page paints, and comes off once it has settled.
- */
-function arriveHome() {
-  const root = document.documentElement;
-  root.dataset.arrived = "";
-  window.setTimeout(() => delete root.dataset.arrived, 1400);
 }
 
 function SunIcon() {

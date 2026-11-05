@@ -11,6 +11,7 @@ import {
   type DemoEvent,
   type Me,
 } from "./data";
+import { groupStatus } from "./groups";
 
 /**
  * The pitch demo's state: one small store shared by every page and kept in this browser
@@ -41,6 +42,14 @@ export type DemoState = {
   itineraries: Itinerary[];
   /** public photo albums on my profile (M2 moves the photos to Storage) */
   albums: Album[];
+  /** when I joined each event (ms): sample event days count from the day I joined */
+  joinedAt: Record<string, number>;
+  /** my messages in each event's group chat */
+  groupMessages: Record<string, ChatMessage[]>;
+  /** notifications I have seen, by id */
+  seenNotes: string[];
+  /** event group chats I deleted after they ended */
+  hiddenGroups: string[];
 };
 
 export const initialState = (): DemoState => ({
@@ -59,6 +68,10 @@ export const initialState = (): DemoState => ({
   posts: [],
   itineraries: [],
   albums: [],
+  joinedAt: {},
+  groupMessages: {},
+  seenNotes: [],
+  hiddenGroups: [],
 });
 
 const KEY = "vibers.demo.v1";
@@ -175,6 +188,28 @@ export const actions = {
     }));
     return true;
   },
+  /** a message in an event's group chat: only for people going, and only until the event ends */
+  sendGroup(event: DemoEvent, text: string, now = Date.now()): boolean {
+    const clean = text.trim().slice(0, 2000);
+    const s0 = getState();
+    if (!clean || s0.rsvps[event.id] !== "going") return false;
+    if (groupStatus(event, s0.joinedAt[event.id], now) !== "open") return false;
+    set((s) => ({
+      ...s,
+      groupMessages: {
+        ...s.groupMessages,
+        [event.id]: [...(s.groupMessages[event.id] ?? []), { id: crypto.randomUUID(), from: "me", text: clean, minutesAgo: 0 }],
+      },
+    }));
+    return true;
+  },
+  /** an ended group chat can be deleted (from my chats only) */
+  deleteGroup(eventId: string) {
+    set((s) => ({ ...s, hiddenGroups: add(s.hiddenGroups, eventId) }));
+  },
+  markNotesSeen(ids: string[]) {
+    set((s) => ({ ...s, seenNotes: [...new Set([...s.seenNotes, ...ids])] }));
+  },
   /** block hides both people from each other everywhere: discovery, chats, events */
   block(id: string) {
     set((s) => {
@@ -199,7 +234,11 @@ export const actions = {
   rsvp(event: DemoEvent): "going" | "waitlist" {
     const status =
       event.goingIds.length < event.capacity ? "going" : "waitlist";
-    set((s) => ({ ...s, rsvps: { ...s.rsvps, [event.id]: status } }));
+    set((s) => ({
+      ...s,
+      rsvps: { ...s.rsvps, [event.id]: status },
+      joinedAt: { ...s.joinedAt, [event.id]: s.joinedAt[event.id] ?? Date.now() },
+    }));
     return status;
   },
   leave(eventId: string) {
@@ -222,6 +261,7 @@ export const actions = {
       ...s,
       hosted: [event, ...s.hosted],
       rsvps: { ...s.rsvps, [event.id]: "going" },
+      joinedAt: { ...s.joinedAt, [event.id]: Date.now() },
     }));
   },
   /** a thread (text), or a photo with an optional caption */

@@ -24,7 +24,7 @@ const sampleAdapter = createSampleAdapter();
 
 const TRY = ["I want to explore Manali with people who love photography", "Trek Hampta this weekend", "Live music, no clubbing", "Workation buddies with good wifi"];
 // category hues keep their old ids; on screen they read forest, terracotta and gold
-const HUE_COLOR = { blue: "#2F4736", violet: "#6B3543", cyan: "#B88792" } as const;
+const HUE_COLOR = { blue: "#432556", violet: "#6E4F8A", cyan: "#9B82B5" } as const;
 const MENU = [
   { href: "/home", label: "Home" },
   { href: "/discover", label: "Discover" },

@@ -102,9 +102,11 @@ test.describe("the door opens", () => {
       .evaluate((el) => getComputedStyle(el).transform);
     expect(turned).not.toBe("none");
     // through the doorway: the cosmos, then the sphere and Manali
-    await expect(stage).toHaveAttribute("data-phase", /cosmos|manali|arrive/, {
-      timeout: 6000,
-    });
+    await expect(stage).toHaveAttribute(
+      "data-phase",
+      /cosmos|manali|orbit|settled/,
+      { timeout: 6000 },
+    );
     // the cosmos now fills the screen, the meadow is gone
     const cosmos = page.locator("[data-cosmos]");
     await expect(cosmos).toBeVisible();
@@ -112,8 +114,7 @@ test.describe("the door opens", () => {
     expect(clip === "none" || /inset\(0px( 0px)*\)/.test(clip)).toBe(true);
   });
 
-  test("Escape jumps straight to the Vibers on Discover", async ({ page }) => {
-    await page.route("**/images.pexels.com/**", (r) => r.abort());
+  test("Escape jumps straight to the Vibers", async ({ page }) => {
     await page.goto("/");
     await page
       .getByLabel("What’s on your mind?")
@@ -121,18 +122,17 @@ test.describe("the door opens", () => {
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
     await page.keyboard.press("Escape");
-    await expect(page).toHaveURL(/\/discover\?vibe=Hidden/, {
-      timeout: 8000,
-    });
+    await expect(page.locator("[data-phase]")).toHaveAttribute(
+      "data-phase",
+      "settled",
+      { timeout: 3000 },
+    );
   });
 });
 
 test.describe("door with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
-  test("the door does not swing; Manali fades in, then home", async ({
-    page,
-  }) => {
-    await page.route("**/images.pexels.com/**", (r) => r.abort());
+  test("the door does not swing; the result fades in", async ({ page }) => {
     await page.goto("/");
     await page
       .getByLabel("What’s on your mind?")
@@ -140,20 +140,24 @@ test.describe("door with reduced motion", () => {
     await page.keyboard.press("Enter");
     await expect(page.locator("[data-phase]")).toHaveAttribute(
       "data-phase",
-      /manali|arrive/,
+      "settled",
       { timeout: 4000 },
     );
+    await expect(
+      page.getByRole("heading", { name: "Your vibe has a universe." }),
+    ).toBeVisible();
     const leaf = await page
       .locator("[class*=leaf]")
       .first()
       .evaluate((el) => getComputedStyle(el).transform);
     expect(leaf).toBe("none");
-    await expect(page).toHaveURL(/\/discover/, { timeout: 8000 });
   });
 });
 
-test.describe("after Manali", () => {
-  test("Skip lands on Discover, Community ranked by the thought", async ({ page }) => {
+test.describe("the Vibers", () => {
+  test("Skip lands on the result: cards in a row, Connect and View profile work", async ({
+    page,
+  }) => {
     await page.route("**/images.pexels.com/**", (r) => r.abort());
     await page.goto("/");
     await page
@@ -161,20 +165,48 @@ test.describe("after Manali", () => {
       .fill("Looking for people who love mountain adventures");
     await page.keyboard.press("Enter");
     await page.getByRole("button", { name: /Skip intro/ }).click();
-    await expect(page).toHaveURL(/\/discover\?vibe=/, {
-      timeout: 8000,
+    const stage = page.locator("[data-phase]");
+    await expect(stage).toHaveAttribute("data-phase", "settled", {
+      timeout: 4000,
     });
+    // the heading takes focus so the result is where keyboard users start
+    const heading = page.getByRole("heading", {
+      name: "Your vibe has a universe.",
+    });
+    await expect(heading).toBeFocused();
     await expect(
       page.getByText(
-        "Picked for “Looking for people who love mountain adventures”.",
+        "Here are some Vibers who might see the world the way you do.",
+        { exact: true },
       ),
     ).toBeVisible();
+    // six Vibers, matched to the thought: they share treks or hikes with it
+    const cards = page.getByRole("article");
+    await expect(cards).toHaveCount(6);
+    await expect(cards.first().getByText("You share")).toBeVisible();
+    await expect(cards.first()).toContainText(/Treks|Day hikes|Paragliding/);
+    // the first card sits in the row, untransformed, and its buttons work
+    const transform = await page
+      .locator("li:has(article)")
+      .first()
+      .evaluate((el) => getComputedStyle(el).transform);
+    expect(transform).toBe("none");
+    const connect = cards.first().getByRole("button", { name: "Connect" });
+    await connect.click();
     await expect(
-      page.locator('[aria-roledescription="card stack"]'),
-    ).toBeVisible();
+      cards.first().getByRole("button", { name: "Request sent" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await cards.first().getByRole("button", { name: "View profile" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Close" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(
+      page.getByRole("link", { name: /Explore more Vibers/ }),
+    ).toHaveAttribute("href", "/home?tab=community");
   });
 
-  test("the whole journey dives into Manali and arrives home on its own", async ({
+  test("the whole journey plays through to the row on its own", async ({
     page,
   }) => {
     test.setTimeout(60_000);
@@ -185,34 +217,11 @@ test.describe("after Manali", () => {
       .fill("Hidden cafés in Old Manali");
     await page.keyboard.press("Enter");
     const stage = page.locator("[data-phase]");
-    for (const phase of ["manali", "arrive"])
+    for (const phase of ["manali", "orbit", "settled"])
       await expect(stage).toHaveAttribute("data-phase", phase, {
         timeout: 20000,
       });
     await expect(page.getByText("Manali, India")).toBeAttached();
-    // no cards orbit or line up on the way: the people are on Discover
-    await expect(page.getByRole("article")).toHaveCount(0);
-    await expect(page).toHaveURL(/\/discover/, { timeout: 10000 });
+    await expect(page.getByRole("article")).toHaveCount(6);
   });
-});
-
-test("suggestions fill the line, and it can still be changed", async ({
-  page,
-}) => {
-  await page.goto("/");
-  const ideas = page.getByRole("list", { name: "Ideas to start from" });
-  await expect(ideas.getByRole("button")).toHaveCount(8);
-  await ideas.getByRole("button", { name: "First time here" }).click();
-  const field = page.getByLabel("What’s on your mind?");
-  await expect(field).toHaveValue(
-    "First time in Manali: easy walks, local food and meeting locals",
-  );
-  await expect(field).toBeFocused();
-  // nothing was sent: the door is still closed
-  await expect(page.locator("[data-phase]")).toHaveAttribute(
-    "data-phase",
-    "idle",
-  );
-  await page.keyboard.type(" and a sunrise");
-  await expect(field).toHaveValue(/meeting locals and a sunrise$/);
 });

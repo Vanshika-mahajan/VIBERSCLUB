@@ -1,15 +1,9 @@
-/** the bottom pill bar: exactly the three main places */
+/** the bottom pill bar: the four main places */
 export const navItems = [
   { href: "/home", label: "Home" },
   { href: "/discover", label: "Discover" },
-  { href: "/explore", label: "Explore" },
-] as const;
-
-/** in the profile menu at the top right */
-export const menuItems = [
-  { href: "/profile", label: "Your profile" },
-  { href: "/chats", label: "Chats" },
   { href: "/events", label: "Events" },
+  { href: "/explore", label: "Explore" },
 ] as const;
 
 export function isActive(pathname: string, href: string): boolean {

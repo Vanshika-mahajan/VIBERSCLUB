@@ -40,6 +40,12 @@ export type WorldParams = {
   manali: number;
   /** the glowing marker on Manali */
   marker: number;
+  /** the profile cards appear around the sphere, 0 … 1 */
+  cards: number;
+  /** where the cards are on their orbit, radians */
+  orbit: number;
+  /** 0 orbiting … 1 settled into the row */
+  settle: number;
 };
 
 export const initialParams = (): WorldParams => ({
@@ -60,6 +66,9 @@ export const initialParams = (): WorldParams => ({
   spin: 0,
   manali: 0,
   marker: 0,
+  cards: 0,
+  orbit: 0,
+  settle: 0,
 });
 
 /** Where the sphere sits on a w × h screen, in CSS pixels (the 3D and CSS versions agree on this). */

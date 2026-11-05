@@ -1,20 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Avatar, PageHeader, Section, Toggle, toast } from "@/components/ui";
-import { PostTab } from "@/features/club/PostTab";
-import club from "@/features/club/club.module.css";
 import { hashtag, interpret } from "@/features/discover/interpret";
 import { actions, useDemo } from "@/lib/demo/store";
-import { Albums } from "./Albums";
-import { ProfileLists } from "./ProfileLists";
+import { useSound } from "@/lib/sound";
 import { areas, categories, intents, interests, type AreaId, type IntentId } from "@/lib/taxonomy";
 
 const MAX_INTERESTS = 12;
 
-export function ProfileScreen() {
-  const router = useRouter();
+/** Settings, behind the gear on your profile: who you are, your vibe line, interests, what you are
+ * looking for, privacy and safety, and sounds. */
+export function ProfileSettings() {
+  const sound = useSound();
   const me = useDemo((s) => s.me);
   // null = not edited yet, so the box shows the saved vibe
   const [draft, setDraft] = useState<string | null>(null);
@@ -41,7 +40,10 @@ export function ProfileScreen() {
 
   return (
     <div className="max-w-5xl">
-      <PageHeader kicker="Profile" title="Your profile">
+      <Link href="/profile" className="link mb-4 inline-flex text-sm">
+        ← Back to your profile
+      </Link>
+      <PageHeader kicker="Settings" title="Your profile">
         What others see is your first name, general area, vibe and interests. Never your exact location.
       </PageHeader>
 
@@ -84,14 +86,7 @@ export function ProfileScreen() {
         </div>
       </section>
 
-      <Albums />
-
-      {/* posting: a thread or a photo with a caption; the keywords find people like you */}
-      <div id="ignite" className={`${club.club} mt-10 scroll-mt-6`}>
-        <PostTab title="IGNITE THE VIBE" onSeeCommunity={() => router.push("/discover#community")} />
-      </div>
-
-      <Section title="Your vibe line">
+      <Section title="YOUR VIBE LINE">
         <div className="card p-5">
           <label htmlFor="vibe" className="font-bold">
             In a line or two, what are you here for?
@@ -138,7 +133,7 @@ export function ProfileScreen() {
         </div>
       </Section>
 
-      <Section title="Looking for">
+      <Section title="LOOKING FOR">
         <div className="flex flex-wrap gap-2">
           {(Object.keys(intents) as IntentId[]).map((id) => (
             <button key={id} type="button" className="chip" aria-pressed={me.intents.includes(id)} onClick={() => toggleIntent(id)}>
@@ -148,7 +143,7 @@ export function ProfileScreen() {
         </div>
       </Section>
 
-      <Section title="Privacy and safety">
+      <Section title="PRIVACY AND SAFETY">
         <div className="card divide-y divide-line px-5">
           <Toggle label="Show me in Discover" hint="Turn off to browse without being found." checked={me.privacy.discoverable} onChange={(v) => actions.updateMe({ privacy: { ...me.privacy, discoverable: v } })} />
           <Toggle label="Women-only discovery" hint="Only women can find you, and you see only women." checked={me.privacy.womenOnly} onChange={(v) => actions.updateMe({ privacy: { ...me.privacy, womenOnly: v } })} />
@@ -156,8 +151,28 @@ export function ProfileScreen() {
         </div>
       </Section>
 
-      <Section title="Your lists">
-        <ProfileLists />
+      <Section title="Sounds">
+        <div className="card divide-y divide-line px-5">
+          <Toggle label="Sounds" hint="Small, soft sounds when you tap, post or connect." checked={sound.enabled} onChange={(v) => (sound.setEnabled(v), v && sound.play("select"))} />
+          {sound.enabled && (
+            <label className="flex items-center gap-4 py-4">
+              <span className="text-sm font-bold">Volume</span>
+              <input
+                type="range"
+                className="flex-1"
+                style={{ accentColor: "var(--color-accent)" }}
+                min={0}
+                max={100}
+                step={5}
+                aria-label="Sound volume"
+                value={Math.round(sound.volume * 100)}
+                onChange={(e) => sound.setVolume(Number(e.target.value) / 100)}
+                onPointerUp={() => sound.play("tap")}
+                onKeyUp={() => sound.play("tap")}
+              />
+            </label>
+          )}
+        </div>
       </Section>
 
       <Section title="Demo">

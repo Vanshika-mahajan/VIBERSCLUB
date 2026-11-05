@@ -6,7 +6,7 @@ import { EventScreen } from "@/features/events/EventScreen";
 import { Events } from "@/features/club/Events";
 import { Explore } from "@/features/club/Explore";
 import { HostForm, validate } from "@/features/events/HostForm";
-import { ProfileScreen } from "@/features/profile/ProfileScreen";
+import { ProfileSettings } from "@/features/profile/ProfileSettings";
 import { Toaster } from "@/components/ui";
 import { getState } from "@/lib/demo/store";
 
@@ -118,7 +118,7 @@ describe("Chats", () => {
     await user.click(screen.getByRole("button", { name: "Block" }));
     await user.click(screen.getByRole("button", { name: "Confirm block" }));
     expect(getState().blocked).toContain("tashi");
-    expect(push).toHaveBeenCalledWith("/chats");
+    expect(push).toHaveBeenCalledWith("/inbox?tab=chats");
   });
 
   it("does not open a chat with someone you are not connected to", () => {
@@ -134,7 +134,7 @@ describe("Profile", () => {
     const user = userEvent.setup();
     render(
       <>
-        <ProfileScreen />
+        <ProfileSettings />
         <Toaster />
       </>,
     );
@@ -150,7 +150,7 @@ describe("Profile", () => {
 
   it("toggles privacy settings", async () => {
     const user = userEvent.setup();
-    render(<ProfileScreen />);
+    render(<ProfileSettings />);
     await user.click(screen.getByRole("switch", { name: /Women-only discovery/ }));
     expect(getState().me.privacy.womenOnly).toBe(true);
   });

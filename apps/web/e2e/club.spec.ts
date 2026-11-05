@@ -19,8 +19,8 @@ test("home is one page: the hero, then what used to be Today", async ({
     "Explore Manali",
   ])
     await expect(page.getByRole("heading", { name, level: 2 })).toBeVisible();
-  await page.getByRole("link", { name: /Ignite the vibe/ }).click();
-  await expect(page).toHaveURL(/\/profile#ignite/);
+  await page.getByRole("button", { name: /Ignite the vibe/ }).click();
+  await expect(page.getByRole("dialog", { name: "Ignite the vibe" })).toBeVisible();
 });
 
 test("old Home tab links land on their new pages", async ({ page }) => {
@@ -81,11 +81,11 @@ test("community: a Viber's overview opens in place, then their full profile", as
   ).toBeVisible();
 });
 
-test("Discover is black from the sphere to the community", async ({ page }) => {
+test("Discover is plum-black from the sphere to the community", async ({ page }) => {
   await page.goto("/discover");
   const bg = (sel: string) =>
     page.locator(sel).first().evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(await bg("[data-formed]")).toBe("rgb(0, 0, 0)");
+  expect(await bg("[data-formed]")).toBe("rgb(22, 4, 25)");
 });
 
 test("events: join and leave", async ({ page }) => {
@@ -144,7 +144,7 @@ test("itinerary: drag places onto days, reorder, move to another day, remove", a
   const day1 = page.getByRole("region", { name: "Day 1" });
   const day2 = page.getByRole("region", { name: "Day 2" });
   // a person drags to a day they can see; the places tray stays beside it
-  await day1.scrollIntoViewIfNeeded();
+  await day1.evaluate((el) => el.scrollIntoView({ block: "center" }));
   await tray.getByRole("listitem").filter({ hasText: "Jogini falls" }).dragTo(day1);
   await tray.getByRole("listitem").filter({ hasText: "Hadimba Devi temple" }).dragTo(day1);
   await expect(day1.getByText("Jogini falls")).toBeVisible();
@@ -156,7 +156,8 @@ test("itinerary: drag places onto days, reorder, move to another day, remove", a
   await expect(rows.first()).toContainText("Hadimba Devi temple");
   await day1.getByRole("button", { name: "Move Hadimba Devi temple later" }).click();
   await expect(rows.first()).toContainText("Jogini falls");
-  await day2.scrollIntoViewIfNeeded();
+  // centred, clear of the pill bar at the foot of the screen
+  await day2.evaluate((el) => el.scrollIntoView({ block: "center" }));
   await day1.locator("[data-stop-row]").filter({ hasText: "Jogini falls" }).dragTo(day2);
   await expect(day2.getByText("Jogini falls")).toBeVisible();
   await expect(day1.getByText("Jogini falls")).toHaveCount(0);
@@ -177,6 +178,7 @@ test("post: keywords appear while typing and find matching Vibers", async ({
   page,
 }) => {
   await page.goto("/profile#ignite");
+  await expect(page.getByRole("dialog", { name: "Ignite the vibe" })).toBeVisible();
   await page
     .getByLabel("Your post")
     .fill("Sunrise trek on Saturday, then cafes in Old Manali");
@@ -206,9 +208,9 @@ const png = async (page: import("@playwright/test").Page, color: string) => {
 };
 
 test("profile: post a photo with a caption", async ({ page }) => {
-  await page.goto("/profile#ignite");
+  await page.goto("/profile");
+  await page.getByRole("button", { name: "Post: ignite the vibe" }).click();
   await expect(page.getByRole("heading", { name: "IGNITE THE VIBE" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /WHAT'S YOUR VIBE\?/ })).toBeVisible();
   await page.getByRole("button", { name: "Photo", exact: true }).click();
   await page.getByLabel("Choose a photo").setInputFiles(await png(page, "#6b3543"));
   await expect(page.getByAltText("The photo you picked")).toBeVisible();

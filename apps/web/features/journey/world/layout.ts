@@ -25,15 +25,12 @@ const LEAF_FRAC = { left: 0.1794, top: 0.1222, width: 0.6364, height: 0.8023 };
 export const LEAF = {
   width: DOOR.width * LEAF_FRAC.width,
   height: DOOR.height * LEAF_FRAC.height,
-  thickness: 0.1,
+  thickness: 0.07,
   /** hinge line on the left edge */
   hingeX: DOOR.x - DOOR.width / 2 + DOOR.width * LEAF_FRAC.left,
   top: DOOR.height * (1 - LEAF_FRAC.top),
 };
 export const LEAF_CENTER_Y = LEAF.top - LEAF.height / 2;
-
-/** how deep the doorway's reveal is: the light sits this far behind the face of the frame */
-export const JAMB_DEPTH = 0.32;
 
 /** where the front grass stands: where the ground first enters the frame */
 export const GRASS = { z: -5.6, width: 7.6 };

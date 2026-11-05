@@ -80,9 +80,9 @@ const PERSON_AR = 0.77;
 const WORLD_AR = 1.36;
 const SCREEN_AR = 1.5;
 // warm alpine palette, matching the theme tokens in app/globals.css
-const KIND_COL: Record<string, string> = { event: "#6B3543", place: "#2F4736" };
+const KIND_COL: Record<string, string> = { event: "#6E4F8A", place: "#432556" };
 const PEARL = ["#EDE3DC", "#F6F1EB", "#F1E4E5", "#E4E8E1"];
-const INK = "#2A1016";
+const INK = "#320B35";
 const FONT = "Manrope, system-ui, sans-serif";
 
 /** tier mode orbits: [tier, radius, angular speed, tilt a, tilt b, card scale]. Inner bands turn fastest. */
@@ -99,7 +99,7 @@ const TIER_RINGS: [number, number, number, number, number, number][] = [
   [2, 2.64, -0.66, 1.4, -0.2, 0.86],
 ];
 const SWARM = 2400;
-const SWARM_COL = ["#18231D", "#2F4736", "#6B3543", "#B88792", "#A39498", "#C9D2C6"];
+const SWARM_COL = ["#2A0E33", "#432556", "#6E4F8A", "#9B82B5", "#A39498", "#E4DAEE"];
 
 export type SpherePerson = { uid: string; title: string; photoUrl?: string; pos?: string };
 export type SphereWorld = { uid: string; kind: "event" | "place"; photoUrl?: string };
@@ -279,7 +279,7 @@ function personSprite(sc: number, img: HTMLImageElement | undefined, name: strin
     gr.addColorStop(1, "#E4E8E1");
     g.fillStyle = gr;
     g.fillRect(x, y, bw, bh);
-    g.fillStyle = "rgba(24,35,29,.55)";
+    g.fillStyle = "rgba(42,14,51,.55)";
     g.font = `700 ${bw * 0.34}px ${FONT}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
@@ -326,7 +326,7 @@ function worldSprite(sc: number, img: HTMLImageElement | undefined, kind: string
     g.fillStyle = gr;
     g.fillRect(x, y, bw, bh);
   }
-  g.fillStyle = KIND_COL[kind] ?? "#B88792";
+  g.fillStyle = KIND_COL[kind] ?? "#9B82B5";
   g.globalAlpha = 0.95;
   g.fillRect(x + b, y + bh - b - bh * 0.1, bw - 2 * b, bh * 0.1);
   g.restore();
@@ -384,7 +384,7 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     else {
       const gr = g.createLinearGradient(x, y, x + bw, y + bh);
       gr.addColorStop(0, PEARL[seed % 4]);
-      gr.addColorStop(1, "#C9D2C6");
+      gr.addColorStop(1, "#E4DAEE");
       g.fillStyle = gr;
       g.fillRect(x, y, bw, bh);
     }
@@ -401,14 +401,14 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     g.font = `600 ${bh * 0.095}px ${FONT}`;
     g.fillText(wrap(g, `${e.author} · ${e.meta}`, bw - p * 2, 1)[0], x + p, y + bh - p);
   } else {
-    g.fillStyle = "#6B3543";
+    g.fillStyle = "#6E4F8A";
     g.fillRect(x, y, bw, bh * 0.035);
     const ar = bh * 0.1;
     g.fillStyle = PEARL[seed % 4];
     g.beginPath();
     g.arc(x + p + ar, y + p + ar, ar, 0, TAU);
     g.fill();
-    g.fillStyle = "#18231D";
+    g.fillStyle = "#2A0E33";
     g.font = `800 ${ar * 0.9}px ${FONT}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
@@ -427,7 +427,7 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
       g.font = `500 ${bh * 0.098}px ${FONT}`;
       g.fillText(wrap(g, "“" + e.snippet + "”", bw - p * 2, 1)[0], x + p, y + p + ar * 2 + bh * 0.1 + lines.length * bh * 0.155);
     }
-    g.fillStyle = "#51202C";
+    g.fillStyle = "#5B3F75";
     g.font = `800 ${bh * 0.09}px ${FONT}`;
     g.textBaseline = "alphabetic";
     g.fillText(e.meta, x + p, y + bh - p * 0.8);
@@ -488,7 +488,7 @@ function glowSprite() {
   const g = ctx(c);
   const gr = g.createRadialGradient(80, 80, 6, 80, 80, 80);
   gr.addColorStop(0, "rgba(184,135,146,.6)");
-  gr.addColorStop(0.35, "rgba(107,53,67,.26)");
+  gr.addColorStop(0.35, "rgba(110,79,138,.26)");
   gr.addColorStop(0.7, "rgba(184,135,146,.10)");
   gr.addColorStop(1, "rgba(184,135,146,0)");
   g.fillStyle = gr;
@@ -909,7 +909,7 @@ export class Sphere {
     const g = ctx(c);
     g.scale(d, d);
     if (this.dark) {
-      g.fillStyle = "#000000";
+      g.fillStyle = "#160419";
       g.fillRect(0, 0, W, H);
       this.bg = c;
       return;
@@ -1174,10 +1174,10 @@ export class Sphere {
     const R1 = S * 1.7;
     const glow = g.createRadialGradient(cx, cy, S * 0.1, cx, cy, R1);
     if (this.dark) {
-      // a low wine glow in the dark, not a spotlight
-      glow.addColorStop(0, `rgba(107,53,67,${0.42 * sphA})`);
-      glow.addColorStop(0.5, `rgba(81,32,44,${0.16 * sphA + this.flash * 0.08})`);
-      glow.addColorStop(1, "rgba(81,32,44,0)");
+      // a low lavender glow in the dark, not a spotlight
+      glow.addColorStop(0, `rgba(110,79,138,${0.42 * sphA})`);
+      glow.addColorStop(0.5, `rgba(91,63,117,${0.16 * sphA + this.flash * 0.08})`);
+      glow.addColorStop(1, "rgba(91,63,117,0)");
     } else {
       glow.addColorStop(0, `rgba(255,255,255,${0.95 * sphA})`);
       glow.addColorStop(0.5, `rgba(236,232,214,${0.35 * sphA + this.flash * 0.1})`);
@@ -1190,8 +1190,8 @@ export class Sphere {
     g.translate(cx, cy + S * 1.62);
     g.scale(1, 0.12);
     const sh = g.createRadialGradient(0, 0, 0, 0, 0, S * 1.1);
-    sh.addColorStop(0, `rgba(24,35,29,${0.16 * sphA})`);
-    sh.addColorStop(1, "rgba(24,35,29,0)");
+    sh.addColorStop(0, `rgba(42,14,51,${0.16 * sphA})`);
+    sh.addColorStop(1, "rgba(42,14,51,0)");
     g.fillStyle = sh;
     g.fillRect(-S * 1.2, -S * 1.2, S * 2.4, S * 2.4);
     g.restore();
@@ -1228,11 +1228,11 @@ export class Sphere {
         }
         const lit = this.searching && ring.tier !== undefined && ring.tier < 2 ? (ring.tier === 0 ? 1 : 0.5) : 0;
         g.strokeStyle = this.dark
-          ? lit ? `rgba(211,169,178,${(0.12 + 0.12 * lit) * sphA})` : `rgba(243,235,221,${0.07 * sphA})`
-          : lit ? `rgba(107,53,67,${(0.12 + 0.12 * lit) * sphA})` : `rgba(140,145,132,${0.15 * sphA})`;
+          ? lit ? `rgba(183,163,204,${(0.12 + 0.12 * lit) * sphA})` : `rgba(245,240,201,${0.07 * sphA})`
+          : lit ? `rgba(110,79,138,${(0.12 + 0.12 * lit) * sphA})` : `rgba(140,145,132,${0.15 * sphA})`;
         g.stroke(back);
         g.strokeStyle = this.dark
-          ? lit ? `rgba(211,169,178,${(0.26 + 0.24 * lit) * sphA})` : `rgba(243,235,221,${0.15 * sphA})`
+          ? lit ? `rgba(183,163,204,${(0.26 + 0.24 * lit) * sphA})` : `rgba(245,240,201,${0.15 * sphA})`
           : lit ? `rgba(181,83,47,${(0.24 + 0.24 * lit) * sphA})` : `rgba(104,112,100,${0.28 * sphA})`;
         g.stroke(front);
       }
@@ -1265,7 +1265,7 @@ export class Sphere {
       o[i * 4 + 3] = p.k;
     }
     const dustPass = (near: boolean) => {
-      const colors = this.dark ? ["#586759", "#B98A95", "#D3A9B2", "#8A9A8B"] : ["#2F4736", "#6B3543", "#B88792", "#586759"];
+      const colors = this.dark ? ["#6c5a80", "#9B82B5", "#B7A3CC", "#8C79A3"] : ["#432556", "#6E4F8A", "#9B82B5", "#6c5a80"];
       for (let ci = 0; ci < 4; ci++) {
         g.fillStyle = colors[ci];
         for (let i = 0; i < nd; i++) {
@@ -1464,7 +1464,7 @@ export class Sphere {
       it.drawn = true;
       if (hv) {
         g.globalAlpha = 0.9;
-        g.strokeStyle = "rgba(107,53,67,.85)";
+        g.strokeStyle = "rgba(110,79,138,.85)";
         g.lineWidth = 1.6;
         const ww = w * xs;
         g.strokeRect(sx - ww / 2 - 1, sy - h / 2 - 1, ww + 2, h + 2);
@@ -1548,7 +1548,7 @@ export class Sphere {
     for (let i = H.length - 1; i > 0; i--) {
       const f = i / H.length;
       g.globalAlpha = (1 - f) * 0.55;
-      g.strokeStyle = f < 0.5 ? "#B88792" : "#6B3543";
+      g.strokeStyle = f < 0.5 ? "#9B82B5" : "#6E4F8A";
       g.lineWidth = Math.max(1, h * 0.34 * (1 - f));
       g.beginPath();
       g.moveTo(H[i].x, H[i].y);
@@ -1615,7 +1615,7 @@ export class Sphere {
     g.arc(cx, cy, r, 0, TAU);
     g.fill();
     g.globalAlpha = b * 0.8;
-    g.strokeStyle = "#6B3543";
+    g.strokeStyle = "#6E4F8A";
     g.lineWidth = 1.5 + 3 * b;
     g.beginPath();
     g.arc(cx, cy, r, 0, TAU);
@@ -1631,7 +1631,7 @@ export class Sphere {
     g.lineWidth = 1;
     g.setLineDash([2, 5]);
     g.lineDashOffset = -this.t * 14;
-    g.strokeStyle = this.dark ? `rgba(243,235,221,${0.32 * sphA})` : `rgba(24,35,29,${0.3 * sphA})`;
+    g.strokeStyle = this.dark ? `rgba(245,240,201,${0.32 * sphA})` : `rgba(42,14,51,${0.3 * sphA})`;
     const top = lit.sort((a, b) => a.zc - b.zc).slice(0, 12);
     for (const a of top) {
       const near = top

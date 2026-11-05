@@ -1,76 +1,83 @@
 @import "tailwindcss";
 
-/* Vibers Club look: Winewood Whisper, dark (2026-11-04). A private travel club at night: the page is a
-   deep Black Cherry, surfaces lift in small wine steps (canvas, surface, raised), forest green comes in
-   for places and nature, and warm ivory and champagne carry the type instead of pure white.
-   Mulberry marks what is selected or active, Plum and Moss are small interaction accents, Dusky Leaf is
-   for quiet details only (never text on dark). Every text pairing is at least 4.5:1.
+/* Vibers Club look: Deep Plum nights (2026-11-04). A club for music, places and people, styled like
+   a music and fashion label, not a tech product. Roughly 60 percent Deep Plum (the page and the brand),
+   30 percent Almond Cream (type, light cards, negative space), 8 percent Dusty Lavender (secondary
+   details, hover, soft atmospheric light) and 2 percent Soft Butter (tiny sparks of energy: the post
+   button, new dots, stars). Surfaces lift in small plum steps. Every text pairing is at least 4.5:1.
    `static` emits every token as a CSS variable, so CSS modules and canvas code can read them too.
    No apostrophes in comments inside this block: Tailwind drops every token after one. */
 @theme static {
   /* the palette, by name */
-  --color-cherry: #2a1016;
-  --color-mulberry: #51202c;
-  --color-plum: #6b3543;
-  --color-ivy: #18231d;
-  --color-moss: #2f4736;
-  --color-leaf: #586759;
+  --color-deep-plum: #320b35;
+  --color-almond: #f5f0c9;
+  --color-lavender: #9b82b5;
+  --color-butter: #fff3b0;
+  /* older names, kept so every screen follows the new palette */
+  --color-cherry: #320b35;
+  --color-mulberry: #573a70;
+  --color-plum: #6e4f8a;
+  --color-ivy: #2a0930;
+  --color-moss: #47285a;
+  --color-leaf: #6c5a80;
 
   /* surfaces, deepest first: recess (wells, inputs), canvas (the page), surface (cards), raised (hover, menus) */
-  --color-recess: #170a0e;
-  --color-canvas: #1f0c11;
-  --color-surface: #2a1016;
-  --color-raised: #34161d;
-  --color-sand: #2e141a;
-  /* brand: Mulberry fills for active and selected things; brand-ink is its readable light partner */
-  --color-brand: #51202c;
-  --color-brand-hover: #5e2834;
-  --color-brand-deep: #2a1016;
-  --color-brand-ink: #e2c2c8;
-  /* the main call to action: champagne, set in Black Cherry */
-  --color-cta: #eadcc6;
-  --color-cta-hover: #f4ebdd;
-  --color-on-cta: #2a1016;
-  /* accent: a light Plum for text and icons, Mulberry wash behind selected chips */
-  --color-accent: #d3a9b2;
-  --color-accent-hover: #e2c2c8;
-  --color-accent-wash: #51202c;
-  --color-rose: #b98a95;
-  --color-rose-wash: #3a1820;
-  /* forest: the second world, for places, nature and the cards on them */
-  --color-forest: #18231d;
-  --color-forest-surface: #2f4736;
-  --color-support: #586759;
-  --color-mist: #1f2d25;
-  --color-mist-deep: #2f4736;
-  /* type: ivory headings, champagne supporting text, warm stone for metadata */
-  --color-ink: #f3ebdd;
-  --color-ink2: #e3d3bc;
-  --color-muted: #b5a49a;
-  --color-silver: #6e5a5e;
-  --color-line: rgba(243, 235, 221, 0.09);
-  --color-line2: rgba(243, 235, 221, 0.17);
-  --color-on-dark: #f3ebdd;
-  --color-on-wine: #e6c3c9;
-  --color-on-forest: #c9d2c6;
+  --color-recess: #220626;
+  --color-canvas: #320b35;
+  --color-surface: #3c1340;
+  --color-raised: #4a1d4f;
+  --color-sand: #43184a;
+  /* brand: a lavender plum fill for active and selected things; brand-ink is its readable light partner */
+  --color-brand: #573a70;
+  --color-brand-hover: #644680;
+  --color-brand-deep: #320b35;
+  --color-brand-ink: #dccfea;
+  /* the main call to action: Almond Cream, set in Deep Plum */
+  --color-cta: #f5f0c9;
+  --color-cta-hover: #fbf8e2;
+  --color-on-cta: #320b35;
+  /* accent: Dusty Lavender, lifted for text and icons; a plum wash behind selected chips */
+  --color-accent: #b7a3cc;
+  --color-accent-hover: #dccfea;
+  --color-accent-wash: #4f2f63;
+  --color-rose: #9b82b5;
+  --color-rose-wash: #43184a;
+  /* highlight: Soft Butter, used rarely */
+  --color-highlight: #fff3b0;
+  /* the second world (places, nature): a deeper, cooler plum, so it still reads as its own space */
+  --color-forest: #2a0930;
+  --color-forest-surface: #47285a;
+  --color-support: #6c5a80;
+  --color-mist: #3a1a44;
+  --color-mist-deep: #47285a;
+  /* type: Almond Cream headings, a softer cream for body, lavender grey for metadata */
+  --color-ink: #f5f0c9;
+  --color-ink2: #e6dfba;
+  --color-muted: #bdb2c8;
+  --color-silver: #7a6788;
+  --color-line: rgba(245, 240, 201, 0.1);
+  --color-line2: rgba(245, 240, 201, 0.18);
+  --color-on-dark: #f5f0c9;
+  --color-on-wine: #e4daee;
+  --color-on-forest: #e4daee;
   /* status, softened for a dark page */
-  --color-ok: #9cc3a5;
-  --color-warn: #e0b872;
-  --color-danger: #e07a72;
-  --color-danger-hover: #ea9a93;
-  --color-danger-fill: #8e2b26;
-  --color-focus: #d3a9b2;
+  --color-ok: #a9d4b4;
+  --color-warn: #ffe08a;
+  --color-danger: #f09a9a;
+  --color-danger-hover: #f6b4b4;
+  --color-danger-fill: #8e2b3e;
+  --color-focus: #fff3b0;
 
   --font-sans:
     "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
   /* shadows: deep and soft, with a hairline of light on top so surfaces read as lifted */
   --shadow-soft:
-    0 24px 60px -28px rgba(8, 2, 4, 0.75),
-    inset 0 1px 0 rgba(243, 235, 221, 0.05);
+    0 24px 60px -28px rgba(10, 2, 12, 0.75),
+    inset 0 1px 0 rgba(245, 240, 201, 0.05);
   --shadow-card:
-    0 16px 40px -26px rgba(8, 2, 4, 0.8),
-    inset 0 1px 0 rgba(243, 235, 221, 0.04);
+    0 16px 40px -26px rgba(10, 2, 12, 0.8),
+    inset 0 1px 0 rgba(245, 240, 201, 0.05);
 }
 
 :root {
@@ -78,16 +85,16 @@
 }
 
 body {
-  /* depth, not flatness: Black Cherry light from above, a breath of forest from below */
+  /* depth, not flatness: soft lavender light from above, deeper plum pooling below */
   background:
     radial-gradient(
-      110% 55% at 50% -12%,
-      rgba(81, 32, 44, 0.55),
+      100% 50% at 50% -12%,
+      rgba(155, 130, 181, 0.22),
       transparent 62%
     ),
     radial-gradient(
       70% 45% at 100% 105%,
-      rgba(24, 35, 29, 0.7),
+      rgba(20, 3, 24, 0.75),
       transparent 70%
     ),
     var(--color-canvas);
@@ -97,6 +104,18 @@ body {
   -webkit-font-smoothing: antialiased;
   /* edge to edge sections (100vw) must not add a sideways scroll */
   overflow-x: clip;
+}
+
+/* a fine grain over everything, like printed paper; never over text contrast */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
 }
 
 ::selection {
@@ -121,16 +140,16 @@ body {
   button.chip {
     @apply cursor-pointer transition duration-300 hover:border-rose/60 hover:text-ink;
   }
-  /* selected: Mulberry, the club colour for "this one" */
+  /* selected: lavender plum, the club colour for "this one" */
   .chip[aria-pressed="true"],
   .chip[aria-selected="true"] {
     @apply border-brand bg-brand text-ink;
   }
-  /* the main action: champagne set in Black Cherry */
+  /* the main action: Almond Cream set in Deep Plum */
   .btn {
     @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-cta px-5 font-bold tracking-[0.01em] text-on-cta transition duration-300 hover:bg-cta-hover active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45;
   }
-  /* the warm call to action, for people: Mulberry with an ivory label */
+  /* the warm call to action, for people: lavender plum with a cream label */
   .btn-accent {
     @apply border border-rose/25 bg-brand text-ink hover:bg-brand-hover;
   }
@@ -199,15 +218,101 @@ html[data-arrived] body > main {
   bottom: calc(14px + env(safe-area-inset-bottom));
   z-index: 40;
   transform: translateX(-50%);
-  max-width: calc(100vw - 32px);
+  max-width: calc(100vw - 24px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* the + for posting, beside the pill bar: the one butter-yellow moment on the screen */
+.vc-plus {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: var(--color-highlight, var(--color-cta));
+  color: var(--color-on-cta);
+  cursor: pointer;
+  box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.8);
+  transition: transform 0.2s ease;
+}
+.vc-plus:hover {
+  transform: rotate(90deg) scale(1.05);
+}
+/* on a narrow phone the + floats just above the pill bar, at the right */
+@media (max-width: 520px) {
+  .vc-plus {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+  }
+}
+.vc-plus:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+/* the posting sheet */
+.vc-sheet {
+  width: min(1040px, calc(100vw - 24px));
+  max-height: calc(100svh - 48px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--color-line2);
+  border-radius: 28px;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  overflow: auto;
+}
+.vc-sheet::backdrop {
+  background: rgb(10 2 12 / 0.7);
+  backdrop-filter: blur(6px);
+}
+.vc-sheet__body {
+  position: relative;
+  padding: 28px 22px 22px;
+}
+.vc-sheet__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line2);
+  color: var(--color-ink);
+  cursor: pointer;
 }
 
-/* The profile avatar and its menu, top right */
-.vc-profile {
+/* Top right: the bell (on Home) and your initial, which opens your profile */
+.vc-top {
   position: fixed;
   top: calc(14px + env(safe-area-inset-top));
   right: calc(16px + env(safe-area-inset-right));
   z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vc-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow:
+    0 0 0 1px var(--color-line2),
+    0 10px 24px -12px rgb(8 2 4 / 0.8);
+  transition: transform 0.2s ease;
+}
+.vc-bell:hover {
+  transform: scale(1.04);
 }
 .vc-profile__button {
   position: relative;
@@ -240,64 +345,9 @@ html[data-arrived] body > main {
   font-size: 0.66rem;
   font-weight: 800;
 }
-.vc-profile__menu {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  width: min(260px, calc(100vw - 32px));
-  padding: 8px;
-  border: 1px solid var(--color-line);
-  border-radius: 20px;
-  background: rgb(31 12 17 / 0.94);
-  box-shadow: 0 24px 48px -20px rgb(8 2 4 / 0.9);
-  backdrop-filter: blur(18px);
-  transform-origin: top right;
-  animation: vc-menu 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-}
-.vc-profile__head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 8px 12px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--color-line);
-}
-.vc-profile__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 0.92rem;
-  font-weight: 650;
-  color: var(--color-ink2);
-}
-.vc-profile__row:hover,
-.vc-profile__row[aria-current="page"] {
-  background: var(--color-brand);
-  color: var(--color-ink);
-}
-.vc-profile__count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--color-accent);
-  color: var(--color-on-cta);
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-@keyframes vc-menu {
-  from {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.97);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
-  .vc-profile__menu {
-    animation: none;
+  .vc-plus:hover {
+    transform: none;
   }
 }
 
@@ -313,50 +363,30 @@ body:not(:has(> .vc-pillbar)) > main {
   }
 }
 
-/* sounds on or off, and how loud, at the foot of the profile menu */
-.vc-profile__sound {
-  margin-top: 4px;
-  padding-top: 4px;
-  border-top: 1px solid var(--color-line);
+/* Discover's wheel: names the sphere and the gallery under it, at the right edge */
+.vc-wheel {
+  position: fixed;
+  right: max(4px, env(safe-area-inset-right));
+  top: 50%;
+  z-index: 30;
+  width: min(220px, 48vw);
+  height: 150px;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  font-family: var(--font-display);
 }
-.vc-profile__sound .vc-profile__row {
-  cursor: pointer;
-  text-align: left;
+.vc-wheel .option-wheel__item {
+  font-style: italic;
+  letter-spacing: 0.01em;
 }
-.vc-profile__switch {
-  position: relative;
-  width: 34px;
-  height: 20px;
-  border-radius: 999px;
-  background: var(--color-recess);
-  box-shadow: inset 0 0 0 1px var(--color-line2);
-  transition: background 0.2s;
-}
-.vc-profile__switch::after {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  background: var(--color-muted);
-  transition:
-    transform 0.2s,
-    background 0.2s;
-}
-[aria-checked="true"] > .vc-profile__switch {
-  background: var(--color-brand);
-}
-[aria-checked="true"] > .vc-profile__switch::after {
-  transform: translateX(14px);
-  background: var(--color-ink);
-}
-.vc-profile__volume {
-  display: block;
-  padding: 4px 12px 10px;
-}
-.vc-profile__volume input {
-  width: 100%;
-  accent-color: var(--color-accent);
+@media (max-width: 640px) {
+  /* on a phone it sits at the side of the sphere, clear of the thought box */
+  .vc-wheel {
+    top: 34%;
+    width: 42vw;
+    height: 96px;
+  }
+  .vc-wheel .option-wheel__item {
+    font-size: 0.8rem;
+  }
 }
