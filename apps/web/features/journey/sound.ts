@@ -3,11 +3,11 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * The journey's own sounds, made in the browser with the Web Audio API: no audio files, so nothing to
- * licence and nothing to download. They have their own on/off (the speaker on the door page), kept apart
- * from the app's Sounds setting.
+ * The journey's own sounds, made in the browser with the Web Audio API, plus one short loop made for
+ * Vibers Club (the night meadow): nothing to licence. They have their own on/off (the speaker on the
+ * door page), kept apart from the app's Sounds setting.
  *
- * - wind over the grass, looping softly while the door page is open;
+ * - the night meadow (far-off crickets, a faint breeze), looping softly while the door page is open;
  * - a magic shimmer the moment light breaks at the door's seam;
  * - the door: a latch, a long wooden creak, a soft thump against the wall;
  * - the Earth: a low airy hum while it turns, a rising rush as we dive into Manali, a bell as the
@@ -154,73 +154,45 @@ export function unlockJourneySound() {
 
 /* ---------- the sounds ---------- */
 
-/** eight seconds of deep, smooth noise (a slow random walk) that loops without a seam: a distant breeze */
-let breeze: AudioBuffer | null = null;
-function breezeBuffer(c: AudioContext) {
-  if (breeze) return breeze;
-  const n = c.sampleRate * 8;
-  breeze = c.createBuffer(1, n, c.sampleRate);
-  const d = breeze.getChannelData(0);
-  let v = 0;
-  for (let i = 0; i < n; i++) {
-    v = 0.996 * v + 0.02 * (Math.random() * 2 - 1);
-    d[i] = v;
-  }
-  // tilt the walk so the end meets the start, then scale it: no click where it loops
-  const drift = d[n - 1] - d[0];
-  let peak = 0;
-  for (let i = 0; i < n; i++) {
-    d[i] -= (drift * i) / n;
-    peak = Math.max(peak, Math.abs(d[i]));
-  }
-  for (let i = 0; i < n; i++) d[i] /= peak || 1;
-  return breeze;
+/** the door page ambience: the night meadow (far-off crickets over a faint low breeze), a 20 second
+ * recording made for Vibers Club that loops without a seam (public/journey/sounds/night-meadow.wav) */
+const MEADOW_URL = "/journey/sounds/night-meadow.wav";
+let meadow: Promise<AudioBuffer | null> | null = null;
+function meadowBuffer(c: AudioContext) {
+  meadow ??= fetch(MEADOW_URL)
+    .then((r) => r.arrayBuffer())
+    .then((data) => c.decodeAudioData(data))
+    .catch(() => null);
+  return meadow;
 }
+let windWanted = false;
 
-/** the door page: a peaceful, soft breeze far away, with a faint warm tone that rises and falls like
- * a slow breath. No hiss and no gusts, so it rests quietly behind the scene */
 export function startWind() {
-  if (wind) return;
+  windWanted = true;
   hushed = false;
-  wind = loop(
-    (c, out) => {
-      // the breeze: deep, rounded air, with everything bright taken out
-      const air = c.createBufferSource();
-      air.buffer = breezeBuffer(c);
-      air.loop = true;
-      const soft = c.createBiquadFilter();
-      soft.type = "lowpass";
-      soft.frequency.value = 320;
-      soft.Q.value = 0.3;
-      const breath = c.createGain();
-      breath.gain.value = 0.7;
-      air.connect(soft).connect(breath).connect(out);
-      air.start();
-      // the warm tone: a quiet open chord of pure sines, each drifting at its own slow pace
-      const tones = [
-        [220, 0.05, 0.05],
-        [329.6, 0.035, 0.037],
-        [440, 0.02, 0.029],
-      ].flatMap(([f, level, rate]) => {
-        const o = c.createOscillator();
-        o.type = "sine";
-        o.frequency.value = f;
-        const g = c.createGain();
-        g.gain.value = level;
-        o.connect(g).connect(out);
-        o.start();
-        return [o, lfo(c, rate, level * 0.7, g.gain)];
-      });
-      // the breeze swells and settles very slowly
-      const swell = lfo(c, 0.045, 0.25, breath.gain);
-      return [air, ...tones, swell];
-    },
-    0.22,
-    4,
-  );
+  if (wind) return;
+  const c = audio();
+  if (!c) return;
+  void meadowBuffer(c).then((buf) => {
+    if (!buf || wind || !windWanted) return;
+    // played as heard in the demo (the master sits at 0.8, so this brings it back to 1)
+    wind = loop(
+      (cc, out) => {
+        const src = cc.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
+        src.connect(out);
+        src.start();
+        return [src];
+      },
+      1 / MASTER,
+      3,
+    );
+  });
 }
 
 export function stopWind(fade = 1.2) {
+  windWanted = false;
   wind?.stop(fade);
   wind = null;
 }
