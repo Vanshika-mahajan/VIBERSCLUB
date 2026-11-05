@@ -15,7 +15,7 @@
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
 ## ARPIT's review round (2026-11-04 night): ten changes
-- Door and Earth restored to the version ARPIT approved (commit 8378930): `features/journey`, `public/journey` and their tests were checked out from it. Enter the app still lands on /home.
+- Door and Earth: first restored to 8378930, which was the wrong one (no dive into Manali). Corrected 2026-11-05: the journey is back to its full version (d8eeec3: swaying meadow, door, Earth turning and diving into Manali, a dissolve into the club home), and the dive lands on /home again. Phase 1 had pointed it at Discover, whose different colour broke the dissolve.
 - Discover: people come out of the sphere only when you send the thought (Enter, the arrow or a suggestion). While you type, the sphere lights up only the interests it reads.
 - `features/discover/DiscoverWheel.tsx` + `components/reactbits/OptionWheel.*` (restored): a wheel at the side of Discover, "The orbit of thoughts" and "Faces waiting below ↓", hints at the gallery under the globe. Turning it scrolls there with a soft tick (`public/sounds/wheel-tick.wav`, made here; it follows the Sounds setting).
 - Navigation: the pill bar is Home, Discover, Events, Explore. A + beside it (`components/PostButton.tsx`) opens IGNITE THE VIBE as a sheet from any screen; the Home card and old `/profile#ignite` links open it too. `components/TopBar.tsx`: your initial opens your profile; on Home a bell opens `/inbox`. The profile menu is gone (`ProfileMenu.tsx` deleted).

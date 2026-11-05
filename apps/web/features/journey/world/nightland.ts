@@ -105,7 +105,7 @@ const LIGHT = /* glsl */ `
   uniform float uSpill;
   uniform vec3 uSpillAt;
   // night: near-black haze; day: the warm, dusty haze of the Landscape template
-  vec3 haze() { return mix(vec3(0.011, 0.011, 0.015), vec3(0.5, 0.44, 0.29), uDay); }
+  vec3 haze() { return mix(vec3(0.011, 0.011, 0.015), vec3(0.52, 0.48, 0.27), uDay); }
   // the light a surface facing n receives: moonlight at night, low warm sun by day
   vec3 skyLight(vec3 n, vec3 night) {
     float sun = 0.45 + 0.55 * clamp(dot(n, normalize(vec3(0.35, 0.8, 0.45))), 0.0, 1.0);
@@ -200,7 +200,7 @@ const SKY_FRAG = /* glsl */ `
     vec3 d = normalize(vDir);
     float up = clamp(d.y, -0.2, 1.0);
     vec3 c = mix(vec3(0.014, 0.013, 0.017), vec3(0.002, 0.002, 0.004), smoothstep(-0.02, 0.4, up));
-    vec3 day = mix(vec3(0.6, 0.53, 0.36), vec3(0.42, 0.4, 0.33), smoothstep(-0.02, 0.5, up));
+    vec3 day = mix(vec3(0.63, 0.57, 0.34), vec3(0.45, 0.44, 0.31), smoothstep(-0.02, 0.5, up));
     float m = dot(d, uMoon);
     // the red glow the moon throws into the haze
     c += (1.0 - uDay) * vec3(0.5, 0.025, 0.04) * (pow(max(m, 0.0), 260.0) * 0.45 + pow(max(m, 0.0), 40.0) * 0.08 + pow(max(m, 0.0), 8.0) * 0.012);
@@ -208,7 +208,7 @@ const SKY_FRAG = /* glsl */ `
     vec2 sp = vec2(atan(d.x, -d.z), d.y) * 160.0;
     float s = hash(floor(sp));
     float tw = 0.6 + 0.4 * sin(uTime * (1.0 + s * 3.0) + s * 50.0);
-    day += vec3(0.5, 0.4, 0.22) * (pow(max(m, 0.0), 30.0) * 0.5 + pow(max(m, 0.0), 6.0) * 0.12);
+    day += vec3(0.56, 0.38, 0.28) * (pow(max(m, 0.0), 30.0) * 0.5 + pow(max(m, 0.0), 6.0) * 0.12);
     c = mix(c, day, uDay);
     c += (1.0 - uDay) * vec3(0.8, 0.85, 1.0) * smoothstep(0.997, 1.0, s) * smoothstep(0.02, 0.2, up) * 0.25 * tw * (1.0 - smoothstep(0.98, 0.999, m));
     c = mix(c, c * vec3(0.15, 0.15, 0.3), uDusk);
@@ -417,7 +417,7 @@ const BLADE_FRAG = /* glsl */ `
     vec3 root = vec3(0.006, 0.009, 0.003);
     vec3 tip = mix(vec3(0.035, 0.065, 0.015), vec3(0.07, 0.09, 0.03), vSeed);
     vec3 albedo = mix(root, tip, smoothstep(0.0, 1.0, vY));
-    vec3 c = albedo * mix(vec3(0.72, 0.66, 0.72), vec3(3.4, 2.8, 1.8) * (0.75 + 0.25 * vY), uDay);
+    vec3 c = albedo * mix(vec3(0.72, 0.66, 0.72), vec3(3.1, 2.9, 1.7) * (0.75 + 0.25 * vY), uDay);
     // the tips catch the moon's red from behind
     c += (1.0 - uDay) * vec3(0.05, 0.006, 0.006) * pow(vY, 3.0) * step(0.55, vSeed);
     c += albedo * lampLight(vWorld) * 6.0 + albedo * doorLight(vWorld) * 5.0;

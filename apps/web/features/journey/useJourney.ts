@@ -11,8 +11,7 @@ export const PHASES = [
   "opening",
   "cosmos",
   "manali",
-  "orbit",
-  "settled",
+  "arrive",
 ] as const;
 export type Phase = (typeof PHASES)[number];
 

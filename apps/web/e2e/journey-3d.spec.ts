@@ -40,7 +40,10 @@ test("the 3D scene takes over and the door starts to open", async ({
   expect(errors).toEqual([]);
 });
 
-test("Escape skips the 3D journey to the Vibers", async ({ page }) => {
+test("Escape skips the 3D journey to the Vibers in Community", async ({
+  page,
+}) => {
+  await page.route("**/images.pexels.com/**", (r) => r.abort());
   await page.goto("/?world=3d");
   const stage = page.locator("[data-phase]");
   await expect(stage).toHaveAttribute("data-world", "3d", { timeout: 30000 });
@@ -50,11 +53,10 @@ test("Escape skips the 3D journey to the Vibers", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(stage).toHaveAttribute("data-phase", "opening");
   await page.keyboard.press("Escape");
-  // a 0.4 s fast-forward through the door, then straight to the result; slow frames stretch it here
-  await expect(stage).toHaveAttribute("data-phase", "settled", {
+  // a 0.4 s fast-forward through the door, then straight home; slow frames stretch it here
+  await expect(page).toHaveURL(/\/home\?vibe=/, {
     timeout: 45000,
   });
-  await expect(page.getByRole("article")).toHaveCount(6);
 });
 
 test("a device that can't keep 3D smooth gets the CSS version", async ({
@@ -84,13 +86,12 @@ test("reduced motion keeps the still CSS version, even when 3D is asked for", as
 });
 
 test("Enter the app opens the club home", async ({ page }) => {
-  test.setTimeout(60_000);
   await page.route("**/images.pexels.com/**", (r) => r.abort());
   await page.goto("/");
-  // the 3D scene keeps a software-rendered browser busy, so the click can wait for the page to settle
   await page.getByRole("link", { name: "Enter the app" }).click();
-  await expect(page).toHaveURL(/\/home$/, { timeout: 30_000 });
-  await expect(
-    page.getByRole("heading", { name: /your Manali has people/, level: 1 }),
-  ).toBeVisible();
+  // software WebGL keeps the main thread busy, so the page change can take a while here
+  await expect(page).toHaveURL(/\/home$/, { timeout: 30000 });
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "your Manali has people in it",
+  );
 });
