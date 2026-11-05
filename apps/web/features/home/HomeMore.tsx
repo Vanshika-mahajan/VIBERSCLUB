@@ -21,7 +21,7 @@ export function HomeMore() {
         aria-label="Discover"
         className="mt-16 scroll-mt-4 md:mt-24"
       >
-        <Chapter n="V" title="Discover" img="/journey/meadow.webp" y={0.2} />
+        <Chapter n="V" title="Discover" img="/home/earth.webp" y={0.5} />
         <DiscoverScreen inline />
         <section
           id="community"
@@ -40,7 +40,7 @@ export function HomeMore() {
         aria-label="Events"
         className={`${s.club} mt-16 scroll-mt-4 md:mt-24`}
       >
-        <Chapter n="VI" title="Events" img="/journey/night.webp" y={0.6} />
+        <Chapter n="VI" title="Events" img="/journey/night.webp" y={0.45} />
         <Events />
       </section>
 
@@ -49,7 +49,7 @@ export function HomeMore() {
         aria-label="Explore"
         className="mt-16 scroll-mt-4 md:mt-24"
       >
-        <Chapter n="VII" title="Explore" img="/journey/day.webp" y={0.35} />
+        <Chapter n="VII" title="Explore" img="/home/scene.webp" y={0.45} />
         <Suspense>
           <ExploreHub inline />
         </Suspense>

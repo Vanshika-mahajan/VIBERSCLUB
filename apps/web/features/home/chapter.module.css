@@ -6,6 +6,15 @@
   overflow: hidden;
   background: #120c08;
 }
+/* a soft shade at the foot and the top corner, so ivory type reads on any picture */
+.shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgb(18 12 8 / 0.55), rgb(18 12 8 / 0) 45%),
+    linear-gradient(to bottom, rgb(18 12 8 / 0.3), rgb(18 12 8 / 0) 22%);
+  pointer-events: none;
+}
 .title {
   position: absolute;
   z-index: 1;

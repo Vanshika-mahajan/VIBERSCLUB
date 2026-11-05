@@ -293,7 +293,7 @@ export function PostCard({
             {keys.slice(0, 5).map((k) => (
               <span
                 key={k}
-                className={s.tag}
+                className={`${s.tag} ${s.hashed}`}
                 data-tone={shared.includes(k) ? undefined : "clover"}
               >
                 {shared.includes(k) ? "✓ " : "#"}

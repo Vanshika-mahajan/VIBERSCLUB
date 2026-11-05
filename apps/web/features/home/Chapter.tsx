@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Dust, clamp, ease, span, toned } from "./dust";
+import { Dust, clamp, ease, plain, span } from "./dust";
 import s from "./opening.module.css";
 import c from "./chapter.module.css";
 
 /**
  * A chapter opener on Home: a wide photograph that gathers out of stardust as it scrolls into view,
- * with the chapter's name rising over it and its numeral at the top right. The photographs are
- * placeholders; any wide picture works.
+ * with the chapter's name rising over it and its numeral at the top right. Each picture keeps its
+ * own colours (a soft shade at the foot keeps the title readable); any wide picture works.
  */
 export function Chapter({
   n,
@@ -30,7 +30,8 @@ export function Chapter({
     let alive = true,
       raf = 0,
       D: Dust | null = null;
-    toned(img)
+    // each chapter in its own colours, so no two openers look alike
+    plain(img)
       .then((src) => {
         if (alive) D = new Dust(canvas.current!, src, y);
       })
@@ -60,6 +61,7 @@ export function Chapter({
   return (
     <div ref={box} className={c.chapter} data-tone="dark">
       <canvas ref={canvas} className={s.canvas} aria-hidden="true" />
+      <span className={c.shade} aria-hidden="true" />
       <span className={c.n} aria-hidden="true">
         {n}
       </span>

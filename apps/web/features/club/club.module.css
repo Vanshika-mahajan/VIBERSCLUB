@@ -1691,23 +1691,8 @@ select.mini2 {
 }
 
 /* ---------- the issue: Discover's faces, Events and Explore as chapters of one magazine ---------- */
-/* photographs toned in sage (their luminosity onto deep sage), hairlines instead of boxes, square
-   type-set controls in espresso, and amber kept for the small jewels (a date, a seat bar) */
-.issue .photo {
-  background: #64754b;
-  isolation: isolate;
-}
-.issue .photo img {
-  mix-blend-mode: luminosity;
-  filter: brightness(0.92) contrast(1.05);
-}
-.issue .photo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgb(30 20 12 / 0.16);
-  pointer-events: none;
-}
+/* photographs in their own colours, hairlines instead of boxes, square type-set controls in
+   espresso, and amber kept for the small jewels (a date, a seat bar) */
 .issue .card {
   box-shadow: none;
 }

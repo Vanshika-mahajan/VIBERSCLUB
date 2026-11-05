@@ -227,15 +227,6 @@ function cover(g: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y:
   const sx = clamp((iw - sw) * (isNaN(px) ? 0.5 : px), 0, iw - sw);
   const sy = clamp((ih - sh) * (isNaN(py) ? 0.3 : py), 0, ih - sh);
   g.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-  // toned in sage, like every photograph in the club: its light and shade, the colour of sage
-  g.save();
-  g.globalCompositeOperation = "color";
-  g.fillStyle = "#64754b";
-  g.fillRect(x, y, w, h);
-  g.globalCompositeOperation = "source-over";
-  g.fillStyle = "rgba(30,20,12,.14)";
-  g.fillRect(x, y, w, h);
-  g.restore();
 }
 export const initials = (n: string) =>
   n

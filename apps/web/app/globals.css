@@ -504,7 +504,7 @@ body:not(:has(> .vc-contents)) > main {
 }
 
 /* What's new: the tabs are words, the current one underlined; rows are ruled; faces are sage-toned
-   squares; the unread mark stays a small amber dot */
+   squares (initials on sage, photos in their own colours); the unread mark stays a small amber dot */
 .vc-inbox [role="tablist"] {
   gap: 22px;
 }
@@ -545,8 +545,4 @@ body:not(:has(> .vc-contents)) > main {
   background: #55643f;
   color: var(--color-ivory);
   isolation: isolate;
-}
-.vc-inbox .bg-accent-wash img {
-  mix-blend-mode: luminosity;
-  filter: brightness(0.92);
 }
