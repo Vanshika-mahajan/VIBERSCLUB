@@ -1,6 +1,7 @@
 "use client";
 
 import { HomeSections } from "@/features/home/HomeSections";
+import { HomeMore } from "@/features/home/HomeMore";
 import { Opening } from "@/features/home/Opening";
 import { openPost } from "@/components/PostButton";
 import s from "./club.module.css";
@@ -8,7 +9,8 @@ import s from "./club.module.css";
 /**
  * The club home, set like an edition of a magazine: the opening (two matching thoughts meet, a spark,
  * the meadow breaks into stardust and gathers into our Earth) under the contents, then the chapters
- * the contents list: your vibe, Vibers like you, this week and day plans.
+ * the contents list: your vibe, Vibers like you, this week and day plans, then the whole of Discover,
+ * Events and Explore.
  */
 export function ClubHome() {
   return (
@@ -27,6 +29,7 @@ export function ClubHome() {
           </button>
         }
       />
+      <HomeMore />
     </div>
   );
 }

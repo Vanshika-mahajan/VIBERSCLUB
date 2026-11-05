@@ -26,22 +26,26 @@ const PARTS: WheelSection[] = [
  * Explore Manali in two halves: Explore (places, day plans, posts like yours) and Itinerary
  * (plans to start from and my own). The open half is kept in the URL (?section=itinerary).
  */
-export function ExploreHub() {
+export function ExploreHub({ inline = false }: { inline?: boolean }) {
   const asked = useSearchParams().get("section");
   const [section, setSection] = useState<ExploreSection>(asked === "itinerary" ? "itinerary" : "explore");
   // a day plan opened to customize: the Itinerary half opens with it in the builder
   const [openPlan, setOpenPlan] = useState<string | null>(null);
   const choose = (id: ExploreSection) => {
     setSection(id);
+    // on its own page the open half is kept in the URL; as a chapter of Home it is not
+    if (inline) return;
     const url = id === "explore" ? "/explore" : `/explore?section=${id}`;
     window.history.replaceState(null, "", url);
   };
 
   return (
     <div className={s.club}>
-      <PageHeader kicker="Explore" title="Explore Manali">
-        Places worth the walk, day plans by locals, and your own itinerary.
-      </PageHeader>
+      {!inline && (
+        <PageHeader kicker="Explore" title="Explore Manali">
+          Places worth the walk, day plans by locals, and your own itinerary.
+        </PageHeader>
+      )}
       <div className={s.segment} role="group" aria-label="Explore sections">
         {SECTIONS.map((x) => (
           <button key={x.id} type="button" aria-pressed={section === x.id} onClick={() => choose(x.id)}>
@@ -52,16 +56,19 @@ export function ExploreHub() {
       <div key={section} className={s.panel}>
         {section === "explore" ? (
           <>
-            <SectionWheel sections={PARTS} label="Parts of Explore" layout="inline" className="vc-explore-wheel--inline" />
-            <SectionWheel sections={PARTS} label="Parts of Explore" className="vc-explore-wheel--side" />
+            {/* on Home the contents name the parts, and day plans are chapter IV */}
+            {!inline && <SectionWheel sections={PARTS} label="Parts of Explore" layout="inline" className="vc-explore-wheel--inline" />}
+            {!inline && <SectionWheel sections={PARTS} label="Parts of Explore" className="vc-explore-wheel--side" />}
             <Explore />
-            <DayPlans
-              onCustomize={(id) => {
-                setOpenPlan(id);
-                choose("itinerary");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
+            {!inline && (
+              <DayPlans
+                onCustomize={(id) => {
+                  setOpenPlan(id);
+                  choose("itinerary");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              />
+            )}
           </>
         ) : (
           <Itinerary initialOpen={openPlan} />

@@ -47,45 +47,31 @@
   background: rgb(30 20 12 / 0.3);
 }
 
-/* the two thoughts */
-.thought {
+/* the two Vibers, each a cut-out layer of the illustration, and their captions */
+.viber {
   position: absolute;
-  z-index: 3;
-  top: 50%;
+  z-index: 2;
+  top: 0;
   left: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 18px 10px 10px;
-  border: 1px solid rgb(247 242 232 / 0.8);
-  background: rgb(42 27 19 / 0.6);
-  color: var(--color-ivory);
-  white-space: nowrap;
+  max-width: none;
+  height: auto;
+  transform-origin: 0 0;
+  filter: drop-shadow(0 22px 26px rgb(18 12 8 / 0.22));
+  pointer-events: none;
+  user-select: none;
   will-change: transform, opacity;
 }
-.thought b {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgb(247 242 232 / 0.7);
-  border-radius: 50%;
-  font: 600 12px/1 var(--font-sans);
-}
-.thought span {
-  display: grid;
-  gap: 2px;
-}
-.thought small {
-  font: 500 10px/1 var(--font-sans);
-  letter-spacing: 0.14em;
+.cap {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  color: var(--color-ivory);
+  font: 500 11px/1 var(--font-sans);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  opacity: 0.8;
-}
-.thought em {
-  font: 700 1.3rem/1.1 var(--font-display);
-  font-style: normal;
-  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-shadow: 0 1px 8px rgb(18 12 8 / 0.5);
 }
 
 /* chapter I */
@@ -144,9 +130,6 @@
     left: 16px;
     bottom: 120px;
     font-size: 3.4rem;
-  }
-  .thought {
-    top: 50%;
   }
 }
 @media (prefers-reduced-motion: reduce) {

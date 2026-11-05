@@ -31,6 +31,8 @@ export function Contents() {
   const pathname = usePathname();
   const home = pathname === "/home";
   const [dock, setDock] = useState(!home);
+  // the chapter you are reading: an anchor in the contents, while it is on this page
+  const [at, setAt] = useState<string | null>(null);
   const docked = useRef(dock);
   const root = useRef<HTMLDivElement>(null);
   const movedAt = useRef(0);
@@ -157,8 +159,23 @@ export function Contents() {
         raf = requestAnimationFrame(() => {
           raf = 0;
           tone();
+          locate();
         });
     };
+    // the last chapter whose top has passed 40% of the screen; on Home the opening is chapter I
+    const locate = () => {
+      let found: string | null = null;
+      for (const c of contents) {
+        const [path, id] = c.href.split("#");
+        if (!id || path !== pathname) continue;
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= innerHeight * 0.4)
+          found = c.href;
+      }
+      if (!found && home && window.scrollY > 4) found = contents[0].href;
+      setAt(found);
+    };
+    locate();
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY > 0) move(true);
     };
@@ -172,7 +189,7 @@ export function Contents() {
       cancelAnimationFrame(raf);
       clearTimeout(back);
     };
-  }, [home, move, tone]);
+  }, [home, move, tone, pathname]);
 
   // a chapter on this page: glide down to it (the list moves aside first)
   const go = (e: MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -186,8 +203,11 @@ export function Contents() {
     history.replaceState(null, "", `#${id}`);
   };
 
-  const here = (href: string) =>
-    !href.includes("#") && isActive(pathname, href);
+  // the chapter you are reading on Home, or the page of its own you are on (/discover, ...)
+  const current = (c: (typeof contents)[number]) => {
+    if ("page" in c && isActive(pathname, c.page)) return "page";
+    return c.href === at ? "location" : undefined;
+  };
 
   return (
     <div
@@ -212,7 +232,7 @@ export function Contents() {
               <Link
                 href={c.href}
                 onClick={(e) => go(e, c.href)}
-                aria-current={here(c.href) ? "page" : undefined}
+                aria-current={current(c)}
               >
                 <span className={s.t}>{c.label}</span>
                 <i className={s.n} aria-hidden="true">

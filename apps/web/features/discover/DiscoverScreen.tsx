@@ -68,7 +68,9 @@ export function formationSlots(n: number, W: number, H: number): Slot[] {
 
 type Toast = { id: number; text: string };
 
-export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: DiscoveryAdapter }) {
+/** inline: a chapter of Home rather than its own page (no pull under the top line; its title is an h2) */
+export function DiscoverScreen({ adapter = sampleAdapter, inline = false }: { adapter?: DiscoveryAdapter; inline?: boolean }) {
+  const Title = inline ? "h2" : "h1";
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -355,7 +357,7 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
   return (
     <div
       ref={rootRef}
-      className={s.root}
+      className={`${s.root} ${inline ? s.inline : ""}`}
       data-formed={formed}
       data-hasq={hasQ}
       data-kb={kb}
@@ -399,11 +401,11 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
 
       <div className={s.hero}>
         <div className={s.intro}>
-          <h1>
+          <Title>
             Somewhere, someone
             <br />
             is thinking like <span className={s.you}>you.</span>
-          </h1>
+          </Title>
         </div>
         <div className={s.ask}>
           <form role="search" autoComplete="off" onSubmit={settleNow} data-parsing={parsing}>

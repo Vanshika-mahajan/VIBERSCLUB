@@ -66,8 +66,10 @@ test("list view, calm mode and the about dialog", async ({ page }) => {
 
 test("the main navigation stays reachable", async ({ page }) => {
   const nav = page.getByRole("navigation", { name: "Main" });
+  // Explore is a chapter of Home now: the link takes you there
   await nav.getByRole("link", { name: "Explore" }).click();
-  await expect(page.getByRole("heading", { name: "Explore Manali", level: 1 })).toBeVisible();
+  await expect(page).toHaveURL(/\/home#explore$/);
+  await expect(page.locator("#explore")).toBeAttached();
 });
 
 test("the wheel names the sphere and the gallery below, and takes you there", async ({ page }) => {

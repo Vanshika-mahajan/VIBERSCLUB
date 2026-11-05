@@ -77,6 +77,24 @@
 .list a:focus-visible {
   outline: none;
 }
+/* where you are: the chapter you are reading (or the page you are on) stays underlined, with a
+   small square in the gutter before it */
+.list a[aria-current] .t {
+  text-decoration-color: currentColor;
+}
+.list a {
+  position: relative;
+}
+.list a[aria-current]::before {
+  content: "";
+  position: absolute;
+  left: -11px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -3px;
+  background: currentColor;
+}
 /* the numerals: a roman serif, small */
 .n {
   display: inline-block;

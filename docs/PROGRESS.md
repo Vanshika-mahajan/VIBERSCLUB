@@ -430,3 +430,14 @@ ARPIT approved demo v5 (Shopify Editions style contents) and asked for it to be 
 **Tests**: `pnpm test` 95 passed; `pnpm lint` clean; `pnpm build` ok. e2e (phone and desktop): home, club, sound, discover, demo, sweep, motion, journey, journey-3d, journey-sound, universe all pass, except "home shows API OK", which needs the backend on :8000 (not running in this workspace). New e2e: the contents list I to VII and reach every page; centred, docked on scroll and back at the top; a chapter link glides to it.
 
 **Known issues**: the PillNav component is no longer used but kept in `components/reactbits`. Photographs are placeholders.
+
+## Review round: the two Vibers, a live contents marker, and chapters V to VII (2026-11-06)
+
+- **Home opening:** the two thought cards are replaced by two Vibers from ARPIT's own illustration (a girl on a skateboard and a boy, both with Vibers Club bags). They were cut out with rembg (isnet) and float in over the illustration's sky and trees, with the figures inpainted out (OpenCV shiftmap). As you scroll they leap in until their fingertips almost touch, and each has a "Viber" caption. The spark starts between their fingertips, then the scene breaks into stardust and gathers into the Earth as before (the Earth is unchanged). Assets are in `public/home/scene.webp`, `viber-girl.webp` and `viber-boy.webp`. `dust.ts` gained `plain()` so the illustration keeps its own colours.
+- **Contents:** the chapter you are reading stays underlined, with a small square beside it (`aria-current="location"`).
+- **Chapters V to VII:** Discover (with the faces below it), Events and Explore are now full sections of Home (`features/home/HomeMore.tsx`), and the contents glide to `/home#discover`, `#events` and `#explore`. Their own pages still exist. `DiscoverScreen` and `ExploreHub` take an `inline` prop.
+- **Tests:**
+  - Unit tests: 95 passed.
+  - e2e: everything passes except "API OK", which needs the backend on :8000 and is a known failure.
+  - The contents, Discover nav and sound specs were updated for the chapter links.
+- **Next:** restyle Discover, Events and Explore, the Discover globe, Post, and What's new (points 4 to 7).

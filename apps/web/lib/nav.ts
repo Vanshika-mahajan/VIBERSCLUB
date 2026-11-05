@@ -7,17 +7,18 @@ export const navItems = [
 ] as const;
 
 /**
- * The contents, set like a magazine's: the four chapters of Home, then the other pages, in one flat
- * list numbered I to VII. A chapter is an anchor on Home; a page is its own route.
+ * The contents, set like a magazine's: one flat list numbered I to VII, every item a chapter of Home
+ * you can scroll or glide to. Discover, Events and Explore also keep their own pages (`page`), where
+ * the contents mark them as the page you are on.
  */
 export const contents = [
   { label: "Your vibe", href: "/home#your-vibe" },
   { label: "Vibers like you", href: "/home#vibers-like-you" },
   { label: "This week", href: "/home#this-week" },
   { label: "Day plans", href: "/home#day-plans" },
-  { label: "Discover", href: "/discover" },
-  { label: "Events", href: "/events" },
-  { label: "Explore", href: "/explore" },
+  { label: "Discover", href: "/home#discover", page: "/discover" },
+  { label: "Events", href: "/home#events", page: "/events" },
+  { label: "Explore", href: "/home#explore", page: "/explore" },
 ] as const;
 
 export const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"] as const;

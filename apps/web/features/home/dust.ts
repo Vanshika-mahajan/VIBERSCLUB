@@ -43,6 +43,28 @@ export function toned(src: string): Promise<HTMLCanvasElement> {
   return p;
 }
 
+/** the picture as it is, in its own colours (the opening scene is an illustration, not a photograph) */
+export function plain(src: string): Promise<HTMLCanvasElement> {
+  const key = "plain:" + src;
+  let p = cache.get(key);
+  if (!p) {
+    p = new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = im.naturalWidth;
+        c.height = im.naturalHeight;
+        c.getContext("2d")!.drawImage(im, 0, 0);
+        resolve(c);
+      };
+      im.onerror = reject;
+      im.src = src;
+    });
+    cache.set(key, p);
+  }
+  return p;
+}
+
 type Particle = {
   x: number;
   y: number;

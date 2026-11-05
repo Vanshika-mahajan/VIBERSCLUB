@@ -13,15 +13,20 @@ test("the contents list the four chapters of Home and the other pages, I to VII,
   const nav = page.getByRole("navigation", { name: "Main" });
   for (const name of CONTENTS) await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
   await expect(nav.getByRole("link")).toHaveCount(CONTENTS.length);
-  for (const [label, heading] of [
-    ["Discover", "Discover Vibers"],
-    ["Events", "Events"],
-    ["Explore", "Explore Manali"],
+  // Discover, Events and Explore are chapters V to VII of Home: the contents glide down to them
+  for (const [label, id] of [
+    ["Discover", "discover"],
+    ["Events", "events"],
+    ["Explore", "explore"],
   ] as const) {
     await nav.getByRole("link", { name: label, exact: true }).click();
-    await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeAttached();
-    await expect(nav.getByRole("link", { name: label, exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(page).toHaveURL(new RegExp(`/home#${id}$`));
+    await expect(page.locator(`#${id}`)).toBeInViewport();
+    await expect(nav.getByRole("link", { name: label, exact: true })).toHaveAttribute("aria-current", "location");
   }
+  // each still has its own page, where its line in the contents is the current page
+  await page.goto("/events");
+  await expect(nav.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("aria-current", "page");
   // the wordmark goes back to Home
   await page.getByRole("link", { name: "Vibers Club" }).click();
   await expect(page.getByRole("heading", { name: /Spaces for curious people/, level: 1 })).toBeAttached();

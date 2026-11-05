@@ -50,6 +50,14 @@
   }
 }
 /* reset with zero specificity, so component classes win without */
+/* a chapter of Home: it follows the chapter opener instead of pulling up under the top line */
+.root.inline {
+  margin-top: 0;
+}
+/* on Home the contents title already sits top left; the Discover mark would overlap it */
+.root.inline .brand {
+  visibility: hidden;
+}
 :where(.root) button {
   font: inherit;
   color: inherit;

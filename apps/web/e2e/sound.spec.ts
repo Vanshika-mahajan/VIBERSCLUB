@@ -22,7 +22,7 @@ test("sounds: quiet on arrival, play on a tap, and can be muted in settings", as
   expect(await notes(page)).toBe(0); // nothing plays on its own
 
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" }).click();
-  await expect(page).toHaveURL(/\/explore/);
+  await expect(page).toHaveURL(/#explore$/);
   await expect.poll(() => notes(page)).toBeGreaterThan(0);
 
   // turn them off in settings (your profile, then the gear)
