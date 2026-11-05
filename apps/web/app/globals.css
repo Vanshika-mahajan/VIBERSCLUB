@@ -550,8 +550,7 @@ body:not(:has(> .vc-contents)) > main {
 }
 
 /* PALETTE IN USE (2026-11-06). Ivory and Espresso carry the page; Sage brings atmosphere as deep olive
-   bands and quiet labels; Amber is jewellery: the full stop of the headline, the spark on the
-   wordmark, where-you-are markers, the badge and the moment a link is touched. A fine film grain sits
+   bands and quiet labels; Amber is jewellery: the full stop of the headline, the where-you-are markers, the badge and the moment a link is touched. A fine film grain sits
    over everything so paper and photographs share one printed surface. */
 body::after {
   content: "";
@@ -562,13 +561,6 @@ body::after {
   opacity: 0.09;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .16 0 0 0 0 .1 0 0 0 0 .07 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-/* the spark on the wordmark */
-.vc-word::after {
-  content: "\2726";
-  margin: -0.7em 0 0 0.12em;
-  color: var(--color-amber);
-  font-size: 0.62em;
 }
 /* the count on the bell: an amber bead */
 .vc-profile__badge {
