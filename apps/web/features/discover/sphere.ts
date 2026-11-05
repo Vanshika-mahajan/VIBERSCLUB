@@ -81,7 +81,7 @@ const WORLD_AR = 1.36;
 const SCREEN_AR = 1.5;
 // warm alpine palette, matching the theme tokens in app/globals.css
 const KIND_COL: Record<string, string> = { event: "#6E4F8A", place: "#432556" };
-const PEARL = ["#EDE3DC", "#F6F1EB", "#F1E4E5", "#E4E8E1"];
+const PEARL = ["#F5F0C9", "#FFF3B0", "#ECE3F0", "#F2EAC0"];
 const INK = "#320B35";
 const FONT = "Manrope, system-ui, sans-serif";
 
@@ -259,7 +259,7 @@ function personSprite(sc: number, img: HTMLImageElement | undefined, name: strin
   const r = bw * 0.13;
   const b = bw * 0.055;
   g.save();
-  g.shadowColor = "rgba(23,52,45,.26)";
+  g.shadowColor = "rgba(50,11,53,.26)";
   g.shadowBlur = bw * 0.2;
   g.shadowOffsetY = bw * 0.07;
   g.fillStyle = "#fff";
@@ -276,7 +276,7 @@ function personSprite(sc: number, img: HTMLImageElement | undefined, name: strin
   else {
     const gr = g.createLinearGradient(x, y, x + bw, y + bh);
     gr.addColorStop(0, PEARL[seed % 4]);
-    gr.addColorStop(1, "#E4E8E1");
+    gr.addColorStop(1, "#F5F0C9");
     g.fillStyle = gr;
     g.fillRect(x, y, bw, bh);
     g.fillStyle = "rgba(42,14,51,.55)";
@@ -308,7 +308,7 @@ function worldSprite(sc: number, img: HTMLImageElement | undefined, kind: string
   const r = bh * 0.16;
   const b = bh * 0.07;
   g.save();
-  g.shadowColor = "rgba(23,52,45,.22)";
+  g.shadowColor = "rgba(50,11,53,.22)";
   g.shadowBlur = bh * 0.28;
   g.shadowOffsetY = bh * 0.1;
   g.fillStyle = "#fff";
@@ -322,7 +322,7 @@ function worldSprite(sc: number, img: HTMLImageElement | undefined, kind: string
   else {
     const gr = g.createLinearGradient(x, y, x + bw, y + bh);
     gr.addColorStop(0, PEARL[seed % 4]);
-    gr.addColorStop(1, "#E4E8E1");
+    gr.addColorStop(1, "#F5F0C9");
     g.fillStyle = gr;
     g.fillRect(x, y, bw, bh);
   }
@@ -368,7 +368,7 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
   const y = bh * pad;
   const r = bh * 0.12;
   g.save();
-  g.shadowColor = "rgba(23,52,45,.24)";
+  g.shadowColor = "rgba(50,11,53,.24)";
   g.shadowBlur = bh * 0.3;
   g.shadowOffsetY = bh * 0.1;
   g.fillStyle = "#FBF8F4";
@@ -389,8 +389,8 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
       g.fillRect(x, y, bw, bh);
     }
     const sh = g.createLinearGradient(0, y + bh * 0.45, 0, y + bh);
-    sh.addColorStop(0, "rgba(20,32,28,0)");
-    sh.addColorStop(1, "rgba(20,32,28,.78)");
+    sh.addColorStop(0, "rgba(50,11,53,0)");
+    sh.addColorStop(1, "rgba(50,11,53,.78)");
     g.fillStyle = sh;
     g.fillRect(x, y, bw, bh);
     g.fillStyle = "#fff";
@@ -414,7 +414,7 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     g.textBaseline = "middle";
     g.fillText(initials(e.author), x + p + ar, y + p + ar + ar * 0.05);
     g.textAlign = "left";
-    g.fillStyle = "#5E4A4E";
+    g.fillStyle = "#6E5670";
     g.font = `700 ${bh * 0.09}px ${FONT}`;
     g.fillText(wrap(g, e.author, bw - p * 3 - ar * 2, 1)[0], x + p * 1.6 + ar * 2, y + p + ar);
     g.fillStyle = INK;
@@ -423,7 +423,7 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     const lines = wrap(g, e.title, bw - p * 2, 2);
     lines.forEach((l, i) => g.fillText(l, x + p, y + p + ar * 2 + bh * 0.07 + i * bh * 0.155));
     if (e.snippet) {
-      g.fillStyle = "#5E4A4E";
+      g.fillStyle = "#6E5670";
       g.font = `500 ${bh * 0.098}px ${FONT}`;
       g.fillText(wrap(g, "“" + e.snippet + "”", bw - p * 2, 1)[0], x + p, y + p + ar * 2 + bh * 0.1 + lines.length * bh * 0.155);
     }
@@ -450,7 +450,7 @@ function tagSprite(sc: number, label: string, col: string): Sprite {
   const x = f * 0.6;
   const y = f * 0.55;
   g.save();
-  g.shadowColor = "rgba(23,52,45,.2)";
+  g.shadowColor = "rgba(50,11,53,.2)";
   g.shadowBlur = f * 0.7;
   g.shadowOffsetY = f * 0.25;
   g.fillStyle = "#fff";
@@ -487,10 +487,10 @@ function glowSprite() {
   const c = mk(160, 160);
   const g = ctx(c);
   const gr = g.createRadialGradient(80, 80, 6, 80, 80, 80);
-  gr.addColorStop(0, "rgba(184,135,146,.6)");
+  gr.addColorStop(0, "rgba(155,130,181,.5)");
   gr.addColorStop(0.35, "rgba(110,79,138,.26)");
-  gr.addColorStop(0.7, "rgba(184,135,146,.10)");
-  gr.addColorStop(1, "rgba(184,135,146,0)");
+  gr.addColorStop(0.7, "rgba(155,130,181,.10)");
+  gr.addColorStop(1, "rgba(155,130,181,0)");
   g.fillStyle = gr;
   g.fillRect(0, 0, 160, 160);
   return c;
@@ -914,39 +914,13 @@ export class Sphere {
       this.bg = c;
       return;
     }
+    // soft yellow world: flat butter, a touch lighter behind the sphere, no tints or rays
     const gr = g.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.5, Math.max(W, H) * 0.78);
-    gr.addColorStop(0, "#FDFBF8");
-    gr.addColorStop(0.5, "#F6F1EB");
-    gr.addColorStop(1, "#EDE3DC");
+    gr.addColorStop(0, "#FFF7CC");
+    gr.addColorStop(0.55, "#FFF3B0");
+    gr.addColorStop(1, "#FBEDA6");
     g.fillStyle = gr;
     g.fillRect(0, 0, W, H);
-    // faint sage and gold tints in the corners and soft sunlight from the upper right
-    const t1 = g.createRadialGradient(W * 0.08, H * 0.1, 0, W * 0.08, H * 0.1, W * 0.5);
-    t1.addColorStop(0, "rgba(120,165,135,.1)");
-    t1.addColorStop(1, "rgba(120,165,135,0)");
-    g.fillStyle = t1;
-    g.fillRect(0, 0, W, H);
-    const t2 = g.createRadialGradient(W * 0.95, H * 0.95, 0, W * 0.95, H * 0.95, W * 0.5);
-    t2.addColorStop(0, "rgba(184,135,146,.12)");
-    t2.addColorStop(1, "rgba(184,135,146,0)");
-    g.fillStyle = t2;
-    g.fillRect(0, 0, W, H);
-    g.save();
-    g.translate(W * 1.05, -H * 0.1);
-    for (const [ang, w, al] of [[2.25, 0.13, 0.07], [2.5, 0.08, 0.045], [2.05, 0.06, 0.05]]) {
-      const len = Math.max(W, H) * 1.6;
-      const gg = g.createLinearGradient(0, 0, Math.cos(ang) * len, Math.sin(ang) * len);
-      gg.addColorStop(0, `rgba(240,200,130,${al * 1.2})`);
-      gg.addColorStop(1, "rgba(240,200,130,0)");
-      g.fillStyle = gg;
-      g.beginPath();
-      g.moveTo(0, 0);
-      g.lineTo(Math.cos(ang - w) * len, Math.sin(ang - w) * len);
-      g.lineTo(Math.cos(ang + w) * len, Math.sin(ang + w) * len);
-      g.closePath();
-      g.fill();
-    }
-    g.restore();
     this.bg = c;
   }
 
@@ -1179,9 +1153,9 @@ export class Sphere {
       glow.addColorStop(0.5, `rgba(91,63,117,${0.16 * sphA + this.flash * 0.08})`);
       glow.addColorStop(1, "rgba(91,63,117,0)");
     } else {
-      glow.addColorStop(0, `rgba(255,255,255,${0.95 * sphA})`);
-      glow.addColorStop(0.5, `rgba(236,232,214,${0.35 * sphA + this.flash * 0.1})`);
-      glow.addColorStop(1, "rgba(236,232,214,0)");
+      glow.addColorStop(0, `rgba(255,250,224,${0.8 * sphA})`);
+      glow.addColorStop(0.5, `rgba(245,240,201,${0.35 * sphA + this.flash * 0.1})`);
+      glow.addColorStop(1, "rgba(245,240,201,0)");
     }
     g.fillStyle = glow;
     g.fillRect(cx - R1, cy - R1, R1 * 2, R1 * 2);
@@ -1229,11 +1203,11 @@ export class Sphere {
         const lit = this.searching && ring.tier !== undefined && ring.tier < 2 ? (ring.tier === 0 ? 1 : 0.5) : 0;
         g.strokeStyle = this.dark
           ? lit ? `rgba(183,163,204,${(0.12 + 0.12 * lit) * sphA})` : `rgba(245,240,201,${0.07 * sphA})`
-          : lit ? `rgba(110,79,138,${(0.12 + 0.12 * lit) * sphA})` : `rgba(140,145,132,${0.15 * sphA})`;
+          : lit ? `rgba(155,130,181,${(0.2 + 0.15 * lit) * sphA})` : `rgba(50,11,53,${0.12 * sphA})`;
         g.stroke(back);
         g.strokeStyle = this.dark
           ? lit ? `rgba(183,163,204,${(0.26 + 0.24 * lit) * sphA})` : `rgba(245,240,201,${0.15 * sphA})`
-          : lit ? `rgba(181,83,47,${(0.24 + 0.24 * lit) * sphA})` : `rgba(104,112,100,${0.28 * sphA})`;
+          : lit ? `rgba(91,63,117,${(0.34 + 0.24 * lit) * sphA})` : `rgba(50,11,53,${0.26 * sphA})`;
         g.stroke(front);
       }
     }
@@ -1608,8 +1582,8 @@ export class Sphere {
     const r = S * (0.7 + (1 - b) * 1.8);
     const gr = g.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
     gr.addColorStop(0, `rgba(255,253,249,${0.5 * b})`);
-    gr.addColorStop(0.8, `rgba(184,135,146,${0.25 * b})`);
-    gr.addColorStop(1, "rgba(184,135,146,0)");
+    gr.addColorStop(0.8, `rgba(155,130,181,${0.25 * b})`);
+    gr.addColorStop(1, "rgba(155,130,181,0)");
     g.fillStyle = gr;
     g.beginPath();
     g.arc(cx, cy, r, 0, TAU);

@@ -1,104 +1,89 @@
 @import "tailwindcss";
 
-/* Vibers Club look: Deep Plum nights (2026-11-04). A club for music, places and people, styled like
-   a music and fashion label, not a tech product. Roughly 60 percent Deep Plum (the page and the brand),
-   30 percent Almond Cream (type, light cards, negative space), 8 percent Dusty Lavender (secondary
-   details, hover, soft atmospheric light) and 2 percent Soft Butter (tiny sparks of energy: the post
-   button, new dots, stars). Surfaces lift in small plum steps. Every text pairing is at least 4.5:1.
+/* Vibers Club look: SOFT YELLOW WORLD, DEEP PLUM VOICE (2026-11-05). A club for music, places and
+   people, styled like a creative label, not an app. About 65 percent Soft Butter (the page, panels,
+   negative space), 25 percent Deep Plum (type, logo, navigation, buttons, icons, borders), 7 percent
+   Almond Cream (a softer layer for cards between the yellow and the plum) and 3 percent Dusty Lavender
+   (small accents, selected washes, quiet illustrations). Flat colour, fine paper grain, no glow.
+   Every text pairing is at least 4.5:1; lavender is never used for text on yellow.
    `static` emits every token as a CSS variable, so CSS modules and canvas code can read them too.
    No apostrophes in comments inside this block: Tailwind drops every token after one. */
 @theme static {
   /* the palette, by name */
+  --color-butter: #fff3b0;
   --color-deep-plum: #320b35;
   --color-almond: #f5f0c9;
   --color-lavender: #9b82b5;
-  --color-butter: #fff3b0;
-  /* older names, kept so every screen follows the new palette */
+  /* older names, kept so every screen follows the palette */
   --color-cherry: #320b35;
-  --color-mulberry: #573a70;
-  --color-plum: #6e4f8a;
-  --color-ivy: #2a0930;
-  --color-moss: #47285a;
-  --color-leaf: #6c5a80;
+  --color-mulberry: #320b35;
+  --color-plum: #5b3f75;
+  --color-ivy: #f5f0c9;
+  --color-moss: #e4daee;
+  --color-leaf: #9b82b5;
 
-  /* surfaces, deepest first: recess (wells, inputs), canvas (the page), surface (cards), raised (hover, menus) */
-  --color-recess: #220626;
-  --color-canvas: #320b35;
-  --color-surface: #3c1340;
-  --color-raised: #4a1d4f;
-  --color-sand: #43184a;
-  /* brand: a lavender plum fill for active and selected things; brand-ink is its readable light partner */
-  --color-brand: #573a70;
-  --color-brand-hover: #644680;
+  /* surfaces: recess (wells, inputs), canvas (the page), surface (cards), raised (hover, menus) */
+  --color-recess: #fffaf0;
+  --color-canvas: #fff3b0;
+  --color-surface: #f5f0c9;
+  --color-raised: #fbf6d6;
+  --color-sand: #f2eac0;
+  /* brand: Deep Plum fills for active and selected things, with butter type */
+  --color-brand: #320b35;
+  --color-brand-hover: #4a1a4e;
   --color-brand-deep: #320b35;
-  --color-brand-ink: #dccfea;
-  /* the main call to action: Almond Cream, set in Deep Plum */
-  --color-cta: #f5f0c9;
-  --color-cta-hover: #fbf8e2;
-  --color-on-cta: #320b35;
-  /* accent: Dusty Lavender, lifted for text and icons; a plum wash behind selected chips */
-  --color-accent: #b7a3cc;
-  --color-accent-hover: #dccfea;
-  --color-accent-wash: #4f2f63;
+  --color-brand-ink: #320b35;
+  /* the main call to action: Deep Plum, set in butter */
+  --color-cta: #320b35;
+  --color-cta-hover: #4a1a4e;
+  --color-on-cta: #fff3b0;
+  /* accent: a readable lavender plum for small text and icons; a pale lavender wash behind tags */
+  --color-accent: #5b3f75;
+  --color-accent-hover: #320b35;
+  --color-accent-wash: #ece3f0;
   --color-rose: #9b82b5;
-  --color-rose-wash: #43184a;
-  /* highlight: Soft Butter, used rarely */
-  --color-highlight: #fff3b0;
-  /* the second world (places, nature): a deeper, cooler plum, so it still reads as its own space */
-  --color-forest: #2a0930;
-  --color-forest-surface: #47285a;
-  --color-support: #6c5a80;
-  --color-mist: #3a1a44;
-  --color-mist-deep: #47285a;
-  /* type: Almond Cream headings, a softer cream for body, lavender grey for metadata */
-  --color-ink: #f5f0c9;
-  --color-ink2: #e6dfba;
-  --color-muted: #bdb2c8;
-  --color-silver: #7a6788;
-  --color-line: rgba(245, 240, 201, 0.1);
-  --color-line2: rgba(245, 240, 201, 0.18);
-  --color-on-dark: #f5f0c9;
-  --color-on-wine: #e4daee;
-  --color-on-forest: #e4daee;
-  /* status, softened for a dark page */
-  --color-ok: #a9d4b4;
-  --color-warn: #ffe08a;
-  --color-danger: #f09a9a;
-  --color-danger-hover: #f6b4b4;
-  --color-danger-fill: #8e2b3e;
-  --color-focus: #fff3b0;
+  --color-rose-wash: #f1ead9;
+  /* highlight: the one strong mark (the post button, new dots): Deep Plum */
+  --color-highlight: #320b35;
+  /* the second world (places, nature): almond cards with plum line work */
+  --color-forest: #f5f0c9;
+  --color-forest-surface: #ece3f0;
+  --color-support: #9b82b5;
+  --color-mist: #f5f0c9;
+  --color-mist-deep: #ece3f0;
+  /* type: Deep Plum, a softer plum for body, a muted plum for metadata */
+  --color-ink: #320b35;
+  --color-ink2: #4a2a4e;
+  --color-muted: #6e5670;
+  --color-silver: #a5949f;
+  --color-line: rgba(50, 11, 53, 0.12);
+  --color-line2: rgba(50, 11, 53, 0.24);
+  --color-on-dark: #fff3b0;
+  --color-on-wine: #5b3f75;
+  --color-on-forest: #320b35;
+  /* status, readable on butter */
+  --color-ok: #2f6a3d;
+  --color-warn: #8a5300;
+  --color-danger: #a8261c;
+  --color-danger-hover: #861d15;
+  --color-danger-fill: #a8261c;
+  --color-focus: #320b35;
 
   --font-sans:
     "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
-  /* shadows: deep and soft, with a hairline of light on top so surfaces read as lifted */
-  --shadow-soft:
-    0 24px 60px -28px rgba(10, 2, 12, 0.75),
-    inset 0 1px 0 rgba(245, 240, 201, 0.05);
-  --shadow-card:
-    0 16px 40px -26px rgba(10, 2, 12, 0.8),
-    inset 0 1px 0 rgba(245, 240, 201, 0.05);
+  /* shadows: soft and low, tinted plum; surfaces mostly rely on a hairline border */
+  --shadow-soft: 0 18px 40px -26px rgba(50, 11, 53, 0.35);
+  --shadow-card: 0 10px 28px -22px rgba(50, 11, 53, 0.3);
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  /* depth, not flatness: soft lavender light from above, deeper plum pooling below */
-  background:
-    radial-gradient(
-      100% 50% at 50% -12%,
-      rgba(155, 130, 181, 0.22),
-      transparent 62%
-    ),
-    radial-gradient(
-      70% 45% at 100% 105%,
-      rgba(20, 3, 24, 0.75),
-      transparent 70%
-    ),
-    var(--color-canvas);
-  background-attachment: fixed;
+  /* flat, warm butter: the yellow world */
+  background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -113,14 +98,14 @@ body::after {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: 0.08;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
+  mix-blend-mode: multiply;
 }
 
 ::selection {
-  background: var(--color-mulberry);
-  color: var(--color-ink);
+  background: var(--color-deep-plum);
+  color: var(--color-butter);
 }
 
 :focus-visible {
@@ -143,7 +128,7 @@ body::after {
   /* selected: lavender plum, the club colour for "this one" */
   .chip[aria-pressed="true"],
   .chip[aria-selected="true"] {
-    @apply border-brand bg-brand text-ink;
+    @apply border-brand bg-brand text-on-cta;
   }
   /* the main action: Almond Cream set in Deep Plum */
   .btn {
@@ -151,10 +136,10 @@ body::after {
   }
   /* the warm call to action, for people: lavender plum with a cream label */
   .btn-accent {
-    @apply border border-rose/25 bg-brand text-ink hover:bg-brand-hover;
+    @apply border border-rose/25 bg-brand text-on-cta hover:bg-brand-hover;
   }
   .btn-danger {
-    @apply bg-danger-fill text-ink hover:bg-danger-fill/85;
+    @apply bg-danger-fill text-butter hover:bg-danger-hover;
   }
   .btn-ghost {
     @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-line2 bg-transparent px-5 font-bold text-ink transition duration-300 hover:border-rose/60 hover:bg-raised active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45;
@@ -223,7 +208,7 @@ html[data-arrived] body > main {
   align-items: center;
   gap: 8px;
 }
-/* the + for posting, beside the pill bar: the one butter-yellow moment on the screen */
+/* the + for posting, beside the pill bar: a Deep Plum disc with a butter cross */
 .vc-plus {
   display: grid;
   flex: none;
@@ -234,7 +219,7 @@ html[data-arrived] body > main {
   background: var(--color-highlight, var(--color-cta));
   color: var(--color-on-cta);
   cursor: pointer;
-  box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.8);
+  box-shadow: 0 12px 28px -14px rgb(50 11 53 / 0.45);
   transition: transform 0.2s ease;
 }
 .vc-plus:hover {
@@ -265,7 +250,7 @@ html[data-arrived] body > main {
   overflow: auto;
 }
 .vc-sheet::backdrop {
-  background: rgb(10 2 12 / 0.7);
+  background: rgb(50 11 53 / 0.35);
   backdrop-filter: blur(6px);
 }
 .vc-sheet__body {
@@ -308,7 +293,7 @@ html[data-arrived] body > main {
   color: var(--color-ink);
   box-shadow:
     0 0 0 1px var(--color-line2),
-    0 10px 24px -12px rgb(8 2 4 / 0.8);
+    0 10px 24px -12px rgb(50 11 53 / 0.3);
   transition: transform 0.2s ease;
 }
 .vc-bell:hover {
@@ -320,7 +305,7 @@ html[data-arrived] body > main {
   border-radius: 999px;
   box-shadow:
     0 0 0 1px var(--color-line2),
-    0 10px 24px -12px rgb(8 2 4 / 0.8);
+    0 10px 24px -12px rgb(50 11 53 / 0.3);
   transition: transform 0.2s ease;
 }
 .vc-profile__button:hover {
@@ -366,10 +351,10 @@ body:not(:has(> .vc-pillbar)) > main {
 /* Discover's wheel: names the sphere and the gallery under it, at the right edge */
 .vc-wheel {
   position: fixed;
-  right: max(4px, env(safe-area-inset-right));
+  right: max(18px, env(safe-area-inset-right));
   top: 50%;
   z-index: 30;
-  width: min(220px, 48vw);
+  width: min(240px, 48vw);
   height: 150px;
   transform: translateY(-50%);
   pointer-events: auto;

@@ -81,11 +81,11 @@ test("community: a Viber's overview opens in place, then their full profile", as
   ).toBeVisible();
 });
 
-test("Discover is plum-black from the sphere to the community", async ({ page }) => {
+test("Discover sits on the butter page like the rest of the club", async ({ page }) => {
   await page.goto("/discover");
   const bg = (sel: string) =>
     page.locator(sel).first().evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(await bg("[data-formed]")).toBe("rgb(22, 4, 25)");
+  expect(await bg("[data-formed]")).toBe("rgb(255, 243, 176)");
 });
 
 test("events: join and leave", async ({ page }) => {

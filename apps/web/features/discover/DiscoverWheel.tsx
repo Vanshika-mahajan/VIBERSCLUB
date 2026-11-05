@@ -41,8 +41,8 @@ export function DiscoverWheel() {
         smoothing={220}
         inset={0}
         draggable
-        textColor="rgba(245, 240, 201, 0.45)"
-        activeColor="#F5F0C9"
+        textColor="rgba(50, 11, 53, 0.42)"
+        activeColor="#320B35"
         soundUrl={sound.enabled ? "/sounds/wheel-tick.wav" : ""}
         soundVolume={sound.volume * 0.6}
         onChange={(i: number) => {

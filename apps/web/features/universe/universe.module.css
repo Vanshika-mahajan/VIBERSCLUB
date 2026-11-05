@@ -1,7 +1,7 @@
 /* The home universe reuses Discover's styles (discover.module.css); these rules only change the layout:
    full screen with no app navigation, and the thought bar at the centre, over the core. */
 
-/* the universe keeps the light ivory paper (Discover itself is the black page), so the tokens
+/* the universe keeps the light butter paper, so the tokens
    Discover sets go back to their light values here */
 div.root {
   position: fixed;
@@ -12,33 +12,33 @@ div.root {
   margin: 0;
   color-scheme: light;
   --color-ink: #320b35;
-  --color-ink2: #42262d;
-  --color-muted: #5e4a4e;
-  --color-silver: #a39498;
+  --color-ink2: #4a2a4e;
+  --color-muted: #6e5670;
+  --color-silver: #a5949f;
   --color-line: rgba(50, 11, 53, 0.12);
   --color-line2: rgba(50, 11, 53, 0.2);
-  --color-canvas: #f6f1eb;
-  --color-surface: #fbf8f4;
-  --color-raised: #fdfbf8;
-  --color-recess: #fdfbf8;
-  --color-sand: #ede3dc;
-  --color-brand: #5b3f75;
-  --color-brand-hover: #320b35;
-  --color-brand-ink: #5b3f75;
-  --color-accent: #6e4f8a;
-  --color-accent-hover: #5b3f75;
-  --color-accent-wash: #f1e4e5;
+  --color-canvas: #fff3b0;
+  --color-surface: #f5f0c9;
+  --color-raised: #fbf6d6;
+  --color-recess: #fffaf0;
+  --color-sand: #f2eac0;
+  --color-brand: #320b35;
+  --color-brand-hover: #4a1a4e;
+  --color-brand-ink: #320b35;
+  --color-accent: #5b3f75;
+  --color-accent-hover: #320b35;
+  --color-accent-wash: #ece3f0;
   --color-rose: #9b82b5;
-  --color-rose-wash: #f1e4e5;
-  --color-mist: #e4e8e1;
+  --color-rose-wash: #f1ead9;
+  --color-mist: #f5f0c9;
   --color-mist-deep: #e4daee;
-  --color-focus: #6e4f8a;
-  --color-cta: #5b3f75;
-  --color-cta-hover: #320b35;
-  --color-on-cta: #f6f1eb;
+  --color-focus: #320b35;
+  --color-cta: #320b35;
+  --color-cta-hover: #4a1a4e;
+  --color-on-cta: #fff3b0;
   --shadow-soft:
     0 18px 50px -22px rgba(50, 11, 53, 0.32), 0 2px 6px rgba(50, 11, 53, 0.05);
-  --glass: rgba(255, 253, 249, 0.86);
+  --glass: rgba(255, 249, 214, 0.88);
   --tint: 23, 61, 53;
   --pearl: var(--color-canvas);
   --surface: var(--color-surface);
@@ -167,7 +167,7 @@ div.root {
   flex-direction: column;
   padding: 76px max(16px, 5%) 16px;
   /* see-through, so the universe keeps turning behind the room */
-  background: radial-gradient(70% 60% at 50% 45%, rgba(255, 253, 249, 0.72), rgba(248, 246, 240, 0.45));
+  background: radial-gradient(70% 60% at 50% 45%, rgba(255, 249, 214, 0.72), rgba(255, 243, 176, 0.45));
   backdrop-filter: blur(2px);
   animation: coreOpen 0.9s cubic-bezier(0.7, 0, 0.2, 1) both;
 }

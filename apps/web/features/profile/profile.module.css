@@ -62,8 +62,8 @@
   height: 74px;
   padding: 3px;
   border-radius: 999px;
-  /* a wine-to-forest ring around each cover */
-  background: conic-gradient(from 210deg, #b7a3cc, #6e4f8a, #432556, #b7a3cc);
+  /* a plum and lavender ring around each cover */
+  background: conic-gradient(from 210deg, #9b82b5, #320b35, #9b82b5);
   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .disc img {
@@ -106,11 +106,11 @@
   margin: 0;
   padding: 0;
   border: 0;
-  background: #000;
-  color: #f5f0c9;
+  background: #1a051c;
+  color: #fff3b0;
 }
 .viewer::backdrop {
-  background: #000;
+  background: #1a051c;
 }
 .viewer:focus {
   outline: none;
@@ -138,12 +138,12 @@
   height: 2.5px;
   overflow: hidden;
   border-radius: 2px;
-  background: rgb(243 235 221 / 0.28);
+  background: rgb(255 243 176 / 0.3);
 }
 .bar i {
   display: block;
   height: 100%;
-  background: #f5f0c9;
+  background: #fff3b0;
   transform-origin: left;
 }
 .bar i[data-state="done"] {
@@ -187,12 +187,12 @@
   height: 40px;
   border: 0;
   border-radius: 999px;
-  background: rgb(14 10 11 / 0.55);
+  background: rgb(26 5 28 / 0.55);
   color: inherit;
   cursor: pointer;
 }
 .iconBtn:hover {
-  background: rgb(81 32 44 / 0.8);
+  background: rgb(91 63 117 / 0.85);
 }
 .iconBtn:disabled {
   opacity: 0.35;
@@ -260,7 +260,7 @@
   color: var(--color-ink);
 }
 .editor::backdrop {
-  background: rgb(0 0 0 / 0.72);
+  background: rgb(50 11 53 / 0.45);
   backdrop-filter: blur(4px);
 }
 .editor:focus {
@@ -324,6 +324,7 @@
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--color-brand);
+  color: var(--color-on-cta);
   font-size: 0.66rem;
   font-weight: 800;
 }
@@ -344,8 +345,8 @@
   height: 28px;
   border: 0;
   border-radius: 999px;
-  background: rgb(14 10 11 / 0.7);
-  color: #f5f0c9;
+  background: rgb(255 243 176 / 0.92);
+  color: var(--color-ink);
   cursor: pointer;
 }
 .thumbTools button:disabled {
@@ -353,6 +354,7 @@
 }
 .thumbTools button[aria-pressed="true"] {
   background: var(--color-brand);
+  color: var(--color-on-cta);
 }
 .thumbTools button:focus-visible {
   outline: 2px solid var(--color-focus);

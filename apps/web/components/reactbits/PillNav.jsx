@@ -28,22 +28,22 @@ const THEMES = {
   },
   // Vibers Club: Winewood theme, Black Cherry glass with a Mulberry pill and ivory labels
   winewood: {
-    '--pn-surface': 'rgba(42, 10, 46, 0.78)',
-    '--pn-solid': '#2a0a2e',
-    '--pn-edge': 'rgba(245, 240, 201, 0.1)',
-    '--pn-rim': 'rgba(245, 240, 201, 0.08)',
-    '--pn-shadow': '0 22px 44px -20px rgba(10, 2, 12, 0.85), 0 6px 16px -8px rgba(10, 2, 12, 0.55)',
-    '--pn-text': 'rgba(245, 240, 201, 0.66)',
-    '--pn-strong': '#f5f0c9',
-    '--pn-pill': 'linear-gradient(180deg, #674a82 0%, #5b3f75 100%)',
-    '--pn-pill-ink': '#f5f0c9',
-    '--pn-pill-shadow': 'inset 0 1px 0 rgba(245, 240, 201, 0.14), 0 6px 16px -6px rgba(10, 2, 12, 0.6)',
-    '--pn-dot': '#b7a3cc',
-    '--pn-ring': 'rgba(183, 163, 204, 0.7)',
-    '--pn-row-hover': 'rgba(245, 240, 201, 0.06)',
-    '--pn-tile': 'linear-gradient(180deg, #48204d 0%, #320b35 100%)',
+    '--pn-surface': 'rgba(245, 240, 201, 0.86)',
+    '--pn-solid': '#f5f0c9',
+    '--pn-edge': 'rgba(50, 11, 53, 0.16)',
+    '--pn-rim': 'rgba(255, 250, 224, 0.9)',
+    '--pn-shadow': '0 22px 44px -24px rgba(50, 11, 53, 0.4), 0 6px 16px -10px rgba(50, 11, 53, 0.2)',
+    '--pn-text': 'rgba(50, 11, 53, 0.72)',
+    '--pn-strong': '#320b35',
+    '--pn-pill': '#320b35',
+    '--pn-pill-ink': '#fff3b0',
+    '--pn-pill-shadow': '0 6px 16px -8px rgba(50, 11, 53, 0.45)',
+    '--pn-dot': '#9b82b5',
+    '--pn-ring': 'rgba(50, 11, 53, 0.5)',
+    '--pn-row-hover': 'rgba(50, 11, 53, 0.06)',
+    '--pn-tile': '#fff3b0',
     '--pn-tile-rim':
-      'inset 0 0 0 1px rgba(245, 240, 201, 0.08), inset 0 1px 0 rgba(245, 240, 201, 0.1), 0 4px 10px -4px rgba(10, 2, 12, 0.7)'
+      'inset 0 0 0 1px rgba(50, 11, 53, 0.12), 0 4px 10px -6px rgba(50, 11, 53, 0.3)'
   },
   light: {
     '--pn-surface': 'rgba(240, 240, 243, 0.8)',

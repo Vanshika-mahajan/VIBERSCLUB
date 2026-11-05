@@ -14,6 +14,17 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Soft yellow world, deep plum voice (2026-11-05)
+ARPIT's new palette: Soft Butter `#FFF3B0` for the page, panels and cards (about 65 percent), Deep Plum `#320B35` for type, logo, navigation, buttons, icons and borders (25 percent), Almond Cream `#F5F0C9` as the softer card layer (7 percent), Dusty Lavender `#9B82B5` for small accents only (3 percent). Lavender is never used as text on yellow because it fails contrast; small accent text uses `#5B3F75` instead.
+- `app/globals.css`: every token rewritten to the light set; `color-scheme: light`; grain switched to multiply; brand fills (selected chips, toasts, chat bubbles, the + button) are plum with butter text.
+- Discover is no longer the black page: the sphere uses its light mode on a flat butter ground, with plum orbits and lavender highlights. The wheel labels are plum.
+- Club, profile, universe, PillNav, AnimatedList, AccordionGallery, CircularGallery and the placeholder portraits all moved from dark plum surfaces to butter and almond.
+- The door and Earth journey are unchanged; its final dissolve uses the page colour, so it now fades into butter.
+- Slow first load: measured on a production build (first paint about 0.2 s, no headline replay even with 4x CPU and slow network throttling). The delay in the recording comes from `pnpm dev`, which builds each page on first open. Review with `pnpm build && pnpm start`.
+
+## Tests executed (yellow and plum palette, 2026-11-05, in the cloud workspace)
+`vitest`: 95 passed. Playwright: 122 passed, 1 skipped; the axe sweep is clean on every route at phone, tablet and desktop widths. "home shows API OK from the real API" fails only because the backend API is not running in this workspace.
+
 ## ARPIT's review round (2026-11-04 night): ten changes
 - Door and Earth: first restored to 8378930, which was the wrong one (no dive into Manali). Corrected 2026-11-05: the journey is back to its full version (d8eeec3: swaying meadow, door, Earth turning and diving into Manali, a dissolve into the club home), and the dive lands on /home again. Phase 1 had pointed it at Discover, whose different colour broke the dissolve.
 - Discover: people come out of the sphere only when you send the thought (Enter, the arrow or a suggestion). While you type, the sphere lights up only the interests it reads.

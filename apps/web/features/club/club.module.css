@@ -1,6 +1,6 @@
-/* The club home, in Winewood Whisper: ivory paper, a burgundy dusk hero over forest ridges, Mulberry
-   for the active tab and filled buttons, Plum for the moments that matter (like, save, join), forest
-   green for places. Fraunces for headlines, Manrope for everything else. */
+/* The club home: soft yellow world, deep plum voice. Butter paper, almond cards, Deep Plum type,
+   buttons and line work, Dusty Lavender only for small accents. Fraunces for headlines, Manrope for
+   everything else. */
 
 .club {
   --paper: var(--color-canvas);
@@ -18,11 +18,6 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(
-      60% 40% at 100% 0%,
-      rgba(110, 79, 138, 0.08),
-      transparent 70%
-    ),
     var(--paper);
 }
 
@@ -36,12 +31,7 @@
   padding: clamp(28px, 5vw, 60px) clamp(22px, 5vw, 60px) clamp(30px, 5vw, 56px);
   color: var(--color-ink);
   background:
-    radial-gradient(
-      80% 90% at 85% 0%,
-      rgba(110, 79, 138, 0.55),
-      transparent 62%
-    ),
-    linear-gradient(180deg, var(--color-cherry) 0%, #22100f 100%);
+    var(--color-almond);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-soft);
 }
@@ -70,11 +60,11 @@
   background:
     linear-gradient(
       90deg,
-      rgba(42, 10, 46, 0.92) 0%,
-      rgba(42, 10, 46, 0.7) 42%,
-      rgba(42, 10, 46, 0.15) 75%
+      rgba(255, 243, 176, 0.97) 0%,
+      rgba(255, 243, 176, 0.86) 42%,
+      rgba(255, 243, 176, 0.05) 78%
     ),
-    linear-gradient(0deg, rgba(42, 10, 46, 0.85) 0%, transparent 45%);
+    linear-gradient(0deg, rgba(255, 243, 176, 0.9) 0%, transparent 45%);
 }
 .heroInner {
   position: relative;
@@ -123,7 +113,7 @@
   max-width: 30rem;
   font-size: clamp(0.96rem, 1.5vw, 1.04rem);
   line-height: 1.65;
-  color: rgba(245, 240, 201, 0.78);
+  color: var(--color-ink2);
 }
 .stats {
   position: relative;
@@ -279,7 +269,7 @@
 .btn[data-tone="rose"] {
   border: 1px solid rgba(155, 130, 181, 0.28);
   background: var(--color-brand);
-  color: var(--color-ink);
+  color: var(--color-on-cta);
 }
 .btn[data-tone="rose"]:hover {
   background: var(--color-brand-hover);
@@ -323,7 +313,7 @@
 .chip[aria-pressed="true"] {
   background: var(--color-brand);
   border-color: rgba(155, 130, 181, 0.45);
-  color: var(--color-ink);
+  color: var(--color-on-cta);
 }
 .tag {
   display: inline-block;
@@ -346,7 +336,7 @@
   background:
     radial-gradient(
       80% 80% at 70% 20%,
-      rgba(110, 79, 138, 0.85),
+      rgba(155, 130, 181, 0.35),
       transparent 70%
     ),
     linear-gradient(135deg, var(--color-moss), var(--color-ivy));
@@ -366,7 +356,7 @@
   font-family: var(--font-display);
   font-style: italic;
   font-size: 2.6rem;
-  color: rgba(42, 10, 46, 0.72);
+  color: rgba(50, 11, 53, 0.72);
 }
 .empty {
   padding: 40px 20px;
@@ -507,7 +497,7 @@
   border-radius: 28px;
   background: var(--card);
   border: 1px solid var(--line);
-  box-shadow: 0 30px 60px -36px rgba(10, 2, 12, 0.6);
+  box-shadow: 0 30px 60px -36px rgba(50, 11, 53, 0.3);
   touch-action: none;
   user-select: none;
   will-change: transform;
@@ -526,7 +516,7 @@
   content: "";
   position: absolute;
   inset: 40% 0 0;
-  background: linear-gradient(transparent, rgba(42, 14, 51, 0.72));
+  background: linear-gradient(transparent, rgba(50, 11, 53, 0.78));
 }
 .swipeName {
   position: absolute;
@@ -534,7 +524,7 @@
   right: 18px;
   bottom: 14px;
   z-index: 1;
-  color: var(--color-ink);
+  color: var(--color-butter);
 }
 .swipeName h3 {
   margin: 0;
@@ -556,12 +546,12 @@
   z-index: 1;
   padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(42, 10, 46, 0.72);
+  background: rgba(255, 243, 176, 0.92);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-ink2);
+  color: var(--color-ink);
   backdrop-filter: blur(6px);
 }
 .swipeBody {
@@ -623,7 +613,7 @@
   background: var(--card);
   color: var(--ink);
   cursor: pointer;
-  box-shadow: 0 14px 30px -20px rgba(10, 2, 12, 0.6);
+  box-shadow: 0 14px 30px -20px rgba(50, 11, 53, 0.3);
   transition:
     transform 0.2s,
     background 0.2s;
@@ -636,14 +626,14 @@
   height: 68px;
   border: 1px solid rgba(155, 130, 181, 0.35);
   background: var(--color-brand);
-  color: var(--color-ink);
+  color: var(--color-on-cta);
 }
 .round[data-kind="like"]:hover {
   background: var(--color-brand-hover);
 }
 .round[data-kind="save"] {
   background: var(--color-moss);
-  border-color: rgba(201, 210, 198, 0.25);
+  border-color: var(--line2);
   color: var(--color-on-forest);
 }
 .hint {
@@ -697,7 +687,7 @@
   background:
     radial-gradient(
       80% 60% at 50% 0%,
-      rgba(184, 135, 146, 0.6),
+      rgba(155, 130, 181, 0.3),
       transparent 70%
     ),
     var(--color-canvas);
@@ -705,7 +695,7 @@
   text-align: center;
 }
 .match::backdrop {
-  background: rgba(10, 4, 6, 0.7);
+  background: rgba(50, 11, 53, 0.35);
   backdrop-filter: blur(4px);
 }
 .matchFaces {
@@ -746,7 +736,8 @@
   width: 52px;
   padding: 6px 0;
   border-radius: 14px;
-  background: rgba(42, 10, 46, 0.82);
+  background: rgba(255, 243, 176, 0.94);
+  color: var(--color-ink);
   line-height: 1;
 }
 .date b {
@@ -820,8 +811,8 @@
   color: var(--color-ink) !important;
   box-shadow:
     0 0 0 1px var(--line),
-    0 -14px 40px -20px rgba(10, 2, 12, 0.7),
-    0 30px 60px -30px rgba(10, 2, 12, 0.8) !important;
+    0 -14px 40px -24px rgba(50, 11, 53, 0.25),
+    0 30px 60px -34px rgba(50, 11, 53, 0.35) !important;
 }
 .stackPhoto {
   height: 100%;
@@ -835,7 +826,7 @@
   background:
     radial-gradient(
       90% 70% at 100% 0%,
-      rgba(47, 71, 54, 0.35),
+      rgba(155, 130, 181, 0.18),
       transparent 70%
     ),
     var(--color-surface);
@@ -898,13 +889,13 @@
   height: 38px;
   border: 0;
   border-radius: 50%;
-  background: rgba(42, 10, 46, 0.72);
-  color: var(--color-accent);
+  background: rgba(255, 243, 176, 0.92);
+  color: var(--color-ink);
   cursor: pointer;
 }
 .heart[aria-pressed="true"] {
   background: var(--color-brand);
-  color: var(--color-ink);
+  color: var(--color-on-cta);
 }
 .placeBody {
   display: flex;
@@ -926,7 +917,7 @@
 .tip {
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(201, 210, 198, 0.12);
+  border: 1px solid var(--line);
   background: var(--color-mist);
   color: var(--color-on-forest);
   font-size: 0.82rem;
@@ -1098,6 +1089,7 @@
 .mineItem[aria-pressed="true"] {
   border-color: rgba(155, 130, 181, 0.45);
   background: var(--color-brand);
+  color: var(--color-on-cta);
 }
 .create {
   display: grid;
@@ -1187,26 +1179,16 @@
 }
 .segment button[aria-pressed="true"] {
   background: var(--color-brand);
-  color: var(--color-ink);
+  color: var(--color-on-cta);
 }
 .segment button:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
-/* ---------- Discover at night: the whole page plum-black, surfaces just above it ---------- */
+/* ---------- Discover: the same butter page as the rest of the club ---------- */
 .night {
-  --color-canvas: #160419;
-  --color-surface: #1f0823;
-  --color-raised: #270b2b;
-  --color-recess: #120315;
-  --color-sand: #2b0d30;
-  --color-rose-wash: #320b35;
-  --paper: #160419;
-  --card: #1f0823;
-}
-.night::before {
-  background: #160419;
+  --paper: var(--color-canvas);
 }
 
 /* ---------- a Viber's overview, opened in place from the gallery ---------- */
@@ -1223,7 +1205,7 @@
   overflow: visible;
 }
 .ov::backdrop {
-  background: rgb(0 0 0 / 0.78);
+  background: rgb(50 11 53 / 0.45);
   backdrop-filter: blur(6px);
   animation: ovFade 0.35s ease both;
 }
@@ -1232,10 +1214,10 @@
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   max-height: calc(100svh - 48px);
   overflow: hidden;
-  border: 1px solid rgba(245, 240, 201, 0.1);
+  border: 1px solid var(--color-line2);
   border-radius: 28px;
-  background: #1f0823;
-  box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.95);
+  background: var(--color-canvas);
+  box-shadow: 0 40px 90px -40px rgb(50 11 53 / 0.5);
   /* the photo grows out of the gallery: from a small card to the whole overview */
   animation: ovGrow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -1255,7 +1237,7 @@
 .ovShade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgb(0 0 0 / 0.65));
+  background: linear-gradient(180deg, transparent 55%, rgb(50 11 53 / 0.7));
 }
 .ovPhotoName {
   position: absolute;
@@ -1265,7 +1247,7 @@
   font-family: var(--font-display);
   font-style: italic;
   font-size: clamp(1.8rem, 4vw, 2.6rem);
-  color: #f5f0c9;
+  color: var(--color-butter);
 }
 .ovBody {
   position: relative;
@@ -1317,7 +1299,7 @@
   padding: 10px 14px;
   border-radius: 14px;
   background: var(--color-brand);
-  color: var(--color-ink);
+  color: var(--color-on-cta);
   font-size: 0.86rem;
   font-weight: 700;
 }
@@ -1431,9 +1413,9 @@
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   overflow: hidden;
-  border: 1px solid rgba(245, 240, 201, 0.1);
+  border: 1px solid var(--color-line2);
   border-radius: 28px;
-  background: #1f0823;
+  background: var(--color-canvas);
 }
 .fullCard .ovPhoto {
   min-height: 520px;
@@ -1513,7 +1495,8 @@
   right: 10px;
   bottom: 10px;
   min-height: 34px;
-  background: rgb(14 10 11 / 0.8);
+  background: rgb(50 11 53 / 0.85);
+  color: var(--color-butter);
 }
 
 /* ---------- Home: the way to post, on the profile ---------- */
@@ -1604,7 +1587,7 @@
   margin: 3px 0;
   border-radius: 3px;
   background: var(--color-rose);
-  box-shadow: 0 0 12px rgba(183, 163, 204, 0.6);
+  box-shadow: none;
 }
 .stopCard {
   display: flex;
