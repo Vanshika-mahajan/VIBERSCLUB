@@ -491,3 +491,28 @@ ARPIT approved demo v5 (Shopify Editions style contents) and asked for it to be 
 - **Tests:**
   - Unit tests: 95 passed.
   - e2e: passes except "API OK" (needs the backend).
+
+## 2026-11-06: fresh chapter pictures
+
+**What changed**
+- Chapters II to VII on Home each have their own new illustration from ARPIT, replacing the reused pictures:
+  - II: café terrace with friends
+  - III: riverside market
+  - IV: orchard trail with map
+  - V: dusk over the valley lights
+  - VI: bonfire night
+  - VII: temple, waterfall and bridge
+- Files are `public/home/chapter-*.webp`.
+- Each picture was cut from ARPIT's 3×2 sheet and upscaled 3×.
+- Each one is given a light film grade in the palette:
+  - blacks lifted toward Espresso
+  - whites eased toward Ivory
+  - saturation at 84%
+  - fine grain
+- The pictures stay colourful, with no sage cast.
+
+**Tests**
+- Unit: 95 passed.
+- e2e home, club and sweep: 69 passed, 1 skipped, 2 failed. Both failures are the known "API OK" test, which needs the backend.
+
+**Known issue:** the sheet tiles are about 550 px wide, so the openers are a little soft at full width. Full-size originals would sharpen them.

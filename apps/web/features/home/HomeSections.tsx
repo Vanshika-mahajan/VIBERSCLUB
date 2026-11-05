@@ -101,7 +101,7 @@ export function HomeSections({ post }: { post?: ReactNode }) {
 
       {post && <div id="post" className="mt-16 scroll-mt-6">{post}</div>}
 
-      <Section id="vibers-like-you" title="Vibers like you" opener={<Chapter n="II" title="Vibers like you" img="/home/chapter-vibers.webp" y={0.4} />} action={<Link href="/discover" className="link text-sm">Discover <span className="arrow" aria-hidden="true">→</span></Link>}>
+      <Section id="vibers-like-you" title="Vibers like you" opener={<Chapter n="II" title="Vibers like you" img="/home/chapter-vibers.webp" y={0.5} />} action={<Link href="/discover" className="link text-sm">Discover <span className="arrow" aria-hidden="true">→</span></Link>}>
         {/* relevant profiles on a slowly turning ring: drag to spin, click one to bring it to the front */}
         <div className="relative -mx-4 h-[380px] md:mx-0 md:h-[440px]">
           {ring.length > 0 && (
@@ -131,7 +131,7 @@ export function HomeSections({ post }: { post?: ReactNode }) {
         </ul>
       </Section>
 
-      <Section id="this-week" title="This week" opener={<Chapter n="III" title="This week" img="/journey/day.webp" y={0.6} />} action={<Link href="/events" className="link text-sm">All events <span className="arrow" aria-hidden="true">→</span></Link>}>
+      <Section id="this-week" title="This week" opener={<Chapter n="III" title="This week" img="/home/chapter-this-week.webp" y={0.45} />} action={<Link href="/events" className="link text-sm">All events <span className="arrow" aria-hidden="true">→</span></Link>}>
         {/* asymmetric: the closest match leads, larger; the next two stack beside it */}
         <div className="grid gap-8 md:grid-cols-[1.5fr_1fr] md:gap-10">
           {upcoming.map((e, i) => (
@@ -142,7 +142,7 @@ export function HomeSections({ post }: { post?: ReactNode }) {
         </div>
       </Section>
 
-      <Section id="day-plans" title="Day plans" opener={<Chapter n="IV" title="Day plans" img="/journey/meadow.webp" y={0.4} />} action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
+      <Section id="day-plans" title="Day plans" opener={<Chapter n="IV" title="Day plans" img="/home/chapter-day-plans.webp" y={0.5} />} action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
         <ol className="border-t border-line2">
           {roadmaps.map((r, i) => (
             <li key={r.id} className="border-b border-line2">
