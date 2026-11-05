@@ -23,6 +23,24 @@ import type { World } from "./world/engine";
 import { initialParams } from "./world/params";
 import { useDayNight } from "./useDayNight";
 import { useJourney, type Phase } from "./useJourney";
+import {
+  arrivalChime,
+  dive,
+  doorOpen,
+  endDive,
+  hushJourney,
+  leaveJourney,
+  magic,
+  markerBell,
+  setJourneySound,
+  startHum,
+  startWind,
+  stopHum,
+  stopWind,
+  throughTheDoor,
+  unlockJourneySound,
+  useJourneySound,
+} from "./sound";
 import s from "./journey.module.css";
 
 /** What a screen reader hears as each scene begins. */
@@ -65,6 +83,19 @@ export function JourneyScreen() {
   // the 3D world, once its first frame is on screen; until then (or without WebGL) the CSS scene plays
   const [world, setWorld] = useState<World | null>(null);
 
+  // the journey's sounds: wind while the door page is open; the rest ride on the timelines below
+  const soundOn = useJourneySound();
+  useEffect(() => {
+    const off = unlockJourneySound();
+    return () => {
+      off();
+      leaveJourney();
+    };
+  }, []);
+  useEffect(() => {
+    if (phase === "idle") startWind();
+  }, [phase]);
+
   // day or night on the door page: the 3D world fades between them, the CSS follows data-mode
   const { mode, known, toggle } = useDayNight();
   const firstMode = useRef(true);
@@ -92,6 +123,17 @@ export function JourneyScreen() {
           ? buildDoorOpeningStill(parts)
           : buildDoorOpening(parts);
       tl.eventCallback("onComplete", () => advance("cosmos"));
+      // sound: the wind dies down, light breaks with a shimmer, the door creaks open, and the Earth
+      // hums as we fall through into the stars
+      if (world || !prefersReducedMotion()) {
+        tl.call(stopWind, [1.2], 0.4)
+          .call(magic, undefined, 0.6)
+          .call(doorOpen, [world ? 2.3 : 1.8], world ? 0.8 : 0.9)
+          .call(startHum, undefined, 2.6)
+          .call(throughTheDoor, undefined, world ? 3.2 : 3.0);
+      } else {
+        tl.call(stopWind, [0.6], 0).call(magic, undefined, 0.2).call(startHum, undefined, 0.3);
+      }
       tl.data = "door";
       running.current = tl;
       // development only: lets the review script step through the timeline frame by frame
@@ -111,6 +153,16 @@ export function JourneyScreen() {
       const tl = prefersReducedMotion()
         ? buildDiscoveryStill(params, d, advance)
         : buildDiscovery(params, d, advance);
+      // sound: the rush of the dive, a bell as Manali lights, a warm chime as home appears
+      if (prefersReducedMotion()) {
+        tl.call(stopHum, [1.2], 1.4).call(arrivalChime, undefined, 1.8);
+      } else {
+        tl.call(dive, [3.3], 3.4)
+          .call(markerBell, undefined, 4.6)
+          .call(stopHum, [1.4], 6.2)
+          .call(endDive, [0.6], 6.7)
+          .call(arrivalChime, undefined, 6.6);
+      }
       // the light has filled the screen: the club home takes over
       tl.eventCallback("onComplete", () => {
         arriveHome();
@@ -137,6 +189,7 @@ export function JourneyScreen() {
 
   const skip = useCallback(() => {
     skipping.current = true;
+    hushJourney();
     const tl = running.current;
     if (!tl || tl.progress() >= 1) return;
     // the door finishes quickly; later scenes jump straight to the result
@@ -173,6 +226,20 @@ export function JourneyScreen() {
       <header ref={top} className={s.top}>
         <span className={s.brand}>Vibers Club</span>
         <div className={s.topActions}>
+          <button
+            type="button"
+            className={s.mode}
+            data-sound="none"
+            aria-pressed={soundOn}
+            aria-label="Sound"
+            title={soundOn ? "Sound off" : "Sound on"}
+            onClick={() => {
+              setJourneySound(!soundOn);
+              if (!soundOn && phase === "idle") startWind();
+            }}
+          >
+            {soundOn ? <SpeakerIcon /> : <MutedIcon />}
+          </button>
           <button
             type="button"
             className={s.mode}
@@ -249,6 +316,24 @@ function arriveHome() {
   const root = document.documentElement;
   root.dataset.arrived = "";
   window.setTimeout(() => delete root.dataset.arrived, 1400);
+}
+
+function SpeakerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" />
+      <path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.2 6.6a7.6 7.6 0 0 1 0 10.8" />
+    </svg>
+  );
+}
+
+function MutedIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" />
+      <path d="m16 9.5 5 5M21 9.5l-5 5" />
+    </svg>
+  );
 }
 
 function SunIcon() {

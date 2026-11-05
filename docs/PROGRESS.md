@@ -14,6 +14,16 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Journey sounds (2026-11-05)
+Asked by ARPIT after checkpoint 1; nothing else changed. `features/journey/sound.ts` makes every sound in the browser with Web Audio (no files, no licences):
+- Door page: soft gusting wind over the grass while you are there; it dies down as the door opens.
+- The moment light breaks at the seam: a rising magic shimmer of bells with a shimmering tail.
+- The door: a latch click, a long wooden creak, and a soft thump against the wall.
+- Through the doorway: a rush of air; the Earth then hums low while it turns.
+- The pinch into Manali: a long rising rush, a clear bell as the Manali marker lights, and a warm chime as the club home appears.
+- A speaker button on the door page (next to day/night) switches the journey sounds on and off, kept in this browser (`vc-journey-sound`). It is separate from the app's Sounds setting. On by default; off by default for reduced motion. Browsers only allow sound after the first tap, click or key press, so the sound starts then if the browser held it back. Skip silences the sounds it races past; the arrival chime still plays.
+- Tests: new `e2e/journey-sound.spec.ts` (switch on by default and remembered; a full journey with sound runs without page errors). Journey, 3D journey and sweep "/" pass; vitest 95 passed.
+
 ## Explore wheel, Day plans actions, sample portraits (2026-11-05)
 - `components/SectionWheel.tsx`: a shared React Bits OptionWheel that names a page's parts, scrolls to them with the tick sound, and follows the scroll. Discover's wheel now uses it too. Explore's wheel names Places to visit, Posts like yours and Day plans: inline under the Explore/Itinerary switch, and at the right edge on screens 1280px and wider.
 - Day plans: "Customize" saves a copy to your itineraries (if it isn't saved yet) and opens it in the builder; "Save for later" keeps a copy to use as it is, and then reads "Saved ✓". New `fromRoadmap` field on itineraries, so a plan is never saved twice.
