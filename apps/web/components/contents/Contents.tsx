@@ -216,10 +216,12 @@ export function Contents() {
     >
       <div className={s.frame} aria-hidden="true" />
       {home ? (
-        <h1 className={s.title}>Spaces for curious people.</h1>
+        <h1 className={s.title}>
+          Spaces for curious people<span className={s.dot}>.</span>
+        </h1>
       ) : (
         <p className={s.title} aria-hidden="true">
-          Spaces for curious people.
+          Spaces for curious people<span className={s.dot}>.</span>
         </p>
       )}
       <p className={s.stand}>

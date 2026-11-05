@@ -516,3 +516,29 @@ ARPIT approved demo v5 (Shopify Editions style contents) and asked for it to be 
 - e2e home, club and sweep: 69 passed, 1 skipped, 2 failed. Both failures are the known "API OK" test, which needs the backend.
 
 **Known issue:** the sheet tiles are about 550 px wide, so the openers are a little soft at full width. Full-size originals would sharpen them.
+
+## 2026-11-06: palette put to work
+
+ARPIT approved the demo in /mnt/project-files/palette-demo/. The site had felt bland, with Ivory carrying nearly everything.
+
+**Espresso:** "Your vibe" (I) is now a dark band, built from the new `.vc-panel` classes in globals.css.
+
+**Sage:**
+- Day plans (IV) sits on a deep olive band. The new token is `--color-olive` #343824.
+- Small labels (`.kicker`) are sage-ink.
+
+**Amber, as small accents only:**
+- the headline's full stop
+- a ✦ on the wordmark
+- the contents marker for where you are
+- the count on the bell
+- link underlines on hover
+- the numbers and arrows in the olive band, on hover
+
+**Film grain:** a fine grain sits over the whole page (`body::after`).
+
+**Pictures:** the full-size chapter illustrations are in (ed69a4c).
+
+**Tests**
+- lint and typecheck: clean
+- e2e home, club, sweep and journey: 89 passed, 1 skipped, 2 failed. Both failures are "API OK", which needs the backend.

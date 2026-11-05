@@ -18,6 +18,8 @@
   /* sage deep enough for oversized numbers on ivory (3.3:1, the large-type minimum is 3:1) */
   --color-sage-num: #798b5e;
   --color-amber: #d5851f;
+  /* sage at its deepest: the olive of dark atmospheric bands, ivory type on it */
+  --color-olive: #343824;
   /* older names, kept so every screen follows the palette */
   --color-butter: #f7f2e8;
   --color-vanilla: #f7f2e8;
@@ -545,4 +547,122 @@ body:not(:has(> .vc-contents)) > main {
   background: #55643f;
   color: var(--color-ivory);
   isolation: isolate;
+}
+
+/* PALETTE IN USE (2026-11-06). Ivory and Espresso carry the page; Sage brings atmosphere as deep olive
+   bands and quiet labels; Amber is jewellery: the full stop of the headline, the spark on the
+   wordmark, where-you-are markers, the badge and the moment a link is touched. A fine film grain sits
+   over everything so paper and photographs share one printed surface. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.09;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .16 0 0 0 0 .1 0 0 0 0 .07 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* the spark on the wordmark */
+.vc-word::after {
+  content: "\2726";
+  margin: -0.7em 0 0 0.12em;
+  color: var(--color-amber);
+  font-size: 0.62em;
+}
+/* the count on the bell: an amber bead */
+.vc-profile__badge {
+  background: var(--color-amber);
+  color: var(--color-espresso);
+}
+/* small labels carry the sage */
+.kicker {
+  color: var(--color-sage-ink);
+}
+/* a link, touched, underlines in amber */
+.link:hover,
+.link:focus-visible {
+  text-decoration-color: var(--color-amber);
+  text-decoration-thickness: 2px;
+}
+/* A band of colour from the page column to the right edge of the screen (to both edges on phones),
+   its content still on the column. Espresso for a dark section, olive for an atmospheric one. */
+.vc-panel {
+  --bleed: calc(100vw - 100% - var(--main-ml) - var(--main-pl));
+  margin-right: calc(-1 * var(--bleed));
+  padding: clamp(28px, 4vw, 52px) calc(var(--bleed) + clamp(20px, 3vw, 40px)) clamp(28px, 4vw, 52px)
+    clamp(20px, 3vw, 40px);
+  color: var(--color-ivory);
+}
+@media (max-width: 767px) {
+  .vc-panel {
+    margin-left: calc(-1 * var(--main-pl));
+    margin-right: calc(-1 * var(--main-pl));
+    padding: 28px var(--main-pl);
+  }
+}
+.vc-panel--espresso {
+  background: var(--color-espresso);
+}
+.vc-panel--olive {
+  background: var(--color-olive);
+}
+.vc-panel .kicker,
+.vc-panel .text-muted,
+.vc-panel .text-ink2 {
+  color: rgb(247 242 232 / 0.72);
+}
+.vc-panel .text-ink,
+.vc-panel .link {
+  color: var(--color-ivory);
+}
+.vc-panel .border-line2,
+.vc-panel .border-ink {
+  border-color: rgb(247 242 232 / 0.22);
+}
+.vc-panel .chip {
+  border-color: rgb(247 242 232 / 0.5);
+  background: transparent;
+  color: var(--color-ivory);
+}
+.vc-panel .btn-accent {
+  border-color: var(--color-ivory);
+  background: var(--color-ivory);
+  color: var(--color-espresso);
+}
+.vc-panel .btn-accent:hover {
+  background: transparent;
+  color: var(--color-ivory);
+}
+.vc-panel .btn-ghost {
+  border-color: rgb(247 242 232 / 0.6);
+  color: var(--color-ivory);
+}
+.vc-panel .btn-ghost:hover {
+  background: var(--color-ivory);
+  color: var(--color-espresso);
+}
+/* numbered rows on a band: the numeral in amber on hover, the arrow in a thin square */
+.vc-panel .vc-num {
+  color: rgb(247 242 232 / 0.6);
+  transition: color 0.3s;
+}
+.vc-panel a:hover .vc-num {
+  color: var(--color-amber);
+}
+.vc-panel .vc-go {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgb(247 242 232 / 0.5);
+  font-size: 1rem;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+.vc-panel a:hover .vc-go {
+  background: var(--color-amber);
+  border-color: var(--color-amber);
+  color: var(--color-espresso);
 }

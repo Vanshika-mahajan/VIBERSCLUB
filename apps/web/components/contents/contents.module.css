@@ -93,7 +93,7 @@
   width: 5px;
   height: 5px;
   margin-top: -3px;
-  background: currentColor;
+  background: var(--color-amber);
 }
 /* the numerals: a roman serif, small */
 .n {
@@ -216,4 +216,9 @@
   .credit {
     transition: none;
   }
+}
+
+/* the full stop of the headline, in amber */
+.dot {
+  color: var(--color-amber);
 }

@@ -59,7 +59,7 @@ export function HomeSections({ post }: { post?: ReactNode }) {
 
   return (
     <div>
-      <section id="your-vibe" aria-label="Your vibe" className="scroll-mt-6 border-t border-ink pt-5 md:pt-6">
+      <section id="your-vibe" aria-label="Your vibe" data-tone="dark" className="vc-panel vc-panel--espresso scroll-mt-6">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr] md:gap-14">
           <div aria-labelledby="vibe-title">
             <p className="kicker" id="vibe-title">
@@ -143,21 +143,23 @@ export function HomeSections({ post }: { post?: ReactNode }) {
       </Section>
 
       <Section id="day-plans" title="Day plans" opener={<Chapter n="IV" title="Day plans" img="/home/chapter-day-plans.webp" y={0.5} />} action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
+        <div className="vc-panel vc-panel--olive" data-tone="dark">
         <ol className="border-t border-line2">
           {roadmaps.map((r, i) => (
             <li key={r.id} className="border-b border-line2">
-              <Link href={`/explore#${r.id}`} className="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-baseline gap-4 py-5 md:grid-cols-[4rem_minmax(0,1.2fr)_minmax(0,1fr)_auto] md:gap-8">
-                <span className="kicker text-muted">{String(i + 1).padStart(2, "0")}</span>
+              <Link href={`/explore#${r.id}`} className="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-baseline gap-4 py-5 md:grid-cols-[4rem_minmax(0,1.2fr)_minmax(0,1fr)_auto] md:items-center md:gap-8">
+                <span className="vc-num font-display text-lg font-bold">{String(i + 1).padStart(2, "0")}</span>
                 <span>
                   <b className="block font-display text-xl leading-tight font-bold tracking-[-0.02em] md:text-2xl">{r.title}</b>
                   <small className="text-sm text-muted">{r.summary}</small>
                 </span>
                 <span className="hidden text-sm text-ink2 md:block">{r.stops.map((s) => places.find((p) => p.id === s.placeId)?.name).join(" → ")}</span>
-                <span className="arrow text-lg" aria-hidden="true">→</span>
+                <span className="vc-go" aria-hidden="true">↗</span>
               </Link>
             </li>
           ))}
         </ol>
+        </div>
       </Section>
 
       <footer className="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-ink pt-4 text-sm text-muted">
