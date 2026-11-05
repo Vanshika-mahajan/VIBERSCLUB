@@ -377,21 +377,19 @@ body:not(:has(> .vc-pillbar)) > main {
   }
 }
 
-/* Explore's wheel: in the page flow under the section switch, a quiet list of what is below;
-   on wide screens it floats at the right edge like Discover's */
+/* Explore's wheel: under the section switch, it sticks to the top of the screen while you scroll,
+   so you can jump between parts from anywhere; on wide screens it floats at the right edge like Discover's */
 .vc-wheel--inline {
-  position: relative;
+  position: sticky;
   right: auto;
-  top: auto;
-  z-index: 1;
-  width: min(100%, 320px);
-  height: 116px;
-  margin: 6px 0 6px;
+  top: env(safe-area-inset-top);
+  z-index: 35;
+  width: auto;
+  height: 100px;
+  margin: 0 0 8px;
   transform: none;
-}
-/* the chosen name sits near the top, so the parts below it read as a list running down the page */
-.vc-wheel--inline .option-wheel__item {
-  top: 16%;
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-line);
 }
 .vc-explore-wheel--side {
   display: none;
@@ -406,11 +404,19 @@ body:not(:has(> .vc-pillbar)) > main {
 }
 @media (max-width: 640px) {
   .vc-wheel.vc-wheel--inline {
-    top: auto;
-    width: 100%;
-    height: 112px;
+    top: env(safe-area-inset-top);
+    width: auto;
+    height: 108px;
   }
   .vc-wheel--inline .option-wheel__item {
     font-size: 0.95rem;
+  }
+}
+/* jumping to a part of Explore lands its heading just below the sticky wheel */
+@media (max-width: 1279px) {
+  #places,
+  #posts-like-yours,
+  #day-plans {
+    scroll-margin-top: 112px;
   }
 }
