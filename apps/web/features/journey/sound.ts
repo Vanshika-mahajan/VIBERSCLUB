@@ -154,7 +154,8 @@ export function unlockJourneySound() {
 
 /* ---------- the sounds ---------- */
 
-/** wind moving through the grass: a soft gusting breath with a rustle on top */
+/** wind moving through the grass: a peaceful, soft breath that rises and falls slowly, with a faint
+ * rustle on top; warm (no hiss) and quiet, so it sits in the background */
 export function startWind() {
   if (wind) return;
   hushed = false;
@@ -163,28 +164,32 @@ export function startWind() {
       const body = noiseSource(c);
       const band = c.createBiquadFilter();
       band.type = "bandpass";
-      band.frequency.value = 520;
-      band.Q.value = 0.6;
+      band.frequency.value = 360;
+      band.Q.value = 0.5;
+      const warm = c.createBiquadFilter();
+      warm.type = "lowpass";
+      warm.frequency.value = 900;
       const swell = c.createGain();
-      swell.gain.value = 0.55;
-      body.connect(band).connect(swell).connect(out);
+      swell.gain.value = 0.6;
+      body.connect(band).connect(warm).connect(swell).connect(out);
       const rustle = noiseSource(c);
       const hi = c.createBiquadFilter();
-      hi.type = "highpass";
-      hi.frequency.value = 3200;
+      hi.type = "bandpass";
+      hi.frequency.value = 2200;
+      hi.Q.value = 0.7;
       const rg = c.createGain();
-      rg.gain.value = 0.08;
+      rg.gain.value = 0.025;
       rustle.connect(hi).connect(rg).connect(out);
       body.start();
       rustle.start(c.currentTime, 0.7);
-      // gusts: the level and the pitch of the wind drift slowly, the rustle a little faster
-      const a = lfo(c, 0.11, 0.3, swell.gain);
-      const b = lfo(c, 0.07, 260, band.frequency);
-      const d = lfo(c, 0.37, 0.05, rg.gain);
+      // long, slow breaths: the level and the tone drift gently, the rustle barely moves
+      const a = lfo(c, 0.06, 0.18, swell.gain);
+      const b = lfo(c, 0.04, 90, band.frequency);
+      const d = lfo(c, 0.21, 0.012, rg.gain);
       return [body, rustle, a, b, d];
     },
-    0.32,
-    1.6,
+    0.17,
+    3,
   );
 }
 
