@@ -165,7 +165,7 @@ test.describe("after Manali", () => {
       timeout: 8000,
     });
     await expect(
-      page.getByRole("heading", { name: /your Manali has people/, level: 1 }),
+      page.getByRole("heading", { name: /Spaces for curious people/, level: 1 }),
     ).toBeVisible();
   });
 

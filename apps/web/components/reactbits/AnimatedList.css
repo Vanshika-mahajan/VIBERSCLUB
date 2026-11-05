@@ -15,8 +15,6 @@
   padding: 6px;
   background: var(--al-frame);
   box-shadow: var(--al-frame-shadow);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
-  backdrop-filter: blur(20px) saturate(1.6);
 }
 
 .animated-list:has(> .animated-list__viewport:focus-visible) {

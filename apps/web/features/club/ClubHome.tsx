@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { HomeSections } from "@/features/home/HomeSections";
 import { places } from "@/lib/demo/data";
 import { openPost } from "@/components/PostButton";
@@ -10,48 +10,47 @@ import { allEvents } from "@/lib/demo/people";
 import { useDeck } from "./shared";
 import s from "./club.module.css";
 
-/** Solang, above Manali: the hero photograph (ridges and dusk show if it can't load) */
-const HERO_PHOTO =
-  places.find((p) => p.id === "solang")?.photoUrl?.replace("w=640", "w=1600") ??
-  "";
+const noop = () => () => {};
 
-/** The soft ridges at the foot of the hero, in the palette, far to near */
-function Ridges() {
-  return (
-    <svg
-      className={s.ridges}
-      viewBox="0 0 1200 190"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M0 120 L120 70 L210 104 L330 38 L450 96 L560 52 L690 110 L820 46 L940 92 L1060 58 L1200 98 V190 H0Z"
-        style={{ fill: "var(--color-plum)" }}
-        opacity="0.55"
-      />
-      <path
-        d="M0 150 L140 104 L250 132 L380 86 L520 140 L640 98 L780 142 L900 104 L1040 136 L1200 112 V190 H0Z"
-        style={{ fill: "var(--color-leaf)" }}
-        opacity="0.6"
-      />
-      <path
-        d="M0 170 L160 138 L300 160 L460 128 L600 166 L760 136 L900 168 L1060 140 L1200 160 V190 H0Z"
-        style={{ fill: "var(--color-moss)" }}
-        opacity="0.95"
-      />
-      <path
-        d="M0 182 C200 168 400 186 600 176 S1000 170 1200 180 V190 H0Z"
-        style={{ fill: "var(--color-ivy)" }}
-        opacity="0.95"
-      />
-    </svg>
-  );
+/** Solang, above Manali: the hero photograph. A placeholder: any wide photo drops into the same frame. */
+const HERO_PHOTO =
+  places.find((p) => p.id === "solang")?.photoUrl?.replace("w=640", "w=2000") ??
+  "";
+/** shown when the photograph can't load: our own meadow scene, toned the same way */
+const HERO_FALLBACK = "/journey/day.webp";
+
+/** slow parallax: the photograph drifts a little slower than the page (off with reduced motion) */
+function useParallax() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const tick = () => {
+      raf = 0;
+      const r = el.parentElement!.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) return;
+      el.style.setProperty("--drift", `${Math.round(-r.top * 0.16)}px`);
+    };
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+    tick();
+    addEventListener("scroll", on, { passive: true });
+    return () => {
+      removeEventListener("scroll", on);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+  return ref;
 }
 
+const dateLine = new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" });
+
 /**
- * The club home: a hero that says where you are and what's waiting, then one page of what matters
- * today: your vibe and requests, a quick post, Vibers like you, what's on this week and day plans.
- * Discover and Explore have their own pages in the pill bar.
+ * The club home, set like the cover of a magazine: a masthead line, the headline layered over a
+ * full-bleed photograph, a standfirst with one restrained call to action, then the numbered sections
+ * of the issue (your vibe, Vibers like you, what's on, day plans).
  */
 export function ClubHome() {
   const me = useDemo((st) => st.me);
@@ -60,6 +59,8 @@ export function ClubHome() {
   const deck = useDeck();
   const weekEvents = allEvents(hosted).filter((e) => e.dayOffset < 7).length;
   const [heroPhoto, setHeroPhoto] = useState(true);
+  const drift = useParallax();
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
 
   const stats: { href: string; n: number; label: string }[] = [
     { href: "/discover", n: deck.length, label: "Vibers like you" },
@@ -74,56 +75,77 @@ export function ClubHome() {
 
   return (
     <div className={s.club}>
-      <header className={s.hero}>
-        <Ridges />
-        {heroPhoto && (
-          // eslint-disable-next-line @next/next/no-img-element -- sample photo from a CDN
-          <img
-            className={s.heroPhoto}
-            src={HERO_PHOTO}
-            alt=""
-            onError={() => setHeroPhoto(false)}
-            ref={(el) => {
-              if (el?.complete && el.naturalWidth === 0) setHeroPhoto(false);
-            }}
-          />
-        )}
-        <div className={s.heroShade} aria-hidden="true" />
-        <div className={s.heroInner}>
+      <header className={s.cover}>
+        <div className={s.coverMast}>
           <p className={s.kicker}>
             <span className={s.kickerDot} aria-hidden="true" /> Manali ·{" "}
             {me.status === "local" ? "Local" : "Visiting"}
           </p>
-          <h1 className={s.title}>
-            Hi {me.name}, your Manali has <em>people</em> in it.
-          </h1>
-          <p className={s.sly}>Travel solo. Just not alone.</p>
-          <p className={s.lede}>
-            Meet Vibers who share your vibe, join what&apos;s on, find places
-            worth the walk and plan your days, all in one place.
-          </p>
-          <div className={s.stats}>
-            {stats.map((st) => (
-              <Link key={st.label} href={st.href} className={s.stat}>
-                <span className={s.statNum}>{st.n}</span>
-                <span className={s.statLabel}>{st.label}</span>
-              </Link>
-            ))}
+          <p className={`${s.kicker} ${s.coverDate}`}>{mounted ? dateLine.format(new Date()) : "This week"}</p>
+        </div>
+        <h1 className={s.coverTitle}>
+          <span className={s.coverLine}>Spaces for</span>{" "}
+          <span className={`${s.coverLine} ${s.coverOver}`}>curious people.</span>
+        </h1>
+        <div className={s.coverFrame}>
+          <div className={s.coverPhoto} ref={drift}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- sample photo from a CDN, a placeholder */}
+            <img
+              src={heroPhoto ? HERO_PHOTO : HERO_FALLBACK}
+              alt=""
+              onError={() => setHeroPhoto(false)}
+              ref={(el) => {
+                if (heroPhoto && el?.complete && el.naturalWidth === 0) setHeroPhoto(false);
+              }}
+            />
           </div>
+          <p className={s.coverCoords} aria-hidden="true">
+            Solang, Manali
+            <br />
+            32.32° N · 77.16° E
+          </p>
+          <p className={s.coverCaption} aria-hidden="true">
+            Issue 01 · The valley
+          </p>
+        </div>
+        <div className={s.standfirst}>
+          <p className={s.sly}>Hi {me.name}. Travel solo, just not alone.</p>
+          <div className={s.standBody}>
+            <p className={s.lede}>
+              Meet Vibers who share your vibe, join what&apos;s on, find places worth the walk and
+              plan your days, all in one place.
+            </p>
+            <div className={s.ctaRow}>
+              <Link href="/discover" className={s.lineCta}>
+                Find your people <span className="arrow" aria-hidden="true">→</span>
+              </Link>
+              <Link href="/events" className={s.quietCta}>
+                What&apos;s on this week
+              </Link>
+            </div>
+          </div>
+        </div>
+        <div className={s.stats}>
+          {stats.map((st) => (
+            <Link key={st.label} href={st.href} className={s.stat}>
+              <span className={s.statNum}>{String(st.n).padStart(2, "0")}</span>
+              <span className={s.statLabel}>{st.label}</span>
+            </Link>
+          ))}
         </div>
       </header>
 
       <HomeSections
         post={
-          <button type="button" className={`${s.card} ${s.ignite}`} style={{ width: "100%", textAlign: "left", cursor: "pointer" }} onClick={openPost}>
+          <button type="button" className={s.ignite} onClick={openPost}>
             <span>
               <span className={s.igniteTitle}>Ignite the vibe</span>
               <span className={`${s.muted} ${s.small}`}>
                 Post a thread or a photo. Its keywords find your people.
               </span>
             </span>
-            <span className={s.btn} data-tone="rose" aria-hidden="true">
-              Post
+            <span className={s.igniteGo} aria-hidden="true">
+              Post <span className="arrow">→</span>
             </span>
           </button>
         }

@@ -14,6 +14,7 @@
   overflow: hidden;
   background: #050608; /* the night, while the world loads */
   color: var(--ivory);
+  font-family: "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif; /* the door keeps its own type */
 }
 
 /* ---------- scene: the meadow is a stage that covers the screen at the photo's own ratio ---------- */
@@ -495,7 +496,7 @@
 
 .headline {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-serif);
   font-style: italic;
   font-weight: 500;
   font-optical-sizing: auto;
@@ -551,7 +552,7 @@
 .ask {
   display: block;
   margin-bottom: 6px;
-  font-family: var(--font-display);
+  font-family: var(--font-serif);
   font-style: italic;
   font-size: clamp(1.25rem, 2.2vw, 1.6rem);
   font-weight: 500;

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("home shows API OK from the real API", async ({ page }) => {
   await page.goto("/home");
-  await expect(page.getByRole("heading", { name: /your Manali has people/, level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Spaces for curious people/, level: 1 })).toBeVisible();
   await expect(page.getByText("API OK")).toBeVisible();
 });
 
@@ -19,7 +19,7 @@ test("the pill bar has Home, Discover, Events and Explore, and follows the page"
     ["Discover", "Discover Vibers"],
     ["Events", "Events"],
     ["Explore", "Explore Manali"],
-    ["Home", /your Manali has people/],
+    ["Home", /Spaces for curious people/],
   ] as const) {
     await nav.getByRole("link", { name: label }).click();
     await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeAttached();

@@ -402,3 +402,15 @@ Tests ran against Postgres 16.15 with pgvector 0.6.0 installed natively in the w
 
 ## Next recommended action
 Review M0b and ask me to push `m0b-web-skeleton` when ready. Then M0c: GitHub Actions CI (backend and website checks) and staging deploys, which need you to create a Render account (API) and a Vercel account (website).
+
+## Editorial visual direction: Syne + Inter (2026-11-05)
+
+ARPIT picked option A (Syne) from the type study. Applied across the frontend; the door and Earth journey keep their own look (Fraunces and Manrope stay scoped to the journey).
+
+- Palette tokens in `app/globals.css`: Warm Ivory #F7F2E8 and Deep Espresso #2A1B13 carry the site, Sage #879A6B for photo toning and big numbers (#798B5E where it must reach 3:1, #5E6E48 as text), Amber #D5851F for small dots and active marks (#8A4F0C as readable text). Old token names now point at the new colours.
+- Fonts: `@fontsource-variable/syne` (display) and `@fontsource-variable/inter` (everything else).
+- Components: square-cornered hairline panels, solid and thin-line square buttons, pills only for tags and filters, no drop shadows, no glass blur, no gradients on surfaces.
+- Home: a magazine cover. Masthead line, "Spaces for curious people." set over a full-bleed sage-toned photo (image reveal, soft settle, slow parallax, all off with reduced motion), a standfirst with one line CTA, figures with hairlines, then numbered sections 01 to 04. The photo is a placeholder; any wide photo drops in.
+- Section and PageHeader in `components/ui.tsx`: espresso hairline, Syne titles, optional oversized sage number.
+- Events, Posts like yours, Day plans and Inbox lists became editorial listings (hairline above, no box); the first event leads at double width.
+- Tests: 131 pass; only "home shows API OK" fails, because the backend isn't running in the cloud workspace.

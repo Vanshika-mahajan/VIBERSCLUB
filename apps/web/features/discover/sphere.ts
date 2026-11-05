@@ -80,10 +80,10 @@ const PERSON_AR = 0.77;
 const WORLD_AR = 1.36;
 const SCREEN_AR = 1.5;
 // warm alpine palette, matching the theme tokens in app/globals.css
-const KIND_COL: Record<string, string> = { event: "#6E4F8A", place: "#432556" };
-const PEARL = ["#F5F0C9", "#FFF9E3", "#ECE3F0", "#F2EAC0"];
-const INK = "#320B35";
-const FONT = "Manrope, system-ui, sans-serif";
+const KIND_COL: Record<string, string> = { event: "#5e6e48", place: "#3d2a1f" };
+const PEARL = ["#efe8da", "#f7f2e8", "#e4e7d8", "#e9e1d0"];
+const INK = "#2a1b13";
+const FONT = "\"Inter Variable\", Inter, system-ui, sans-serif";
 
 /** tier mode orbits: [tier, radius, angular speed, tilt a, tilt b, card scale]. Inner bands turn fastest. */
 const TIER_RINGS: [number, number, number, number, number, number][] = [
@@ -99,7 +99,7 @@ const TIER_RINGS: [number, number, number, number, number, number][] = [
   [2, 2.64, -0.66, 1.4, -0.2, 0.86],
 ];
 const SWARM = 2400;
-const SWARM_COL = ["#2A0E33", "#432556", "#6E4F8A", "#9B82B5", "#A39498", "#E4DAEE"];
+const SWARM_COL = ["#2a1b13", "#3d2a1f", "#5e6e48", "#879a6b", "#a89b8c", "#dfe3d2"];
 
 export type SpherePerson = { uid: string; title: string; photoUrl?: string; pos?: string };
 export type SphereWorld = { uid: string; kind: "event" | "place"; photoUrl?: string };
@@ -259,7 +259,7 @@ function personSprite(sc: number, img: HTMLImageElement | undefined, name: strin
   const r = bw * 0.13;
   const b = bw * 0.055;
   g.save();
-  g.shadowColor = "rgba(50,11,53,.26)";
+  g.shadowColor = "rgba(42, 27, 19,.26)";
   g.shadowBlur = bw * 0.2;
   g.shadowOffsetY = bw * 0.07;
   g.fillStyle = "#fff";
@@ -276,10 +276,10 @@ function personSprite(sc: number, img: HTMLImageElement | undefined, name: strin
   else {
     const gr = g.createLinearGradient(x, y, x + bw, y + bh);
     gr.addColorStop(0, PEARL[seed % 4]);
-    gr.addColorStop(1, "#F5F0C9");
+    gr.addColorStop(1, "#efe8da");
     g.fillStyle = gr;
     g.fillRect(x, y, bw, bh);
-    g.fillStyle = "rgba(42,14,51,.55)";
+    g.fillStyle = "rgba(42,27,19,.55)";
     g.font = `700 ${bw * 0.34}px ${FONT}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
@@ -308,7 +308,7 @@ function worldSprite(sc: number, img: HTMLImageElement | undefined, kind: string
   const r = bh * 0.16;
   const b = bh * 0.07;
   g.save();
-  g.shadowColor = "rgba(50,11,53,.22)";
+  g.shadowColor = "rgba(42, 27, 19,.22)";
   g.shadowBlur = bh * 0.28;
   g.shadowOffsetY = bh * 0.1;
   g.fillStyle = "#fff";
@@ -322,11 +322,11 @@ function worldSprite(sc: number, img: HTMLImageElement | undefined, kind: string
   else {
     const gr = g.createLinearGradient(x, y, x + bw, y + bh);
     gr.addColorStop(0, PEARL[seed % 4]);
-    gr.addColorStop(1, "#F5F0C9");
+    gr.addColorStop(1, "#efe8da");
     g.fillStyle = gr;
     g.fillRect(x, y, bw, bh);
   }
-  g.fillStyle = KIND_COL[kind] ?? "#9B82B5";
+  g.fillStyle = KIND_COL[kind] ?? "#879a6b";
   g.globalAlpha = 0.95;
   g.fillRect(x + b, y + bh - b - bh * 0.1, bw - 2 * b, bh * 0.1);
   g.restore();
@@ -368,7 +368,7 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
   const y = bh * pad;
   const r = bh * 0.12;
   g.save();
-  g.shadowColor = "rgba(50,11,53,.24)";
+  g.shadowColor = "rgba(42, 27, 19,.24)";
   g.shadowBlur = bh * 0.3;
   g.shadowOffsetY = bh * 0.1;
   g.fillStyle = "#FBF8F4";
@@ -384,13 +384,13 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     else {
       const gr = g.createLinearGradient(x, y, x + bw, y + bh);
       gr.addColorStop(0, PEARL[seed % 4]);
-      gr.addColorStop(1, "#E4DAEE");
+      gr.addColorStop(1, "#dfe3d2");
       g.fillStyle = gr;
       g.fillRect(x, y, bw, bh);
     }
     const sh = g.createLinearGradient(0, y + bh * 0.45, 0, y + bh);
-    sh.addColorStop(0, "rgba(50,11,53,0)");
-    sh.addColorStop(1, "rgba(50,11,53,.78)");
+    sh.addColorStop(0, "rgba(42, 27, 19,0)");
+    sh.addColorStop(1, "rgba(42, 27, 19,.78)");
     g.fillStyle = sh;
     g.fillRect(x, y, bw, bh);
     g.fillStyle = "#fff";
@@ -401,20 +401,20 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     g.font = `600 ${bh * 0.095}px ${FONT}`;
     g.fillText(wrap(g, `${e.author} · ${e.meta}`, bw - p * 2, 1)[0], x + p, y + bh - p);
   } else {
-    g.fillStyle = "#6E4F8A";
+    g.fillStyle = "#5e6e48";
     g.fillRect(x, y, bw, bh * 0.035);
     const ar = bh * 0.1;
     g.fillStyle = PEARL[seed % 4];
     g.beginPath();
     g.arc(x + p + ar, y + p + ar, ar, 0, TAU);
     g.fill();
-    g.fillStyle = "#2A0E33";
+    g.fillStyle = "#2a1b13";
     g.font = `800 ${ar * 0.9}px ${FONT}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
     g.fillText(initials(e.author), x + p + ar, y + p + ar + ar * 0.05);
     g.textAlign = "left";
-    g.fillStyle = "#6E5670";
+    g.fillStyle = "#6b5a4d";
     g.font = `700 ${bh * 0.09}px ${FONT}`;
     g.fillText(wrap(g, e.author, bw - p * 3 - ar * 2, 1)[0], x + p * 1.6 + ar * 2, y + p + ar);
     g.fillStyle = INK;
@@ -423,11 +423,11 @@ function screenSprite(sc: number, img: HTMLImageElement | undefined, e: SphereSc
     const lines = wrap(g, e.title, bw - p * 2, 2);
     lines.forEach((l, i) => g.fillText(l, x + p, y + p + ar * 2 + bh * 0.07 + i * bh * 0.155));
     if (e.snippet) {
-      g.fillStyle = "#6E5670";
+      g.fillStyle = "#6b5a4d";
       g.font = `500 ${bh * 0.098}px ${FONT}`;
       g.fillText(wrap(g, "“" + e.snippet + "”", bw - p * 2, 1)[0], x + p, y + p + ar * 2 + bh * 0.1 + lines.length * bh * 0.155);
     }
-    g.fillStyle = "#5B3F75";
+    g.fillStyle = "#4a382c";
     g.font = `800 ${bh * 0.09}px ${FONT}`;
     g.textBaseline = "alphabetic";
     g.fillText(e.meta, x + p, y + bh - p * 0.8);
@@ -450,7 +450,7 @@ function tagSprite(sc: number, label: string, col: string): Sprite {
   const x = f * 0.6;
   const y = f * 0.55;
   g.save();
-  g.shadowColor = "rgba(50,11,53,.2)";
+  g.shadowColor = "rgba(42, 27, 19,.2)";
   g.shadowBlur = f * 0.7;
   g.shadowOffsetY = f * 0.25;
   g.fillStyle = "#fff";
@@ -487,10 +487,10 @@ function glowSprite() {
   const c = mk(160, 160);
   const g = ctx(c);
   const gr = g.createRadialGradient(80, 80, 6, 80, 80, 80);
-  gr.addColorStop(0, "rgba(155,130,181,.5)");
-  gr.addColorStop(0.35, "rgba(110,79,138,.26)");
-  gr.addColorStop(0.7, "rgba(155,130,181,.10)");
-  gr.addColorStop(1, "rgba(155,130,181,0)");
+  gr.addColorStop(0, "rgba(135, 154, 107,.5)");
+  gr.addColorStop(0.35, "rgba(94,110,72,.26)");
+  gr.addColorStop(0.7, "rgba(135, 154, 107,.10)");
+  gr.addColorStop(1, "rgba(135, 154, 107,0)");
   g.fillStyle = gr;
   g.fillRect(0, 0, 160, 160);
   return c;
@@ -909,16 +909,16 @@ export class Sphere {
     const g = ctx(c);
     g.scale(d, d);
     if (this.dark) {
-      g.fillStyle = "#160419";
+      g.fillStyle = "#1e130d";
       g.fillRect(0, 0, W, H);
       this.bg = c;
       return;
     }
     // soft yellow world: flat butter, a touch lighter behind the sphere, no tints or rays
     const gr = g.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.5, Math.max(W, H) * 0.78);
-    gr.addColorStop(0, "#FFFDF4");
-    gr.addColorStop(0.55, "#FFF9E3");
-    gr.addColorStop(1, "#F8F0D4");
+    gr.addColorStop(0, "#fbf8f1");
+    gr.addColorStop(0.55, "#f7f2e8");
+    gr.addColorStop(1, "#efe8da");
     g.fillStyle = gr;
     g.fillRect(0, 0, W, H);
     this.bg = c;
@@ -1149,13 +1149,13 @@ export class Sphere {
     const glow = g.createRadialGradient(cx, cy, S * 0.1, cx, cy, R1);
     if (this.dark) {
       // a low lavender glow in the dark, not a spotlight
-      glow.addColorStop(0, `rgba(110,79,138,${0.42 * sphA})`);
-      glow.addColorStop(0.5, `rgba(91,63,117,${0.16 * sphA + this.flash * 0.08})`);
-      glow.addColorStop(1, "rgba(91,63,117,0)");
+      glow.addColorStop(0, `rgba(94,110,72,${0.42 * sphA})`);
+      glow.addColorStop(0.5, `rgba(74,56,44,${0.16 * sphA + this.flash * 0.08})`);
+      glow.addColorStop(1, "rgba(74,56,44,0)");
     } else {
-      glow.addColorStop(0, `rgba(255,250,224,${0.8 * sphA})`);
-      glow.addColorStop(0.5, `rgba(245,240,201,${0.35 * sphA + this.flash * 0.1})`);
-      glow.addColorStop(1, "rgba(245,240,201,0)");
+      glow.addColorStop(0, `rgba(251,248,241,${0.8 * sphA})`);
+      glow.addColorStop(0.5, `rgba(239,232,218,${0.35 * sphA + this.flash * 0.1})`);
+      glow.addColorStop(1, "rgba(239,232,218,0)");
     }
     g.fillStyle = glow;
     g.fillRect(cx - R1, cy - R1, R1 * 2, R1 * 2);
@@ -1164,8 +1164,8 @@ export class Sphere {
     g.translate(cx, cy + S * 1.62);
     g.scale(1, 0.12);
     const sh = g.createRadialGradient(0, 0, 0, 0, 0, S * 1.1);
-    sh.addColorStop(0, `rgba(42,14,51,${0.16 * sphA})`);
-    sh.addColorStop(1, "rgba(42,14,51,0)");
+    sh.addColorStop(0, `rgba(42,27,19,${0.16 * sphA})`);
+    sh.addColorStop(1, "rgba(42,27,19,0)");
     g.fillStyle = sh;
     g.fillRect(-S * 1.2, -S * 1.2, S * 2.4, S * 2.4);
     g.restore();
@@ -1202,12 +1202,12 @@ export class Sphere {
         }
         const lit = this.searching && ring.tier !== undefined && ring.tier < 2 ? (ring.tier === 0 ? 1 : 0.5) : 0;
         g.strokeStyle = this.dark
-          ? lit ? `rgba(183,163,204,${(0.12 + 0.12 * lit) * sphA})` : `rgba(245,240,201,${0.07 * sphA})`
-          : lit ? `rgba(155,130,181,${(0.2 + 0.15 * lit) * sphA})` : `rgba(50,11,53,${0.12 * sphA})`;
+          ? lit ? `rgba(195,204,176,${(0.12 + 0.12 * lit) * sphA})` : `rgba(239,232,218,${0.07 * sphA})`
+          : lit ? `rgba(135, 154, 107,${(0.2 + 0.15 * lit) * sphA})` : `rgba(42, 27, 19,${0.12 * sphA})`;
         g.stroke(back);
         g.strokeStyle = this.dark
-          ? lit ? `rgba(183,163,204,${(0.26 + 0.24 * lit) * sphA})` : `rgba(245,240,201,${0.15 * sphA})`
-          : lit ? `rgba(91,63,117,${(0.34 + 0.24 * lit) * sphA})` : `rgba(50,11,53,${0.26 * sphA})`;
+          ? lit ? `rgba(195,204,176,${(0.26 + 0.24 * lit) * sphA})` : `rgba(239,232,218,${0.15 * sphA})`
+          : lit ? `rgba(74,56,44,${(0.34 + 0.24 * lit) * sphA})` : `rgba(42, 27, 19,${0.26 * sphA})`;
         g.stroke(front);
       }
     }
@@ -1239,7 +1239,7 @@ export class Sphere {
       o[i * 4 + 3] = p.k;
     }
     const dustPass = (near: boolean) => {
-      const colors = this.dark ? ["#6c5a80", "#9B82B5", "#B7A3CC", "#8C79A3"] : ["#432556", "#6E4F8A", "#9B82B5", "#6c5a80"];
+      const colors = this.dark ? ["#d5851f", "#879a6b", "#c3ccb0", "#a89b8c"] : ["#3d2a1f", "#5e6e48", "#879a6b", "#d5851f"];
       for (let ci = 0; ci < 4; ci++) {
         g.fillStyle = colors[ci];
         for (let i = 0; i < nd; i++) {
@@ -1438,7 +1438,7 @@ export class Sphere {
       it.drawn = true;
       if (hv) {
         g.globalAlpha = 0.9;
-        g.strokeStyle = "rgba(110,79,138,.85)";
+        g.strokeStyle = "rgba(94,110,72,.85)";
         g.lineWidth = 1.6;
         const ww = w * xs;
         g.strokeRect(sx - ww / 2 - 1, sy - h / 2 - 1, ww + 2, h + 2);
@@ -1522,7 +1522,7 @@ export class Sphere {
     for (let i = H.length - 1; i > 0; i--) {
       const f = i / H.length;
       g.globalAlpha = (1 - f) * 0.55;
-      g.strokeStyle = f < 0.5 ? "#9B82B5" : "#6E4F8A";
+      g.strokeStyle = f < 0.5 ? "#879a6b" : "#5e6e48";
       g.lineWidth = Math.max(1, h * 0.34 * (1 - f));
       g.beginPath();
       g.moveTo(H[i].x, H[i].y);
@@ -1582,14 +1582,14 @@ export class Sphere {
     const r = S * (0.7 + (1 - b) * 1.8);
     const gr = g.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
     gr.addColorStop(0, `rgba(255,253,249,${0.5 * b})`);
-    gr.addColorStop(0.8, `rgba(155,130,181,${0.25 * b})`);
-    gr.addColorStop(1, "rgba(155,130,181,0)");
+    gr.addColorStop(0.8, `rgba(135, 154, 107,${0.25 * b})`);
+    gr.addColorStop(1, "rgba(135, 154, 107,0)");
     g.fillStyle = gr;
     g.beginPath();
     g.arc(cx, cy, r, 0, TAU);
     g.fill();
     g.globalAlpha = b * 0.8;
-    g.strokeStyle = "#6E4F8A";
+    g.strokeStyle = "#5e6e48";
     g.lineWidth = 1.5 + 3 * b;
     g.beginPath();
     g.arc(cx, cy, r, 0, TAU);
@@ -1605,7 +1605,7 @@ export class Sphere {
     g.lineWidth = 1;
     g.setLineDash([2, 5]);
     g.lineDashOffset = -this.t * 14;
-    g.strokeStyle = this.dark ? `rgba(245,240,201,${0.32 * sphA})` : `rgba(42,14,51,${0.3 * sphA})`;
+    g.strokeStyle = this.dark ? `rgba(239,232,218,${0.32 * sphA})` : `rgba(42,27,19,${0.3 * sphA})`;
     const top = lit.sort((a, b) => a.zc - b.zc).slice(0, 12);
     for (const a of top) {
       const near = top

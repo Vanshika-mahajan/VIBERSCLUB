@@ -40,18 +40,18 @@ export function DayPlans({ onCustomize }: { onCustomize?: (itineraryId: string) 
   return (
     <section id="day-plans" className="scroll-mt-6">
       <Section title="Day plans">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-10 md:grid-cols-3 md:gap-8">
           {roadmaps.map((r) => {
             const saved = !!savedCopy(r);
             return (
-              <article key={r.id} id={r.id} className="card flex scroll-mt-6 flex-col p-5">
-                <h3 className="text-lg font-extrabold">{r.title}</h3>
-                <p className="text-sm text-muted">{r.summary}</p>
-                <ol className="mt-4 space-y-3 border-l-2 border-line pl-4">
+              <article key={r.id} id={r.id} className="flex scroll-mt-6 flex-col border-t border-ink pt-4">
+                <h3 className="font-display text-[1.4rem] leading-[1.02] font-bold tracking-[-0.025em]">{r.title}</h3>
+                <p className="mt-2 text-sm text-muted">{r.summary}</p>
+                <ol className="mt-4 space-y-3 border-l border-line2 pl-4">
                   {r.stops.map((s) => (
                     <li key={s.placeId}>
-                      <span className="text-xs font-bold text-accent">{s.time}</span>
-                      <b className="block">{placeById[s.placeId]?.name}</b>
+                      <span className="kicker text-accent">{s.time}</span>
+                      <b className="block font-medium">{placeById[s.placeId]?.name}</b>
                       <small className="text-muted">{s.note}</small>
                     </li>
                   ))}

@@ -92,6 +92,6 @@ test("Enter the app opens the club home", async ({ page }) => {
   // software WebGL keeps the main thread busy, so the page change can take a while here
   await expect(page).toHaveURL(/\/home$/, { timeout: 30000 });
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "your Manali has people in it",
+    "Spaces for curious people.",
   );
 });

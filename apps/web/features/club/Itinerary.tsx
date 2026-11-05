@@ -199,9 +199,9 @@ function TemplateGallery({ onUse, mine }: { onUse: (p: Plan) => void; mine: Plan
           tilt={4}
           parallax={0.35}
           grayscale={false}
-          overlayColor="#320b35"
-          accentColor="#9b82b5"
-          textColor="#fff9e3"
+          overlayColor="#2a1b13"
+          accentColor="#879a6b"
+          textColor="#f7f2e8"
           trigger="hover"
         />
       </div>

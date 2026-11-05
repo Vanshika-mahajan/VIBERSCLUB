@@ -86,7 +86,7 @@ export function ProfileSettings() {
         </div>
       </section>
 
-      <Section title="YOUR VIBE LINE">
+      <Section quiet title="YOUR VIBE LINE">
         <div className="card p-5">
           <label htmlFor="vibe" className="font-bold">
             In a line or two, what are you here for?
@@ -114,7 +114,7 @@ export function ProfileSettings() {
         </div>
       </Section>
 
-      <Section title={`WHAT'S YOUR VIBE? (${me.interests.length}/${MAX_INTERESTS})`}>
+      <Section quiet title={`WHAT'S YOUR VIBE? (${me.interests.length}/${MAX_INTERESTS})`}>
         <div className="card space-y-4 p-5">
           {categories.map((c) => (
             <fieldset key={c.id}>
@@ -133,7 +133,7 @@ export function ProfileSettings() {
         </div>
       </Section>
 
-      <Section title="LOOKING FOR">
+      <Section quiet title="LOOKING FOR">
         <div className="flex flex-wrap gap-2">
           {(Object.keys(intents) as IntentId[]).map((id) => (
             <button key={id} type="button" className="chip" aria-pressed={me.intents.includes(id)} onClick={() => toggleIntent(id)}>
@@ -143,7 +143,7 @@ export function ProfileSettings() {
         </div>
       </Section>
 
-      <Section title="PRIVACY AND SAFETY">
+      <Section quiet title="PRIVACY AND SAFETY">
         <div className="card divide-y divide-line px-5">
           <Toggle label="Show me in Discover" hint="Turn off to browse without being found." checked={me.privacy.discoverable} onChange={(v) => actions.updateMe({ privacy: { ...me.privacy, discoverable: v } })} />
           <Toggle label="Women-only discovery" hint="Only women can find you, and you see only women." checked={me.privacy.womenOnly} onChange={(v) => actions.updateMe({ privacy: { ...me.privacy, womenOnly: v } })} />
@@ -151,7 +151,7 @@ export function ProfileSettings() {
         </div>
       </Section>
 
-      <Section title="Sounds">
+      <Section quiet title="Sounds">
         <div className="card divide-y divide-line px-5">
           <Toggle label="Sounds" hint="Small, soft sounds when you tap, post or connect." checked={sound.enabled} onChange={(v) => (sound.setEnabled(v), v && sound.play("select"))} />
           {sound.enabled && (
@@ -175,7 +175,7 @@ export function ProfileSettings() {
         </div>
       </Section>
 
-      <Section title="Demo">
+      <Section quiet title="Demo">
         <button
           type="button"
           className="btn-ghost"

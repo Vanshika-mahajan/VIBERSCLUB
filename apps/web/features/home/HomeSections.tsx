@@ -56,46 +56,50 @@ export function HomeSections({ post }: { post?: ReactNode }) {
   }, [me.interests, hosted]);
 
   return (
-    <div className="pt-10">
-      <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
-        <section className="card p-5" aria-labelledby="vibe-title">
-          <p className="kicker" id="vibe-title">
-            Your vibe
-          </p>
-          <p className="mt-2 text-lg font-semibold text-ink2">&ldquo;{me.vibe}&rdquo;</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {me.interests.map((i) => (
-              <span key={i} className="chip">
-                {hashtag(interestById[i].label)}
-              </span>
-            ))}
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/discover" className="btn btn-accent">
-              Find people like this
-            </Link>
-            <Link href="/profile" className="btn-ghost">
-              Edit vibe
-            </Link>
-          </div>
-        </section>
-        <section className="card flex flex-col justify-between p-5">
-          <div>
-            <p className="kicker">Connections</p>
-            <p className="mt-2 text-lg font-semibold">
-              {requests > 0 ? `${requests} ${requests === 1 ? "person wants" : "people want"} to connect` : "No new requests"}
+    <div className="pt-4">
+      <Section n="01" title="Your vibe">
+        <div className="grid gap-10 md:grid-cols-[1.5fr_1fr] md:gap-14">
+          <div aria-labelledby="vibe-title">
+            <p className="kicker" id="vibe-title">
+              In your words
             </p>
-            <p className="text-sm text-muted">Chats open only when you both say yes.</p>
+            <p className="mt-3 font-display text-[1.6rem] leading-[1.05] font-semibold tracking-[-0.025em] text-ink md:text-[2.1rem]">
+              &ldquo;{me.vibe}&rdquo;
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {me.interests.map((i) => (
+                <span key={i} className="chip">
+                  {hashtag(interestById[i].label)}
+                </span>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/discover" className="btn btn-accent">
+                Find people like this <span className="arrow" aria-hidden="true">→</span>
+              </Link>
+              <Link href="/profile" className="btn-ghost">
+                Edit vibe
+              </Link>
+            </div>
           </div>
-          <Link href="/chats" className="btn-ghost mt-4 self-start">
-            Open chats
-          </Link>
-        </section>
-      </div>
+          <section className="flex flex-col justify-between border-t border-line2 pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-8">
+            <div>
+              <p className="kicker">Connections</p>
+              <p className="mt-3 text-lg font-medium text-ink">
+                {requests > 0 ? `${requests} ${requests === 1 ? "person wants" : "people want"} to connect` : "No new requests"}
+              </p>
+              <p className="mt-1 text-sm text-muted">Chats open only when you both say yes.</p>
+            </div>
+            <Link href="/chats" className="link mt-6 self-start text-sm">
+              Open chats <span className="arrow" aria-hidden="true">→</span>
+            </Link>
+          </section>
+        </div>
+      </Section>
 
-      {post && <div id="post" className="mt-10 scroll-mt-6">{post}</div>}
+      {post && <div id="post" className="mt-16 scroll-mt-6">{post}</div>}
 
-      <Section title="Vibers like you" action={<Link href="/discover" className="link text-sm">Discover</Link>}>
+      <Section n="02" title="Vibers like you" action={<Link href="/discover" className="link text-sm">Discover <span className="arrow" aria-hidden="true">→</span></Link>}>
         {/* relevant profiles on a slowly turning ring: drag to spin, click one to bring it to the front */}
         <div className="relative -mx-4 h-[380px] md:mx-0 md:h-[440px]">
           {ring.length > 0 && (
@@ -109,9 +113,9 @@ export function HomeSections({ post }: { post?: ReactNode }) {
               gap={22}
               speed={9}
               depthFade={0.6}
-              fadeColor="#2a0a2e"
+              fadeColor="#f7f2e8"
               innerShade={0.35}
-              cornerRadius={18}
+              cornerRadius={2}
               captions
             />
           )}
@@ -125,27 +129,36 @@ export function HomeSections({ post }: { post?: ReactNode }) {
         </ul>
       </Section>
 
-      <Section title="Happening this week" action={<Link href="/events" className="link text-sm">All events</Link>}>
-        <div className="grid gap-4 md:grid-cols-3">
-          {upcoming.map((e) => (
-            <EventCard key={e.id} e={e} compact />
+      <Section n="03" title="Happening this week" action={<Link href="/events" className="link text-sm">All events <span className="arrow" aria-hidden="true">→</span></Link>}>
+        {/* asymmetric: the closest match leads, larger; the next two stack beside it */}
+        <div className="grid gap-8 md:grid-cols-[1.5fr_1fr] md:gap-10">
+          {upcoming.map((e, i) => (
+            <div key={e.id} className={i === 0 ? "md:row-span-2" : ""}>
+              <EventCard e={e} compact={i > 0} lead={i === 0} />
+            </div>
           ))}
         </div>
       </Section>
 
-      <Section title="Explore Manali" action={<Link href="/explore" className="link text-sm">Places</Link>}>
-        <div className="grid gap-3 md:grid-cols-3">
-          {roadmaps.map((r) => (
-            <Link key={r.id} href={`/explore#${r.id}`} className="card block p-4 transition hover:border-rose/30 hover:shadow-soft">
-              <b className="block">{r.title}</b>
-              <small className="text-muted">{r.summary}</small>
-              <p className="mt-2 text-xs font-bold text-ink2">{r.stops.map((s) => places.find((p) => p.id === s.placeId)?.name).join(" → ")}</p>
-            </Link>
+      <Section n="04" title="Explore Manali" action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
+        <ol className="border-t border-line2">
+          {roadmaps.map((r, i) => (
+            <li key={r.id} className="border-b border-line2">
+              <Link href={`/explore#${r.id}`} className="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-baseline gap-4 py-5 md:grid-cols-[4rem_minmax(0,1.2fr)_minmax(0,1fr)_auto] md:gap-8">
+                <span className="kicker text-muted">{String(i + 1).padStart(2, "0")}</span>
+                <span>
+                  <b className="block font-display text-xl leading-tight font-bold tracking-[-0.02em] md:text-2xl">{r.title}</b>
+                  <small className="text-sm text-muted">{r.summary}</small>
+                </span>
+                <span className="hidden text-sm text-ink2 md:block">{r.stops.map((s) => places.find((p) => p.id === s.placeId)?.name).join(" → ")}</span>
+                <span className="arrow text-lg" aria-hidden="true">→</span>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ol>
       </Section>
 
-      <footer className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-sm text-muted">
+      <footer className="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-ink pt-4 text-sm text-muted">
         <span>Design preview: everyone here is a fictional sample Viber. </span>
         <span className="flex items-center gap-2">
           <span className="kicker">System status</span> <HealthStatus />

@@ -13,7 +13,7 @@ export function Avatar({ name, src, size = 44, className = "" }: { name: string;
   const [failed, setFailed] = useState(false);
   return (
     <span
-      className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full border-2 border-surface bg-accent-wash font-extrabold text-ink2 ${className}`}
+      className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full border-2 border-surface bg-accent-wash font-semibold text-ink2 ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.34 }}
       aria-hidden="true"
     >
@@ -26,11 +26,11 @@ export function Avatar({ name, src, size = 44, className = "" }: { name: string;
   );
 }
 
-/** A cover photo with a soft sage-to-gold gradient underneath, so a missing photo still looks intended. */
+/** A cover photo with a flat sand ground underneath, so a missing photo still looks intended. */
 export function Cover({ src, className = "", children }: { src?: string; className?: string; children?: ReactNode }) {
   const [failed, setFailed] = useState(false);
   return (
-    <div className={`relative overflow-hidden bg-gradient-to-br from-accent-wash via-sand to-mist ${className}`}>
+    <div className={`relative overflow-hidden bg-sand ${className}`}>
       {src && !failed && (
         // eslint-disable-next-line @next/next/no-img-element -- sample photos from a CDN
         <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" ref={checkBroken(() => setFailed(true))} onError={() => setFailed(true)} />
@@ -41,25 +41,37 @@ export function Cover({ src, className = "", children }: { src?: string; classNa
 }
 
 export function SampleBadge() {
-  return <span className="inline-flex h-5 items-center rounded-full bg-mist px-2 text-[0.62rem] font-extrabold tracking-[0.08em] text-on-forest uppercase">Sample</span>;
+  return <span className="inline-flex h-5 items-center rounded-full bg-mist px-2 text-[0.62rem] font-semibold tracking-[0.08em] text-on-forest uppercase">Sample</span>;
 }
 
+/** A page opening, like a magazine section front: a spaced label, a large Syne title, a hairline under it. */
 export function PageHeader({ kicker, title, children }: { kicker?: string; title: ReactNode; children?: ReactNode }) {
   return (
-    <header className="mb-6 space-y-1.5">
-      {kicker && <p className="kicker">{kicker}</p>}
-      <h1 className="display text-3xl md:text-4xl">{title}</h1>
-      {children && <div className="text-ink2">{children}</div>}
+    <header className="mb-10">
+      {kicker && <p className="kicker mb-4">{kicker}</p>}
+      <h1 className="display text-[2.6rem] leading-[0.92] md:text-[4.6rem]">{title}</h1>
+      {children && <div className="mt-4 max-w-xl text-ink2">{children}</div>}
     </header>
   );
 }
 
-export function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+/**
+ * A section of a page: a full-width espresso hairline, then the title in Syne. Give it `n` ("01") for an
+ * oversized sage section number beside the title; `quiet` sets the title as a small spaced label instead.
+ */
+export function Section({ title, action, n, quiet, children }: { title: string; action?: ReactNode; n?: string; quiet?: boolean; children: ReactNode }) {
   return (
-    <section className="mt-8">
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 className="kicker">{title}</h2>
-        {action}
+    <section className={quiet ? "mt-10 border-t border-line2 pt-3" : "mt-16 border-t border-ink pt-4 md:mt-20"}>
+      <div className={`flex items-end justify-between gap-4 ${quiet ? "mb-3" : "mb-6 md:mb-8"}`}>
+        <div className="flex min-w-0 items-end gap-4 md:gap-6">
+          {n && (
+            <span aria-hidden="true" className="font-display text-[3.4rem] leading-[0.78] font-bold tracking-[-0.05em] text-sage-num md:text-[6rem]">
+              {n}
+            </span>
+          )}
+          <h2 className={quiet ? "kicker" : "font-display text-[1.7rem] leading-[0.95] font-bold tracking-[-0.025em] text-ink md:text-[2.4rem]"}>{title}</h2>
+        </div>
+        {action && <div className="shrink-0 pb-1">{action}</div>}
       </div>
       {children}
     </section>
@@ -67,7 +79,7 @@ export function Section({ title, action, children }: { title: string; action?: R
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <div className="rounded-3xl border-[1.5px] border-dashed border-line2 p-8 text-center text-muted">{children}</div>;
+  return <div className="rounded-[2px] border border-dashed border-line2 p-8 text-center text-muted">{children}</div>;
 }
 
 export function Toggle({ label, hint, checked, onChange }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void }) {
@@ -112,7 +124,7 @@ export function Toaster() {
   return (
     <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[90] mx-auto grid w-[min(520px,92vw)] gap-2 md:bottom-6">
       {list.map((t) => (
-        <div key={t.id} className="rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-on-cta shadow-soft">
+        <div key={t.id} className="rounded-[2px] bg-brand px-4 py-3 text-sm font-medium text-on-cta">
           {t.text}
         </div>
       ))}

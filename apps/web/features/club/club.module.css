@@ -1,5 +1,5 @@
-/* The club home: soft yellow world, deep plum voice. Butter paper, almond cards, Deep Plum type,
-   buttons and line work, Dusty Lavender only for small accents. Fraunces for headlines, Manrope for
+/* The club home in the editorial direction: ivory paper, espresso type and hairlines, sage for
+   atmosphere and amber for small jewels. Syne for headlines, Inter for
    everything else. */
 
 .club {
@@ -21,143 +21,320 @@
     var(--paper);
 }
 
-/* ---------- hero: a photograph of the valley at dusk ---------- */
+/* ---------- the cover: masthead line, headline over a full-bleed photograph, standfirst ---------- */
 
-.hero {
+/* edge to edge, out of the page column; the photograph is a placeholder that any wide shot replaces */
+.cover {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-radius: 28px;
-  padding: clamp(28px, 5vw, 60px) clamp(22px, 5vw, 60px) clamp(30px, 5vw, 56px);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-top: -72px;
+  padding-top: calc(72px + env(safe-area-inset-top));
   color: var(--color-ink);
-  background:
-    var(--color-almond);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-soft);
 }
-.ridges {
-  position: absolute;
-  inset: auto 0 0 0;
-  z-index: -2;
-  width: 100%;
-  height: clamp(110px, 18vw, 190px);
-  pointer-events: none;
+@media (min-width: 768px) {
+  .cover {
+    margin-top: -2.5rem;
+    padding-top: 2.5rem;
+  }
 }
-/* the photograph keeps its colour; only its left side and foot are shaded, where the words sit */
-.heroPhoto {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 60% 40%;
+.coverMast,
+.coverTitle,
+.standfirst,
+.stats {
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
 }
-.heroShade {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(255, 249, 227, 0.97) 0%,
-      rgba(255, 249, 227, 0.86) 42%,
-      rgba(255, 249, 227, 0.05) 78%
-    ),
-    linear-gradient(0deg, rgba(255, 249, 227, 0.9) 0%, transparent 45%);
+@media (min-width: 768px) {
+  .coverMast,
+  .coverTitle,
+  .standfirst,
+  .stats {
+    padding-left: clamp(24px, 4vw, 56px);
+    padding-right: clamp(24px, 4vw, 56px);
+  }
 }
-.heroInner {
-  position: relative;
-  min-width: 0;
-  max-width: 40rem;
+.coverMast {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  /* clear of the bell and your initial at the top right */
+  margin-right: 110px;
+}
+.coverMast .kicker {
+  margin: 0;
+}
+@media (max-width: 640px) {
+  .coverDate {
+    display: none !important;
+  }
 }
 .kicker {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   margin: 0 0 18px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-ink2);
 }
 .kickerDot {
-  width: 22px;
-  height: 1px;
-  background: var(--color-rose);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-amber);
 }
-.title {
-  margin: 0;
+
+/* the headline begins on the paper and runs down into the photograph */
+.coverTitle {
+  position: relative;
+  z-index: 2;
+  margin: clamp(28px, 6vw, 64px) 0 0;
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(2.2rem, 5.2vw, 3.8rem);
-  line-height: 1.02;
-  letter-spacing: -0.025em;
+  font-weight: 700;
+  /* sized so each line stays on one line at any width: the second line must land on the photograph */
+  font-size: min(11rem, 9.6vw);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
   color: var(--color-ink);
 }
-.title em {
-  font-style: italic;
-  color: var(--color-on-wine);
+.coverLine {
+  display: block;
+  white-space: nowrap;
+  animation: vc-line 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.coverLine + .coverLine {
+  animation-delay: 0.12s;
+}
+.coverOver {
+  color: var(--color-ivory);
+}
+/* on a phone the headline takes three lines, and the photograph rises under the last two */
+@media (max-width: 640px) {
+  .coverTitle {
+    font-size: 13vw;
+  }
+  .coverOver {
+    white-space: normal;
+  }
+  .coverFrame {
+    margin-top: calc(13vw * -1.76) !important;
+  }
+}
+@keyframes vc-line {
+  from {
+    opacity: 0;
+    transform: translateY(0.18em);
+  }
+}
+
+.coverFrame {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(min(11rem, 9.6vw) * -0.92);
+  height: clamp(420px, 68svh, 760px);
+  overflow: hidden;
+  background: var(--color-sage-ink);
+  /* the image reveal: the frame opens upward from its foot */
+  animation: vc-reveal 1.5s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+@keyframes vc-reveal {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+/* toned in sage: the photograph gives the light, the palette gives the colour */
+.coverPhoto {
+  --drift: 0px;
+  position: absolute;
+  inset: -12% 0;
+  /* the photograph keeps its own light (luminosity blend), this only lends the sage hue; a deep
+     sage so the ivory headline reads at 4.9:1 even before the photo loads */
+  background: var(--color-sage-ink);
+  transform: translate3d(0, var(--drift), 0);
+  will-change: transform;
+}
+.coverPhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%;
+  mix-blend-mode: luminosity;
+  opacity: 0.92;
+  animation: vc-settle 2.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes vc-settle {
+  from {
+    transform: scale(1.1);
+  }
+}
+/* a soft espresso shade at the top, so the ivory half of the headline always reads */
+.coverFrame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(42 27 19 / 0.5), rgb(42 27 19 / 0) 42%);
+  pointer-events: none;
+}
+.coverCoords,
+.coverCaption {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  color: var(--color-ivory);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+.coverCoords {
+  right: max(16px, env(safe-area-inset-right));
+  bottom: 18px;
+  text-align: right;
+}
+.coverCaption {
+  left: max(16px, env(safe-area-inset-left));
+  bottom: 18px;
+}
+
+/* the standfirst: a line in Syne at the left, the lede and the call to action at the right */
+.standfirst {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 18px 56px;
+  padding-top: 28px;
+  padding-bottom: 8px;
 }
 .sly {
-  margin: 14px 0 0;
+  margin: 0;
   font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 300;
-  font-size: clamp(1.1rem, 2.1vw, 1.35rem);
-  color: var(--color-ink2);
+  font-weight: 600;
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  max-width: 18ch;
+}
+.standBody {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
 }
 .lede {
-  margin: 14px 0 0;
-  max-width: 30rem;
-  font-size: clamp(0.96rem, 1.5vw, 1.04rem);
+  margin: 0;
+  max-width: 32rem;
+  font-size: clamp(0.98rem, 1.4vw, 1.06rem);
   line-height: 1.65;
   color: var(--color-ink2);
 }
+.ctaRow {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+.lineCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-ink);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.quietCta {
+  font-size: 0.88rem;
+  color: var(--color-muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: border-color 0.3s;
+}
+.quietCta:hover {
+  border-color: var(--color-line2);
+}
+@media (max-width: 760px) {
+  .standfirst {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* the figures of the issue, in a row with hairlines between */
 .stats {
   position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 30px;
-  max-width: 38rem;
-  border-top: 1px solid var(--line2);
+  margin-top: 36px;
 }
-/* figures in a row, editorial: a number in the serif, a small caption, hairlines between */
+.stats::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+  border-top: 1px solid var(--color-ink);
+}
+@media (min-width: 768px) {
+  .stats::before {
+    left: clamp(24px, 4vw, 56px);
+    right: clamp(24px, 4vw, 56px);
+  }
+}
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 14px 14px 4px 0;
+  gap: 6px;
+  padding: 16px 16px 4px 0;
   border: 0;
   background: none;
   text-align: left;
   font: inherit;
   color: inherit;
+  text-decoration: none;
   cursor: pointer;
 }
 .stat + .stat {
-  padding-left: 14px;
-  border-left: 1px solid var(--line);
+  padding-left: 16px;
+  border-left: 1px solid var(--color-line);
 }
 .stat:hover .statNum {
-  color: var(--color-on-wine);
+  color: var(--color-accent);
 }
 .statNum {
   font-family: var(--font-display);
-  font-size: 1.7rem;
-  font-weight: 400;
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
   line-height: 1;
   transition: color 0.3s;
 }
 .statLabel {
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--color-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .coverLine,
+  .coverFrame,
+  .coverPhoto img {
+    animation: none;
+  }
 }
 
 .stat:focus-visible,
+.lineCta:focus-visible,
 .btn:focus-visible,
 .ghost:focus-visible,
 .chip:focus-visible,
@@ -178,6 +355,9 @@
     padding-left: 0;
     border-left: 0;
   }
+  .stat:nth-child(n + 3) {
+    border-top: 1px solid var(--color-line);
+  }
 }
 
 /* ---------- shared pieces ---------- */
@@ -187,24 +367,27 @@
   align-items: end;
   justify-content: space-between;
   gap: 16px;
-  margin: 0 0 16px;
+  margin: 0 0 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-ink);
 }
 .h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 500;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
 }
 .h3 {
   margin: 0;
   font-size: 1.02rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 .inline {
   color: var(--color-accent);
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -221,12 +404,12 @@
   background: var(--color-mist);
   color: var(--color-on-forest);
   font-size: 0.66rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .card {
-  border-radius: 22px;
+  border-radius: 2px;
   background: var(--card);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-card);
@@ -243,10 +426,11 @@
   gap: 8px;
   min-height: 42px;
   padding: 0 18px;
-  border-radius: 999px;
+  border-radius: 2px;
   font: inherit;
   font-size: 0.88rem;
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
   text-decoration: none;
   transition:
@@ -267,7 +451,7 @@
   transform: scale(0.98);
 }
 .btn[data-tone="rose"] {
-  border: 1px solid rgba(155, 130, 181, 0.28);
+  border: 1px solid rgba(135, 154, 107, 0.28);
   background: var(--color-brand);
   color: var(--color-on-cta);
 }
@@ -279,13 +463,13 @@
   cursor: not-allowed;
 }
 .ghost {
-  border: 1px solid var(--line2);
+  border: 1px solid var(--color-ink);
   background: transparent;
   color: var(--ink);
 }
 .ghost:hover {
-  border-color: rgba(155, 130, 181, 0.6);
-  background: var(--color-raised);
+  background: var(--color-ink);
+  color: var(--color-on-cta);
 }
 .chips {
   display: flex;
@@ -308,18 +492,18 @@
   cursor: pointer;
 }
 .chip:hover {
-  border-color: rgba(155, 130, 181, 0.6);
+  border-color: rgba(135, 154, 107, 0.6);
 }
 .chip[aria-pressed="true"] {
   background: var(--color-brand);
-  border-color: rgba(155, 130, 181, 0.45);
+  border-color: rgba(135, 154, 107, 0.45);
   color: var(--color-on-cta);
 }
 .tag {
   display: inline-block;
   padding: 3px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(155, 130, 181, 0.22);
+  border: 1px solid rgba(135, 154, 107, 0.22);
   background: var(--color-rose-wash);
   color: var(--color-on-wine);
   font-size: 0.72rem;
@@ -333,13 +517,7 @@
 .photo {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(
-      80% 80% at 70% 20%,
-      rgba(155, 130, 181, 0.35),
-      transparent 70%
-    ),
-    linear-gradient(135deg, var(--color-moss), var(--color-ivy));
+  background: var(--color-moss);
 }
 .photo img {
   position: absolute;
@@ -354,13 +532,14 @@
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-style: italic;
+  font-weight: 700;
+  font-style: normal;
   font-size: 2.6rem;
-  color: rgba(50, 11, 53, 0.72);
+  color: rgba(42, 27, 19, 0.72);
 }
 .empty {
   padding: 40px 20px;
-  border-radius: 22px;
+  border-radius: 2px;
   border: 1px dashed var(--line2);
   text-align: center;
   color: var(--soft);
@@ -368,7 +547,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
-  gap: 16px;
+  gap: 40px 28px;
 }
 .field,
 .textarea,
@@ -376,7 +555,7 @@
   width: 100%;
   min-height: 44px;
   padding: 10px 14px;
-  border-radius: 14px;
+  border-radius: 2px;
   border: 1px solid var(--line2);
   background: var(--color-recess);
   font: inherit;
@@ -398,7 +577,7 @@
   display: block;
   margin-bottom: 6px;
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 /* ---------- community: the card deck ---------- */
@@ -439,13 +618,9 @@
 .details {
   width: min(100%, 520px);
   padding: 22px 24px 20px;
-  border-radius: 22px;
+  border-radius: 2px;
   border: 1px solid var(--line);
-  background: linear-gradient(
-    180deg,
-    var(--color-surface),
-    var(--color-canvas)
-  );
+  background: var(--color-surface);
   box-shadow: var(--shadow-card);
   text-align: center;
 }
@@ -468,7 +643,7 @@
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(1.6rem, 3vw, 2.1rem);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.05;
 }
@@ -494,10 +669,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 2px;
   background: var(--card);
   border: 1px solid var(--line);
-  box-shadow: 0 30px 60px -36px rgba(50, 11, 53, 0.3);
+  box-shadow: none;
   touch-action: none;
   user-select: none;
   will-change: transform;
@@ -516,7 +691,7 @@
   content: "";
   position: absolute;
   inset: 40% 0 0;
-  background: linear-gradient(transparent, rgba(50, 11, 53, 0.78));
+  background: linear-gradient(transparent, rgba(42, 27, 19, 0.78));
 }
 .swipeName {
   position: absolute;
@@ -530,7 +705,7 @@
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.8rem;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.05;
 }
 .swipeName p {
@@ -546,13 +721,12 @@
   z-index: 1;
   padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(255, 249, 227, 0.92);
+  background: rgba(247, 242, 232, 0.92);
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-ink);
-  backdrop-filter: blur(6px);
 }
 .swipeBody {
   display: flex;
@@ -575,9 +749,9 @@
   z-index: 2;
   padding: 6px 14px;
   border: 3px solid currentColor;
-  border-radius: 12px;
+  border-radius: 2px;
   font-size: 1.3rem;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0.12em;
   opacity: 0;
   pointer-events: none;
@@ -613,7 +787,7 @@
   background: var(--card);
   color: var(--ink);
   cursor: pointer;
-  box-shadow: 0 14px 30px -20px rgba(50, 11, 53, 0.3);
+  box-shadow: none;
   transition:
     transform 0.2s,
     background 0.2s;
@@ -624,7 +798,7 @@
 .round[data-kind="like"] {
   width: 68px;
   height: 68px;
-  border: 1px solid rgba(155, 130, 181, 0.35);
+  border: 1px solid rgba(135, 154, 107, 0.35);
   background: var(--color-brand);
   color: var(--color-on-cta);
 }
@@ -657,7 +831,7 @@
   flex: none;
   width: 52px;
   height: 52px;
-  border-radius: 16px;
+  border-radius: 2px;
 }
 .miniPhoto .initials {
   font-size: 1.2rem;
@@ -670,7 +844,7 @@
   margin: 0;
 }
 .miniName {
-  font-weight: 800;
+  font-weight: 600;
 }
 .ellipsis {
   overflow: hidden;
@@ -683,20 +857,14 @@
   width: min(420px, calc(100% - 32px));
   padding: 30px 26px 24px;
   border: 0;
-  border-radius: 28px;
-  background:
-    radial-gradient(
-      80% 60% at 50% 0%,
-      rgba(155, 130, 181, 0.3),
-      transparent 70%
-    ),
-    var(--color-canvas);
+  border-radius: 2px;
+  background: var(--color-canvas);
+  border-top: 3px solid var(--color-sage);
   color: var(--ink);
   text-align: center;
 }
 .match::backdrop {
-  background: rgba(50, 11, 53, 0.35);
-  backdrop-filter: blur(4px);
+  background: rgba(42, 27, 19, 0.35);
 }
 .matchFaces {
   display: flex;
@@ -718,13 +886,34 @@
 
 /* ---------- events ---------- */
 
+/* events read like listings in a magazine: no box, a hairline above, the photograph cropped wide */
 .eventCard {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 0 !important;
+  border-top: 1px solid var(--color-ink) !important;
+  border-radius: 0 !important;
+  background: none !important;
+  padding-top: 12px;
 }
 .eventPhoto {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
+}
+.eventPhoto img {
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.eventCard:hover .eventPhoto img {
+  transform: scale(1.04);
+}
+/* the first listing leads: twice as wide, a cinematic crop */
+@media (min-width: 900px) {
+  .grid > .eventCard:first-child {
+    grid-column: span 2;
+  }
+  .grid > .eventCard:first-child .eventPhoto {
+    aspect-ratio: 16 / 9;
+  }
 }
 .date {
   position: absolute;
@@ -735,18 +924,19 @@
   place-items: center;
   width: 52px;
   padding: 6px 0;
-  border-radius: 14px;
-  background: rgba(255, 249, 227, 0.94);
+  border-radius: 2px;
+  background: rgba(247, 242, 232, 0.94);
   color: var(--color-ink);
   line-height: 1;
 }
 .date b {
   font-family: var(--font-display);
+  font-weight: 700;
   font-size: 1.35rem;
 }
 .date span {
   font-size: 0.64rem;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--color-accent);
@@ -760,21 +950,28 @@
   border-radius: 999px;
   background: var(--color-mist-deep);
   font-size: 0.74rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 .eventBody {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 8px;
-  padding: 14px 16px 16px;
+  padding: 16px 0 4px;
+}
+.eventBody > a:first-child {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
 }
 .eventBody p {
   margin: 0;
 }
 .seats {
-  height: 6px;
-  border-radius: 999px;
+  height: 2px;
+  border-radius: 0;
   background: var(--color-mist);
   overflow: hidden;
 }
@@ -782,7 +979,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--color-leaf), var(--color-rose));
+  background: var(--color-amber);
 }
 .row {
   display: flex;
@@ -806,13 +1003,11 @@
   height: clamp(340px, 42vw, 420px) !important;
   padding: 0 !important;
   overflow: hidden;
-  border-radius: 26px !important;
-  background: var(--color-surface) !important;
+  border-radius: 2px !important;
+  border-top: 1px solid var(--color-ink);
+  background: var(--color-canvas) !important;
   color: var(--color-ink) !important;
-  box-shadow:
-    0 0 0 1px var(--line),
-    0 -14px 40px -24px rgba(50, 11, 53, 0.25),
-    0 30px 60px -34px rgba(50, 11, 53, 0.35) !important;
+  box-shadow: none;
 }
 .stackPhoto {
   height: 100%;
@@ -822,14 +1017,8 @@
   flex-direction: column;
   gap: 8px;
   min-width: 0;
-  padding: clamp(20px, 3vw, 34px);
-  background:
-    radial-gradient(
-      90% 70% at 100% 0%,
-      rgba(155, 130, 181, 0.18),
-      transparent 70%
-    ),
-    var(--color-surface);
+  padding: clamp(20px, 3vw, 34px) 0 clamp(20px, 3vw, 34px) clamp(20px, 3.4vw, 44px);
+  background: var(--color-canvas);
 }
 .stackBody p {
   margin: 0;
@@ -845,7 +1034,7 @@
   margin: 4px 0 0;
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 2.6vw, 2.1rem);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.05;
 }
@@ -889,7 +1078,7 @@
   height: 38px;
   border: 0;
   border-radius: 50%;
-  background: rgba(255, 249, 227, 0.92);
+  background: rgba(247, 242, 232, 0.92);
   color: var(--color-ink);
   cursor: pointer;
 }
@@ -916,7 +1105,7 @@
 }
 .tip {
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: 2px;
   border: 1px solid var(--line);
   background: var(--color-mist);
   color: var(--color-on-forest);
@@ -932,6 +1121,11 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 0 !important;
+  border-top: 1px solid var(--color-ink) !important;
+  border-radius: 0 !important;
+  background: none !important;
+  padding-top: 12px;
 }
 .postPhoto {
   aspect-ratio: 16 / 10;
@@ -940,7 +1134,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px 16px 16px;
+  padding: 14px 0 4px;
 }
 .postBody p {
   margin: 0;
@@ -983,7 +1177,7 @@
 .dayLabel {
   margin: 0 0 8px;
   font-size: 0.74rem;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-accent);
@@ -1013,7 +1207,7 @@
   flex: none;
   width: 52px;
   font-variant-numeric: tabular-nums;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-on-forest);
 }
 .addStop {
@@ -1040,7 +1234,7 @@
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.35rem;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .templateSummary {
@@ -1078,7 +1272,7 @@
   gap: 10px;
   width: 100%;
   padding: 12px 14px;
-  border-radius: 16px;
+  border-radius: 2px;
   border: 1px solid var(--line);
   background: var(--card);
   font: inherit;
@@ -1087,7 +1281,7 @@
   cursor: pointer;
 }
 .mineItem[aria-pressed="true"] {
-  border-color: rgba(155, 130, 181, 0.45);
+  border-color: rgba(135, 154, 107, 0.45);
   background: var(--color-brand);
   color: var(--color-on-cta);
 }
@@ -1130,7 +1324,7 @@
 }
 @media (max-width: 520px) {
   .hero {
-    border-radius: 22px;
+    border-radius: 2px;
   }
   .addStop,
   .create {
@@ -1199,14 +1393,13 @@
   margin: auto;
   padding: 0;
   border: 0;
-  border-radius: 28px;
+  border-radius: 2px;
   background: transparent;
   color: var(--color-ink);
   overflow: visible;
 }
 .ov::backdrop {
-  background: rgb(50 11 53 / 0.45);
-  backdrop-filter: blur(6px);
+  background: rgb(42 27 19 / 0.45);
   animation: ovFade 0.35s ease both;
 }
 .ovCard {
@@ -1215,9 +1408,9 @@
   max-height: calc(100svh - 48px);
   overflow: hidden;
   border: 1px solid var(--color-line2);
-  border-radius: 28px;
+  border-radius: 2px;
   background: var(--color-canvas);
-  box-shadow: 0 40px 90px -40px rgb(50 11 53 / 0.5);
+  box-shadow: none;
   /* the photo grows out of the gallery: from a small card to the whole overview */
   animation: ovGrow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -1237,7 +1430,7 @@
 .ovShade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgb(50 11 53 / 0.7));
+  background: linear-gradient(180deg, transparent 55%, rgb(42 27 19 / 0.7));
 }
 .ovPhotoName {
   position: absolute;
@@ -1245,7 +1438,8 @@
   bottom: 18px;
   margin: 0;
   font-family: var(--font-display);
-  font-style: italic;
+  font-weight: 700;
+  font-style: normal;
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   color: var(--color-butter);
 }
@@ -1282,7 +1476,7 @@
   margin: 6px 0 0;
   font-family: var(--font-display);
   font-size: clamp(1.9rem, 3.4vw, 2.6rem);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.05;
 }
 .ovRole {
@@ -1297,7 +1491,7 @@
   gap: 6px;
   margin: 18px 0 0;
   padding: 10px 14px;
-  border-radius: 14px;
+  border-radius: 2px;
   background: var(--color-brand);
   color: var(--color-on-cta);
   font-size: 0.86rem;
@@ -1315,7 +1509,7 @@
 .ovH {
   margin: 22px 0 8px;
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-muted);
@@ -1367,7 +1561,7 @@
   from {
     opacity: 0;
     transform: scale(0.72);
-    border-radius: 60px;
+    border-radius: 2px;
   }
 }
 @keyframes ovZoom {
@@ -1414,7 +1608,7 @@
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   overflow: hidden;
   border: 1px solid var(--color-line2);
-  border-radius: 28px;
+  border-radius: 2px;
   background: var(--color-canvas);
 }
 .fullCard .ovPhoto {
@@ -1462,7 +1656,7 @@
   gap: 8px;
   min-height: 160px;
   border: 1.5px dashed var(--line2);
-  border-radius: 18px;
+  border-radius: 2px;
   color: var(--soft);
   font-size: 0.9rem;
   font-weight: 700;
@@ -1472,7 +1666,7 @@
     background 0.2s;
 }
 .photoDrop:hover {
-  border-color: rgba(155, 130, 181, 0.6);
+  border-color: rgba(135, 154, 107, 0.6);
   background: var(--color-raised);
 }
 .photoDrop:focus-within {
@@ -1488,26 +1682,41 @@
   width: 100%;
   max-height: 320px;
   object-fit: cover;
-  border-radius: 18px;
+  border-radius: 2px;
 }
 .photoPreview button {
   position: absolute;
   right: 10px;
   bottom: 10px;
   min-height: 34px;
-  background: rgb(50 11 53 / 0.85);
+  background: rgb(42 27 19 / 0.85);
   color: var(--color-butter);
 }
 
 /* ---------- Home: the way to post, on the profile ---------- */
 .ignite {
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 22px;
+  padding: 26px 0;
+  border: 0;
+  border-top: 1px solid var(--color-ink);
+  border-bottom: 1px solid var(--color-ink);
+  background: none;
   color: inherit;
+  font: inherit;
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
+}
+.igniteGo {
+  flex: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-ink);
 }
 .ignite > span:first-child {
   display: flex;
@@ -1516,10 +1725,13 @@
 }
 .igniteTitle {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.6vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
-.ignite:hover {
-  border-color: rgba(155, 130, 181, 0.4);
+.ignite:hover .arrow {
+  transform: translateX(4px);
 }
 .ignite:focus-visible {
   outline: 2px solid var(--color-focus);
@@ -1543,6 +1755,7 @@
 }
 .planTitle {
   font-family: var(--font-display);
+  font-weight: 700;
   font-size: 1.3rem;
 }
 .planGrid {
@@ -1564,7 +1777,7 @@
 }
 .day[data-over] {
   border-left-color: var(--color-rose);
-  background: linear-gradient(90deg, rgba(155, 130, 181, 0.08), transparent 60%);
+  background: rgba(135, 154, 107, 0.1);
 }
 .dayDate {
   color: var(--soft);
@@ -1574,7 +1787,7 @@
   margin: 0 0 6px;
   padding: 14px;
   border: 1px dashed var(--line2);
-  border-radius: 14px;
+  border-radius: 2px;
   font-size: 0.82rem;
   color: var(--soft);
 }
@@ -1596,7 +1809,7 @@
   margin: 6px 0;
   padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 2px;
   background: var(--color-raised);
   cursor: grab;
   transition:
@@ -1699,7 +1912,7 @@ select.mini2 {
   overflow-y: auto;
   padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 2px;
   background: var(--card);
 }
 .trayList {
@@ -1716,7 +1929,7 @@ select.mini2 {
   gap: 10px;
   padding: 8px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 2px;
   background: var(--color-raised);
   cursor: grab;
 }
@@ -1731,7 +1944,7 @@ select.mini2 {
   width: 48px;
   height: 48px;
   flex: none;
-  border-radius: 10px;
+  border-radius: 2px;
 }
 @media (max-width: 860px) {
   .builder {
@@ -1773,7 +1986,7 @@ select.mini2 {
   border: 1px solid var(--line2);
   border-radius: 999px;
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-ink2);
@@ -1785,7 +1998,7 @@ select.mini2 {
 }
 .planFacts dt {
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--soft);

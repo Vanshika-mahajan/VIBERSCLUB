@@ -1,81 +1,90 @@
 @import "tailwindcss";
 
-/* Vibers Club look: SOFT YELLOW WORLD, DEEP PLUM VOICE (2026-11-05). A club for music, places and
-   people, styled like a creative label, not an app. About 65 percent Vanilla Tint, which replaced
-   Soft Butter on 2026-11-05 (the page, panels, negative space), 25 percent Deep Plum (type, logo, navigation, buttons, icons, borders), 7 percent
-   Almond Cream (a softer layer for cards between the yellow and the plum) and 3 percent Dusty Lavender
-   (small accents, selected washes, quiet illustrations). Flat colour, fine paper grain, no glow.
-   Every text pairing is at least 4.5:1; lavender is never used for text on yellow.
+/* Vibers Club look: THE EDITORIAL CLUB (2026-11-05). An independent culture magazine crossed with a
+   members club and a fashion label. Warm Ivory and Deep Espresso carry almost everything (pages, type,
+   navigation, buttons, hairlines). Sage Green is atmosphere: photo toning, big numbers, quiet washes.
+   Amber Glow is jewellery: small dots, active states, one highlight at a time. Flat colour, hairlines,
+   square corners on surfaces, no glow, no heavy shadow, no glass. Syne for brand, hero and section
+   titles; Inter for everything else. Every text pairing is at least 4.5:1, so sage and amber are never
+   small text on ivory; their darker text shades are accent and sage-ink.
    `static` emits every token as a CSS variable, so CSS modules and canvas code can read them too.
    No apostrophes in comments inside this block: Tailwind drops every token after one. */
 @theme static {
   /* the palette, by name */
-  --color-butter: #fff9e3;
-  --color-vanilla: #fff9e3;
-  --color-deep-plum: #320b35;
-  --color-almond: #f5f0c9;
-  --color-lavender: #9b82b5;
+  --color-ivory: #f7f2e8;
+  --color-espresso: #2a1b13;
+  --color-sage: #879a6b;
+  --color-sage-ink: #5e6e48;
+  /* sage deep enough for oversized numbers on ivory (3.3:1, the large-type minimum is 3:1) */
+  --color-sage-num: #798b5e;
+  --color-amber: #d5851f;
   /* older names, kept so every screen follows the palette */
-  --color-cherry: #320b35;
-  --color-mulberry: #320b35;
-  --color-plum: #5b3f75;
-  --color-ivy: #f5f0c9;
-  --color-moss: #e4daee;
-  --color-leaf: #9b82b5;
+  --color-butter: #f7f2e8;
+  --color-vanilla: #f7f2e8;
+  --color-deep-plum: #2a1b13;
+  --color-almond: #efe8da;
+  --color-lavender: #879a6b;
+  --color-cherry: #2a1b13;
+  --color-mulberry: #2a1b13;
+  --color-plum: #4a382c;
+  --color-ivy: #efe8da;
+  --color-moss: #dfe3d2;
+  --color-leaf: #879a6b;
 
-  /* surfaces: recess (wells, inputs), canvas (the page), surface (cards), raised (hover, menus) */
-  --color-recess: #fffaf0;
-  --color-canvas: #fff9e3;
-  --color-surface: #f5f0c9;
-  --color-raised: #fbf6d6;
-  --color-sand: #f2eac0;
-  /* brand: Deep Plum fills for active and selected things, with butter type */
-  --color-brand: #320b35;
-  --color-brand-hover: #4a1a4e;
-  --color-brand-deep: #320b35;
-  --color-brand-ink: #320b35;
-  /* the main call to action: Deep Plum, set in butter */
-  --color-cta: #320b35;
-  --color-cta-hover: #4a1a4e;
-  --color-on-cta: #fff9e3;
-  /* accent: a readable lavender plum for small text and icons; a pale lavender wash behind tags */
-  --color-accent: #5b3f75;
-  --color-accent-hover: #320b35;
-  --color-accent-wash: #ece3f0;
-  --color-rose: #9b82b5;
-  --color-rose-wash: #f1ead9;
-  /* highlight: the one strong mark (the post button, new dots): Deep Plum */
-  --color-highlight: #320b35;
-  /* the second world (places, nature): almond cards with plum line work */
-  --color-forest: #f5f0c9;
-  --color-forest-surface: #ece3f0;
-  --color-support: #9b82b5;
-  --color-mist: #f5f0c9;
-  --color-mist-deep: #ece3f0;
-  /* type: Deep Plum, a softer plum for body, a muted plum for metadata */
-  --color-ink: #320b35;
-  --color-ink2: #4a2a4e;
-  --color-muted: #6e5670;
-  --color-silver: #a5949f;
-  --color-line: rgba(50, 11, 53, 0.12);
-  --color-line2: rgba(50, 11, 53, 0.24);
-  --color-on-dark: #fff9e3;
-  --color-on-wine: #5b3f75;
-  --color-on-forest: #320b35;
-  /* status, readable on butter */
-  --color-ok: #2f6a3d;
-  --color-warn: #8a5300;
+  /* surfaces: recess (wells, inputs), canvas (the page), surface (panels), raised (hover, menus) */
+  --color-recess: #fbf8f1;
+  --color-canvas: #f7f2e8;
+  --color-surface: #efe8da;
+  --color-raised: #f2ecdf;
+  --color-sand: #e9e1d0;
+  /* brand: Deep Espresso fills for active and selected things, with ivory type */
+  --color-brand: #2a1b13;
+  --color-brand-hover: #3d2a1f;
+  --color-brand-deep: #2a1b13;
+  --color-brand-ink: #2a1b13;
+  /* the main call to action: Deep Espresso, set in ivory */
+  --color-cta: #2a1b13;
+  --color-cta-hover: #3d2a1f;
+  --color-on-cta: #f7f2e8;
+  /* accent: a readable dark amber for small text and icons; a pale sage wash behind tags */
+  --color-accent: #8a4f0c;
+  --color-accent-hover: #2a1b13;
+  --color-accent-wash: #e4e7d8;
+  --color-rose: #879a6b;
+  --color-rose-wash: #ece6d8;
+  /* highlight: the one jewel (active dots, new marks): Amber Glow */
+  --color-highlight: #d5851f;
+  /* the second world (places, nature): sage washes with espresso line work */
+  --color-forest: #efe8da;
+  --color-forest-surface: #e4e7d8;
+  --color-support: #879a6b;
+  --color-mist: #e4e7d8;
+  --color-mist-deep: #d6dcc6;
+  /* type: Deep Espresso, a softer espresso for body, a muted brown for metadata */
+  --color-ink: #2a1b13;
+  --color-ink2: #4a382c;
+  --color-muted: #6b5a4d;
+  --color-silver: #a89b8c;
+  --color-line: rgba(42, 27, 19, 0.14);
+  --color-line2: rgba(42, 27, 19, 0.3);
+  --color-on-dark: #f7f2e8;
+  --color-on-wine: #8a4f0c;
+  --color-on-forest: #2a1b13;
+  /* status, readable on ivory */
+  --color-ok: #3f5a2a;
+  --color-warn: #8a4f0c;
   --color-danger: #a8261c;
   --color-danger-hover: #861d15;
   --color-danger-fill: #a8261c;
-  --color-focus: #320b35;
+  --color-focus: #2a1b13;
 
-  --font-sans:
-    "Manrope Variable", Manrope, ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
-  /* shadows: soft and low, tinted plum; surfaces mostly rely on a hairline border */
-  --shadow-soft: 0 18px 40px -26px rgba(50, 11, 53, 0.35);
-  --shadow-card: 0 10px 28px -22px rgba(50, 11, 53, 0.3);
+  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne Variable", Syne, "Inter Variable", ui-sans-serif, sans-serif;
+  /* the door and the Earth keep their own serif, exactly as they were */
+  --font-serif: "Fraunces Variable", Fraunces, ui-serif, Georgia, serif;
+  /* shadows: none on surfaces, which rely on hairlines; only floating things get a faint lift */
+  --shadow-soft: 0 18px 40px -30px rgba(42, 27, 19, 0.28);
+  --shadow-card: none;
 }
 
 :root {
@@ -99,74 +108,82 @@ body::after {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.08;
+  opacity: 0.06;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   mix-blend-mode: multiply;
 }
 
 ::selection {
-  background: var(--color-deep-plum);
-  color: var(--color-butter);
+  background: var(--color-espresso);
+  color: var(--color-ivory);
 }
 
 :focus-visible {
   outline: 2.5px solid var(--color-focus);
   outline-offset: 3px;
-  border-radius: 10px;
+  border-radius: 2px;
 }
 
 @layer components {
-  /* a curated card: a wine surface, a hairline border, lifted a step on hover */
+  /* a panel: flat ivory paper with a hairline edge and square corners, no shadow */
   .card {
-    @apply rounded-3xl border border-line bg-surface shadow-card;
+    @apply rounded-[2px] border border-line bg-surface;
   }
+  /* pills, used selectively: tags and filters only */
   .chip {
-    @apply inline-flex h-8 items-center gap-1.5 rounded-full border border-line2 bg-transparent px-3 text-sm font-semibold whitespace-nowrap text-ink2;
+    @apply inline-flex h-8 items-center gap-1.5 rounded-full border border-line2 bg-transparent px-3 text-[0.8rem] font-medium tracking-[0.01em] whitespace-nowrap text-ink2;
   }
   button.chip {
-    @apply cursor-pointer transition duration-300 hover:border-rose/60 hover:text-ink;
+    @apply cursor-pointer transition duration-300 hover:border-ink hover:text-ink;
   }
-  /* selected: lavender plum, the club colour for "this one" */
+  /* selected: espresso, the club colour for "this one" */
   .chip[aria-pressed="true"],
   .chip[aria-selected="true"] {
     @apply border-brand bg-brand text-on-cta;
   }
-  /* the main action: Almond Cream set in Deep Plum */
+  /* the main action: a solid espresso bar set in ivory, square, medium weight */
   .btn {
-    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-cta px-5 font-bold tracking-[0.01em] text-on-cta transition duration-300 hover:bg-cta-hover active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45;
+    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[2px] border border-cta bg-cta px-5 text-[0.9rem] font-medium tracking-[0.02em] text-on-cta transition duration-300 hover:bg-cta-hover active:scale-[0.99] disabled:pointer-events-none disabled:opacity-45;
   }
-  /* the warm call to action, for people: lavender plum with a cream label */
   .btn-accent {
-    @apply border border-rose/25 bg-brand text-on-cta hover:bg-brand-hover;
+    @apply border-brand bg-brand text-on-cta hover:bg-brand-hover;
   }
   .btn-danger {
-    @apply bg-danger-fill text-butter hover:bg-danger-hover;
+    @apply border-danger-fill bg-danger-fill text-ivory hover:bg-danger-hover;
   }
+  /* the quiet action: a thin espresso line */
   .btn-ghost {
-    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-line2 bg-transparent px-5 font-bold text-ink transition duration-300 hover:border-rose/60 hover:bg-raised active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45;
+    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[2px] border border-ink bg-transparent px-5 text-[0.9rem] font-medium tracking-[0.02em] text-ink transition duration-300 hover:bg-ink hover:text-on-cta active:scale-[0.99] disabled:pointer-events-none disabled:opacity-45;
   }
   .btn-sm {
-    @apply h-9 px-4 text-sm;
+    @apply h-9 px-4 text-[0.82rem];
   }
   .kicker {
-    @apply text-[0.7rem] font-bold tracking-[0.2em] text-ink2/80 uppercase;
+    @apply text-[0.68rem] font-medium tracking-[0.18em] text-ink2 uppercase;
   }
   .link {
-    @apply font-semibold text-brand-ink decoration-rose/60 decoration-1 underline-offset-4 hover:underline;
+    @apply font-medium text-brand-ink underline decoration-line2 decoration-1 underline-offset-4 hover:decoration-ink;
   }
   .field {
-    @apply w-full rounded-xl border border-line2 bg-recess px-3 py-2.5 text-ink outline-none placeholder:text-muted/80 focus:border-rose/70 focus:ring-3 focus:ring-rose/15;
+    @apply w-full rounded-[2px] border border-line2 bg-recess px-3 py-2.5 text-ink outline-none placeholder:text-muted/80 focus:border-ink focus:ring-0;
   }
   .field[aria-invalid="true"] {
-    @apply border-danger/60 focus:border-danger focus:ring-danger/15;
+    @apply border-danger/60 focus:border-danger;
   }
   .display {
-    @apply font-display font-medium tracking-[-0.02em] text-ink;
-    font-optical-sizing: auto;
+    @apply font-display font-bold tracking-[-0.025em] text-ink;
   }
-  /* one word in a headline, set in italic light plum */
+  /* one word in a headline, picked out in dark amber */
   .accent-word {
-    @apply font-display font-normal text-accent italic;
+    @apply font-display text-accent not-italic;
+  }
+  /* an arrow that leans forward when its link is hovered */
+  .arrow {
+    @apply inline-block transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)];
+  }
+  a:hover .arrow,
+  button:hover .arrow {
+    @apply translate-x-1;
   }
 }
 
@@ -217,10 +234,10 @@ html[data-arrived] body > main {
   width: 46px;
   height: 46px;
   border-radius: 999px;
-  background: var(--color-highlight, var(--color-cta));
+  background: var(--color-cta);
   color: var(--color-on-cta);
   cursor: pointer;
-  box-shadow: 0 12px 28px -14px rgb(50 11 53 / 0.45);
+  box-shadow: 0 12px 28px -18px rgb(42 27 19 / 0.4);
   transition: transform 0.2s ease;
 }
 .vc-plus:hover {
@@ -245,14 +262,13 @@ html[data-arrived] body > main {
   margin: auto;
   padding: 0;
   border: 1px solid var(--color-line2);
-  border-radius: 28px;
+  border-radius: 2px;
   background: var(--color-canvas);
   color: var(--color-ink);
   overflow: auto;
 }
 .vc-sheet::backdrop {
-  background: rgb(50 11 53 / 0.35);
-  backdrop-filter: blur(6px);
+  background: rgb(42 27 19 / 0.55);
 }
 .vc-sheet__body {
   position: relative;
@@ -292,9 +308,7 @@ html[data-arrived] body > main {
   border-radius: 999px;
   background: var(--color-surface);
   color: var(--color-ink);
-  box-shadow:
-    0 0 0 1px var(--color-line2),
-    0 10px 24px -12px rgb(50 11 53 / 0.3);
+  box-shadow: 0 0 0 1px var(--color-line2);
   transition: transform 0.2s ease;
 }
 .vc-bell:hover {
@@ -304,9 +318,7 @@ html[data-arrived] body > main {
   position: relative;
   display: block;
   border-radius: 999px;
-  box-shadow:
-    0 0 0 1px var(--color-line2),
-    0 10px 24px -12px rgb(50 11 53 / 0.3);
+  box-shadow: 0 0 0 1px var(--color-line2);
   transition: transform 0.2s ease;
 }
 .vc-profile__button:hover {
@@ -362,8 +374,8 @@ body:not(:has(> .vc-pillbar)) > main {
   font-family: var(--font-display);
 }
 .vc-wheel .option-wheel__item {
-  font-style: italic;
-  letter-spacing: 0.01em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 @media (max-width: 640px) {
   /* on a phone it sits at the side of the sphere, clear of the thought box */

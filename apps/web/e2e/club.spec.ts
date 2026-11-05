@@ -10,7 +10,7 @@ test("home is one page: the hero, then what used to be Today", async ({
 }) => {
   await page.goto("/home");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "your Manali has people in it",
+    "Spaces for curious people.",
   );
   await expect(page.getByRole("listbox")).toHaveCount(0);
   for (const name of [
@@ -85,7 +85,7 @@ test("Discover sits on the butter page like the rest of the club", async ({ page
   await page.goto("/discover");
   const bg = (sel: string) =>
     page.locator(sel).first().evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(await bg("[data-formed]")).toBe("rgb(255, 249, 227)");
+  expect(await bg("[data-formed]")).toBe("rgb(247, 242, 232)");
 });
 
 test("events: join and leave", async ({ page }) => {

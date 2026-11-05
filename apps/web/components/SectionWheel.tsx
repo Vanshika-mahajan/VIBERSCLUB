@@ -63,8 +63,8 @@ export function SectionWheel({
         smoothing={220}
         inset={inline ? 6 : 0}
         draggable
-        textColor="#4a2a4e"
-        activeColor="#320B35"
+        textColor="#4a382c"
+        activeColor="#2a1b13"
         soundUrl={sound.enabled ? "/sounds/wheel-tick.wav" : ""}
         soundVolume={sound.volume * 0.6}
         onChange={(i: number) => {

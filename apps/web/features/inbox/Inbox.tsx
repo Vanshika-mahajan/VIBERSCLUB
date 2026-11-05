@@ -53,10 +53,10 @@ function Notes() {
     );
   return (
     <div role="tabpanel">
-      <ul className="card divide-y divide-line" aria-label="Notifications">
+      <ul className="divide-y divide-line2 border-y border-ink" aria-label="Notifications">
         {notes.map((n) => (
           <li key={n.id}>
-            <Link href={n.href} className="flex items-center gap-3 p-4 hover:bg-sand">
+            <Link href={n.href} className="flex items-center gap-3 px-1 py-4 transition hover:bg-raised">
               <NoteMark note={n} />
               <span className="min-w-0 flex-1 text-sm text-ink">{n.text}</span>
               {fresh.has(n.id) && (
@@ -77,7 +77,7 @@ function NoteMark({ note }: { note: Note }) {
   if (v) return <Avatar name={v.name} src={v.photoUrl} size={44} />;
   const e = note.eventId ? findEvent(note.eventId, getState().hosted) : undefined;
   return (
-    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent-wash text-[0.6rem] font-extrabold tracking-wider text-ink2 uppercase" aria-hidden="true" title={e?.title}>
+    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent-wash text-[0.6rem] font-semibold tracking-wider text-ink2 uppercase" aria-hidden="true" title={e?.title}>
       {LABEL[note.kind]}
     </span>
   );

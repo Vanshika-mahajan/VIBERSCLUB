@@ -70,17 +70,17 @@ export function portrait(name: string): string {
   const forest =
     [...name].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 2 === 0;
   const ground = g.createLinearGradient(0, 0, 600, 780);
-  ground.addColorStop(0, forest ? "#f5f0c9" : "#fff9e3");
-  ground.addColorStop(1, forest ? "#e4daee" : "#f2eac0");
+  ground.addColorStop(0, forest ? "#efe8da" : "#f7f2e8");
+  ground.addColorStop(1, forest ? "#dfe3d2" : "#e9e1d0");
   g.fillStyle = ground;
   g.fillRect(0, 0, 600, 780);
   const light = g.createRadialGradient(430, 170, 10, 430, 170, 430);
-  light.addColorStop(0, "rgba(155, 130, 181, 0.22)");
-  light.addColorStop(1, "rgba(155, 130, 181, 0)");
+  light.addColorStop(0, "rgba(135, 154, 107, 0.22)");
+  light.addColorStop(1, "rgba(135, 154, 107, 0)");
   g.fillStyle = light;
   g.fillRect(0, 0, 600, 780);
-  g.fillStyle = "rgba(50, 11, 53, 0.82)";
-  g.font = 'italic 300 190px "Fraunces Variable", Georgia, serif';
+  g.fillStyle = "rgba(42, 27, 19, 0.82)";
+  g.font = '700 170px "Syne Variable", "Inter Variable", sans-serif';
   g.textAlign = "center";
   g.textBaseline = "middle";
   g.fillText(initials(name), 300, 400);
@@ -109,12 +109,12 @@ export function landscape(name: string): string {
     return (seed & 0xffff) / 0xffff;
   };
   const sky = g.createLinearGradient(0, 0, 0, 1100);
-  sky.addColorStop(0, "#fff9e3");
-  sky.addColorStop(0.55, "#f5f0c9");
-  sky.addColorStop(1, "#ece3f0");
+  sky.addColorStop(0, "#f7f2e8");
+  sky.addColorStop(0.55, "#efe8da");
+  sky.addColorStop(1, "#e4e7d8");
   g.fillStyle = sky;
   g.fillRect(0, 0, 900, 1100);
-  const ridges = ["#c9b6d9", "#9b82b5", "#5b3f75", "#320b35"];
+  const ridges = ["#c3ccb0", "#879a6b", "#4a382c", "#2a1b13"];
   ridges.forEach((color, i) => {
     const base = 520 + i * 150;
     g.beginPath();

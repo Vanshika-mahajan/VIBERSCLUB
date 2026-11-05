@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource-variable/manrope";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/syne";
 import "@fontsource-variable/fraunces";
+import "@fontsource-variable/manrope";
 import { AppNav } from "@/components/AppNav";
 import { SoundEffects } from "@/components/SoundEffects";
 import { Toaster } from "@/components/ui";
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FFF9E3",
+  themeColor: "#F7F2E8",
   viewportFit: "cover",
 };
 

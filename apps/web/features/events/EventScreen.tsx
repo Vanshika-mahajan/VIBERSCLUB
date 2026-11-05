@@ -17,7 +17,7 @@ export function EventScreen({ id }: { id: string }) {
   if (!e || blocked.includes(e.hostId)) {
     return (
       <Empty>
-        <h1 className="mb-2 text-xl font-extrabold text-ink">Event not found</h1>
+        <h1 className="mb-2 text-xl font-semibold text-ink">Event not found</h1>
         It may have ended or been removed. <Link href="/events" className="link">See all events</Link>
       </Empty>
     );
@@ -38,7 +38,7 @@ export function EventScreen({ id }: { id: string }) {
       <Link href="/events" className="link mb-4 inline-flex text-sm">
         ← All events
       </Link>
-      <Cover src={e.photoUrl} className="h-56 rounded-3xl md:h-72">
+      <Cover src={e.photoUrl} className="h-56 md:h-80">
         {e.sample && (
           <span className="absolute top-3 left-3">
             <SampleBadge />
@@ -73,13 +73,13 @@ export function EventScreen({ id }: { id: string }) {
         </div>
         <aside className="card h-fit space-y-4 p-5" aria-label="Join this event">
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-extrabold">{price(e)}</span>
+            <span className="text-2xl font-semibold">{price(e)}</span>
             <span className="text-sm font-semibold text-muted">{full ? "Full" : `${Math.max(0, e.capacity - going)} of ${e.capacity} seats left`}</span>
           </div>
           <p className="text-sm text-ink2">
             <b>Meet at:</b> {e.meetingPoint}, {areas[e.area].label}
           </p>
-          {e.priceInr > 0 && <p className="rounded-2xl bg-accent-wash/60 p-3 text-sm text-ink2">The host collects payment directly. Vibers Club doesn&apos;t take money in this version.</p>}
+          {e.priceInr > 0 && <p className="rounded-[2px] bg-accent-wash/60 p-3 text-sm text-ink2">The host collects payment directly. Vibers Club doesn&apos;t take money in this version.</p>}
           {mine ? (
             <div className="space-y-2">
               <p className="font-bold text-ok">You&apos;re hosting this.</p>

@@ -206,8 +206,8 @@ export function Community({ vibe = "" }: { vibe?: string }) {
                 wave={0.6}
                 fadeEdges={0.16}
                 shadow={0.35}
-                textColor="#320b35"
-                font='italic 400 26px "Fraunces Variable"'
+                textColor="#2a1b13"
+                font='600 26px "Syne Variable"'
                 openOnClick={false}
                 snap
                 onActiveChange={setActive}

@@ -55,11 +55,11 @@ export function ChatsScreen({ embedded = false }: { embedded?: boolean }) {
       {tab === "chats" ? (
         chats.length || groups.length ? (
           <div role="tabpanel">
-          <ul className="card divide-y divide-line">
+          <ul className="divide-y divide-line2 border-y border-ink">
             {groups.map(({ event: e, status, last }) => (
               <li key={e.id}>
                 <Link href={`/chats?group=${e.id}`} className="flex items-center gap-3 p-4 hover:bg-sand">
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-accent-wash text-xs font-extrabold text-ink2" aria-hidden="true">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-accent-wash text-xs font-semibold text-ink2" aria-hidden="true">
                     {e.goingIds.length + 1}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -98,7 +98,7 @@ export function ChatsScreen({ embedded = false }: { embedded?: boolean }) {
       ) : (
         <div role="tabpanel" className="space-y-4">
           {incoming.length ? (
-            <ul className="card divide-y divide-line">
+            <ul className="divide-y divide-line2 border-y border-ink">
               {incoming.map((id) => {
                 const v = viberById[id];
                 return (
@@ -160,7 +160,7 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
         </button>
         <Avatar name={v.name} src={v.photoUrl} size={42} />
         <span className="min-w-0 flex-1">
-          <h1 className="text-lg leading-tight font-extrabold">{v.name}</h1>
+          <h1 className="text-lg leading-tight font-semibold">{v.name}</h1>
           <small className="text-muted">{areas[v.area].label}</small>
         </span>
         <button
@@ -185,7 +185,7 @@ function Thread({ id, onBack }: { id: string; onBack: () => void }) {
         <li className="pb-2 text-center text-xs text-muted">You connected. Meet in public places, and tell someone your plans.</li>
         {list.map((m) => (
           <li key={m.id} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-            <span className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-brand text-on-cta" : "bg-sand text-ink"}`}>{m.text}</span>
+            <span className={`max-w-[80%] rounded-[3px] px-3.5 py-2 text-sm ${m.from === "me" ? "bg-brand text-on-cta" : "bg-sand text-ink"}`}>{m.text}</span>
           </li>
         ))}
         <li ref={end} aria-hidden="true" />
@@ -236,7 +236,7 @@ function GroupThread({ event: e, status, onBack }: { event: DemoEvent; status: G
           ←
         </button>
         <span className="min-w-0 flex-1">
-          <h1 className="text-lg leading-tight font-extrabold">{e.title}</h1>
+          <h1 className="text-lg leading-tight font-semibold">{e.title}</h1>
           <small className="text-muted">
             Group chat · you and {plural(members.length, "other")}
             {host ? ` · hosted by ${firstName(host)}` : ""}
@@ -267,7 +267,7 @@ function GroupThread({ event: e, status, onBack }: { event: DemoEvent; status: G
         </li>
         {host && (
           <li className="flex justify-start">
-            <span className="max-w-[80%] rounded-2xl bg-sand px-3.5 py-2 text-sm text-ink">
+            <span className="max-w-[80%] rounded-[3px] bg-sand px-3.5 py-2 text-sm text-ink">
               <b className="block text-xs text-muted">{firstName(host)}</b>
               Welcome! See you at {e.meetingPoint} at {e.time}.
             </span>
@@ -275,13 +275,13 @@ function GroupThread({ event: e, status, onBack }: { event: DemoEvent; status: G
         )}
         {list.map((m) => (
           <li key={m.id} className="flex justify-end">
-            <span className="max-w-[80%] rounded-2xl bg-brand px-3.5 py-2 text-sm text-on-cta">{m.text}</span>
+            <span className="max-w-[80%] rounded-[3px] bg-brand px-3.5 py-2 text-sm text-on-cta">{m.text}</span>
           </li>
         ))}
         <li ref={end} aria-hidden="true" />
       </ol>
       {ended ? (
-        <p className="mt-3 rounded-2xl border border-line2 p-3 text-center text-sm text-muted" role="status">
+        <p className="mt-3 rounded-[3px] border border-line2 p-3 text-center text-sm text-muted" role="status">
           This event has ended, so the chat is read only. You can delete it.
         </p>
       ) : (
