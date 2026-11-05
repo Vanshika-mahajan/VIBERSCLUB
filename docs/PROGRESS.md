@@ -14,6 +14,12 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Explore wheel, Day plans actions, sample portraits (2026-11-05)
+- `components/SectionWheel.tsx`: a shared React Bits OptionWheel that names a page's parts, scrolls to them with the tick sound, and follows the scroll. Discover's wheel now uses it too. Explore's wheel names Places to visit, Posts like yours and Day plans: inline under the Explore/Itinerary switch, and at the right edge on screens 1280px and wider.
+- Day plans: "Customize" saves a copy to your itineraries (if it isn't saved yet) and opens it in the builder; "Save for later" keeps a copy to use as it is, and then reads "Saved ✓". New `fromRoadmap` field on itineraries, so a plan is never saved twice.
+- Sample portraits: Harish Negi and Narayan Joshi (now "Teacher and storyteller") show initials portraits until ARPIT picks new photos. Pexels can't be reached from the cloud workspace, so photos can't be chosen by looking at them here.
+- Tests: vitest 95 passed; Playwright all passed except "API OK", which needs the backend. New e2e tests cover the Explore wheel and saving and customizing a day plan.
+
 ## Discover waits for Enter, and Vanilla Tint (2026-11-05)
 - Discover reads your thought quietly while you type, but nothing on screen reacts (no tags read back, no sphere glow, no people) until you press Enter or the arrow. The example thoughts and "Use my vibe" now fill the box for you to edit, and Enter sends them.
 - Soft Butter `#FFF3B0` replaced by Vanilla Tint `#FFF9E3` everywhere (token `--color-butter`, alias `--color-vanilla`), including the Discover sphere background and the theme colour.

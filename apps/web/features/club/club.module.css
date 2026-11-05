@@ -1797,3 +1797,8 @@ select.mini2 {
 .addPlan {
   max-width: 220px;
 }
+
+/* sections the Explore wheel scrolls to: land a little below the top edge */
+.anchor {
+  scroll-margin-top: 24px;
+}

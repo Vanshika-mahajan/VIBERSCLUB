@@ -31,9 +31,9 @@ export function activitiesOf(p: Plan, max = 5): string[] {
 const noop = () => () => {};
 
 /** My itinerary: build my own day by day, or start from a plan by Vibers Club or another Viber. */
-export function Itinerary() {
+export function Itinerary({ initialOpen = null }: { initialOpen?: string | null } = {}) {
   const mine = useDemo((st) => st.itineraries);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(initialOpen);
   const open = mine.find((i) => i.id === openId) ?? mine[0];
   const [title, setTitle] = useState("");
   const [days, setDays] = useState(3);

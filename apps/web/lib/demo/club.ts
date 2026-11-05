@@ -130,6 +130,8 @@ export type Itinerary = {
   startDate?: string;
   travelStyle?: string;
   notes?: string;
+  /** a copy of a local day plan (Explore, Day plans): that plan's id */
+  fromRoadmap?: string;
 };
 
 const plan = (

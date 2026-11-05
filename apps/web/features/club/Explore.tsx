@@ -84,7 +84,7 @@ export function Explore() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 44 }}>
-      <section aria-labelledby="places-title">
+      <section id="places" className={s.anchor} aria-labelledby="places-title">
         <div className={s.sectionHead}>
           <div>
             <h2 id="places-title" className={s.h2}>
@@ -209,7 +209,7 @@ export function Explore() {
         )}
       </section>
 
-      <section aria-labelledby="similar-title">
+      <section id="posts-like-yours" className={s.anchor} aria-labelledby="similar-title">
         <div className={s.sectionHead}>
           <div>
             <h2 id="similar-title" className={s.h2}>

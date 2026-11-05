@@ -249,3 +249,25 @@ test("profile: lists open what they hold", async ({ page }) => {
   await plans.getByRole("option").first().click();
   await expect(page).toHaveURL(/\/events\//);
 });
+
+test("explore: the wheel names its parts and takes you there", async ({ page }) => {
+  await page.goto("/explore");
+  const wheel = page.getByRole("listbox", { name: /Parts of Explore/ });
+  await expect(wheel.getByRole("option")).toHaveText(["Places to visit", "Posts like yours", "Day plans"]);
+  await wheel.getByRole("option", { name: "Day plans" }).click();
+  await expect(page.locator("#day-plans")).toBeInViewport();
+  await expect(wheel.getByRole("option", { name: "Day plans" })).toHaveAttribute("aria-selected", "true");
+});
+
+test("day plans: save one for later, then customize it in the builder", async ({ page }) => {
+  await page.goto("/explore");
+  const plan = page.locator("#old-manali-slow");
+  await plan.getByRole("button", { name: /Save A slow day in Old Manali for later/ }).click();
+  await expect(plan.getByRole("button", { name: /is saved for later/ })).toHaveText("Saved ✓");
+  await plan.getByRole("button", { name: "Customize A slow day in Old Manali" }).click();
+  await expect(page).toHaveURL(/section=itinerary/);
+  await expect(page.getByRole("textbox", { name: "Title", exact: true })).toHaveValue("A slow day in Old Manali");
+  // customizing used the saved copy, not a second one
+  await page.goto("/explore");
+  await expect(page.locator("#old-manali-slow").getByRole("button", { name: /is saved for later/ })).toBeVisible();
+});

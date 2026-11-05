@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui";
+import { SectionWheel, type WheelSection } from "@/components/SectionWheel";
 import { Explore } from "@/features/club/Explore";
 import { Itinerary } from "@/features/club/Itinerary";
 import s from "@/features/club/club.module.css";
@@ -14,6 +15,13 @@ const SECTIONS = [
 ] as const;
 export type ExploreSection = (typeof SECTIONS)[number]["id"];
 
+/** the parts of the Explore half, named on the wheel so it is clear there is more below */
+const PARTS: WheelSection[] = [
+  { label: "Places to visit", id: "places" },
+  { label: "Posts like yours", id: "posts-like-yours" },
+  { label: "Day plans", id: "day-plans" },
+];
+
 /**
  * Explore Manali in two halves: Explore (places, day plans, posts like yours) and Itinerary
  * (plans to start from and my own). The open half is kept in the URL (?section=itinerary).
@@ -21,6 +29,8 @@ export type ExploreSection = (typeof SECTIONS)[number]["id"];
 export function ExploreHub() {
   const asked = useSearchParams().get("section");
   const [section, setSection] = useState<ExploreSection>(asked === "itinerary" ? "itinerary" : "explore");
+  // a day plan opened to customize: the Itinerary half opens with it in the builder
+  const [openPlan, setOpenPlan] = useState<string | null>(null);
   const choose = (id: ExploreSection) => {
     setSection(id);
     const url = id === "explore" ? "/explore" : `/explore?section=${id}`;
@@ -42,11 +52,19 @@ export function ExploreHub() {
       <div key={section} className={s.panel}>
         {section === "explore" ? (
           <>
+            <SectionWheel sections={PARTS} label="Parts of Explore" layout="inline" className="vc-explore-wheel--inline" />
+            <SectionWheel sections={PARTS} label="Parts of Explore" className="vc-explore-wheel--side" />
             <Explore />
-            <DayPlans />
+            <DayPlans
+              onCustomize={(id) => {
+                setOpenPlan(id);
+                choose("itinerary");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
           </>
         ) : (
-          <Itinerary />
+          <Itinerary initialOpen={openPlan} />
         )}
       </div>
     </div>
