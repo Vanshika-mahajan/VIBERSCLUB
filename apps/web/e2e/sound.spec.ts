@@ -35,7 +35,7 @@ test("sounds: quiet on arrival, play on a tap, and can be muted in settings", as
   await expect(sw).not.toBeChecked();
 
   const before = await notes(page);
-  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Home" }).click();
+  await page.getByRole("link", { name: "Vibers Club" }).click();
   await expect(page).toHaveURL(/\/home/);
   await page.waitForTimeout(300);
   expect(await notes(page)).toBe(before);

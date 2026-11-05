@@ -13,11 +13,7 @@ test("home is one page: the hero, then what used to be Today", async ({
     "Spaces for curious people.",
   );
   await expect(page.getByRole("listbox")).toHaveCount(0);
-  for (const name of [
-    "Vibers like you",
-    "Happening this week",
-    "Explore Manali",
-  ])
+  for (const name of ["Vibers like you", "This week", "Day plans"])
     await expect(page.getByRole("heading", { name, level: 2 })).toBeVisible();
   await page.getByRole("button", { name: /Ignite the vibe/ }).click();
   await expect(page.getByRole("dialog", { name: "Ignite the vibe" })).toBeVisible();
@@ -72,7 +68,7 @@ test("community: a Viber's overview opens in place, then their full profile", as
   await expect(page).toHaveURL(/\/vibers\//);
   await expect(page.getByRole("heading", { name, level: 1 })).toBeVisible();
   const connect = page.getByRole("button", { name: "Connect" });
-  // keep it clear of the pill bar at the foot of the screen
+  // keep it clear of the contents strip at the foot of the screen
   await connect.evaluate((el) => el.scrollIntoView({ block: "center" }));
   await connect.click();
   // liked: either waiting for them, or (when they liked you first) straight into a chat
@@ -156,7 +152,7 @@ test("itinerary: drag places onto days, reorder, move to another day, remove", a
   await expect(rows.first()).toContainText("Hadimba Devi temple");
   await day1.getByRole("button", { name: "Move Hadimba Devi temple later" }).click();
   await expect(rows.first()).toContainText("Jogini falls");
-  // centred, clear of the pill bar at the foot of the screen
+  // centred, clear of the contents at the foot of the screen
   await day2.evaluate((el) => el.scrollIntoView({ block: "center" }));
   await day1.locator("[data-stop-row]").filter({ hasText: "Jogini falls" }).dragTo(day2);
   await expect(day2.getByText("Jogini falls")).toBeVisible();

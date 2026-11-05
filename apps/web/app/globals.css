@@ -195,7 +195,7 @@ body::after {
     transform: translateY(14px) scale(0.99);
   }
 }
-html[data-arrived] body > .vc-pillbar,
+html[data-arrived] body > .vc-contents,
 html[data-arrived] body > main {
   animation: vc-arrive 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
@@ -203,7 +203,7 @@ html[data-arrived] body > main {
   animation-delay: 0.08s;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-arrived] body > .vc-pillbar,
+  html[data-arrived] body > .vc-contents,
   html[data-arrived] body > main {
     animation: vc-fade 0.3s ease-out both;
   }
@@ -214,42 +214,112 @@ html[data-arrived] body > main {
   }
 }
 
-/* The pill bar at the foot of the screen, above the home indicator on phones */
-.vc-pillbar {
+/* The page column. On wider screens it keeps clear of the docked contents at the left: --main-ml is
+   the column's left margin and --main-pl its padding, so edge-to-edge parts (.vc-bleed) can reach
+   back to the edge of the screen. */
+:root {
+  --main-ml: 0px;
+  --main-pl: 1rem;
+}
+@media (min-width: 768px) {
+  :root {
+    --main-pl: 2.5rem;
+    --main-ml: max(0px, calc((100vw - 64rem) / 2));
+  }
+  :root:has(body > .vc-contents) {
+    --main-ml: max(232px, calc((100vw - 64rem) / 2));
+  }
+}
+body > main {
+  margin-left: var(--main-ml);
+  margin-right: auto;
+  padding-left: var(--main-pl);
+  width: min(64rem, calc(100% - var(--main-ml)));
+  max-width: none;
+}
+.vc-bleed {
+  width: 100vw;
+  max-width: none;
+  margin-left: calc(-1 * (var(--main-ml) + var(--main-pl)));
+}
+
+/* behind the top line: paper, once the page under it is paper, with a hairline */
+.vc-band {
   position: fixed;
-  left: 50%;
-  bottom: calc(14px + env(safe-area-inset-bottom));
-  z-index: 40;
-  transform: translateX(-50%);
-  max-width: calc(100vw - 24px);
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 42;
+  height: calc(68px + env(safe-area-inset-top));
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-line);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.vc-band.is-paper {
+  opacity: 1;
+}
+/* The wordmark, top left: back to the top of Home. Ivory over the dark opening, espresso on paper. */
+.vc-word {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  z-index: 45;
   display: flex;
   align-items: center;
-  gap: 8px;
+  height: 40px;
+  font: 800 1.2rem/1 var(--font-display);
+  letter-spacing: -0.03em;
+  color: var(--color-ivory);
+  text-decoration: none;
+  transition: color 0.3s;
 }
-/* the + for posting, beside the pill bar: a Deep Plum disc with a butter cross */
+.vc-word.is-paper {
+  color: var(--color-espresso);
+}
+.vc-word:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+/* + Post, in the top line: a thin outline, square, in the colour of what is under it */
 .vc-plus {
-  display: grid;
+  display: inline-flex;
   flex: none;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 999px;
-  background: var(--color-cta);
-  color: var(--color-on-cta);
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid currentColor;
+  border-radius: 0;
+  background: none;
+  color: var(--color-ivory);
+  font: 500 13px/1 var(--font-sans);
+  letter-spacing: 0.02em;
   cursor: pointer;
-  box-shadow: 0 12px 28px -18px rgb(42 27 19 / 0.4);
-  transition: transform 0.2s ease;
+  transition:
+    color 0.3s,
+    background 0.2s;
 }
-.vc-plus:hover {
-  transform: rotate(90deg) scale(1.05);
+.vc-plus.is-paper {
+  color: var(--color-espresso);
 }
-/* on a narrow phone the + floats just above the pill bar, at the right */
+/* a narrow phone keeps only the + */
 @media (max-width: 520px) {
   .vc-plus {
-    position: absolute;
-    right: 0;
-    bottom: calc(100% + 10px);
+    width: 36px;
+    padding: 0;
+    justify-content: center;
   }
+  .vc-plus span {
+    display: none;
+  }
+}
+.vc-plus:hover {
+  background: rgb(247 242 232 / 0.14);
+}
+.vc-plus.is-paper:hover {
+  background: rgb(42 27 19 / 0.06);
 }
 .vc-plus:focus-visible {
   outline: 2px solid var(--color-focus);
@@ -343,19 +413,13 @@ html[data-arrived] body > main {
   font-size: 0.66rem;
   font-weight: 800;
 }
-@media (prefers-reduced-motion: reduce) {
-  .vc-plus:hover {
-    transform: none;
-  }
-}
-
-/* full screen pages (the door, the universe) have no pill bar or avatar to make room for */
-body:not(:has(> .vc-pillbar)) > main {
+/* full screen pages (the door, the universe) have no contents or top line to make room for */
+body:not(:has(> .vc-contents)) > main {
   padding-top: 1.5rem;
   padding-bottom: 7rem;
 }
 @media (min-width: 768px) {
-  body:not(:has(> .vc-pillbar)) > main {
+  body:not(:has(> .vc-contents)) > main {
     padding-top: 2.5rem;
     padding-bottom: 3rem;
   }

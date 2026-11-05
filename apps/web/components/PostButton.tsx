@@ -11,7 +11,7 @@ const OPEN = "vc:post";
 /** open the posting sheet from anywhere (the Home card, a link with #ignite) */
 export const openPost = () => window.dispatchEvent(new Event(OPEN));
 
-/** The + beside the pill bar: IGNITE THE VIBE (a thread or a photo), from any screen. */
+/** + Post in the top line: IGNITE THE VIBE (a thread or a photo), from any screen. */
 export function PostButton() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -32,7 +32,8 @@ export function PostButton() {
   return (
     <>
       <button type="button" className="vc-plus" aria-label="Post: ignite the vibe" aria-haspopup="dialog" onClick={() => setOpen(true)}>
-        <HugeiconsIcon icon={PlusSignIcon} size={22} strokeWidth={2} />
+        <HugeiconsIcon icon={PlusSignIcon} size={16} strokeWidth={2} />
+        <span aria-hidden="true">Post</span>
       </button>
       {open && (
         <dialog

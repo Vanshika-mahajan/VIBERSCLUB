@@ -23,7 +23,7 @@ export function SoundEffects() {
       let sound: SoundName | null = null;
       if (named === "none") return;
       if (named) sound = named as SoundName;
-      else if (el.closest(".vc-pillbar") && el.matches("a")) sound = "nav";
+      else if (el.closest(".vc-contents") && el.matches("a")) sound = "nav";
       else if (el.hasAttribute("aria-pressed")) sound = el.getAttribute("aria-pressed") === "true" ? "deselect" : "select";
       else if (el.hasAttribute("aria-expanded")) sound = el.getAttribute("aria-expanded") === "true" ? "close" : "open";
       else if (el.matches("button[type='submit'], .btn, .btn-ghost")) sound = "tap";

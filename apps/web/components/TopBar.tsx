@@ -6,23 +6,43 @@ import { useMemo, useSyncExternalStore } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Notification01Icon } from "@hugeicons/core-free-icons";
 import { Avatar } from "@/components/ui";
+import { PostButton } from "@/components/PostButton";
 import { notesFor, unseen } from "@/lib/demo/notifications";
 import { useDemo, type DemoState } from "@/lib/demo/store";
 
 /**
- * Top right of every app screen: your initial, which opens your profile. On Home, a bell sits beside
- * it with your chats and notifications (matches, requests, events, group chats).
+ * The top line of every app screen: the wordmark at the left (back to the top of Home); at the right
+ * + Post and your initial, which opens your profile. On Home, a bell sits beside them with your chats
+ * and notifications (matches, requests, events, group chats).
  */
 export function TopBar() {
   const pathname = usePathname();
   const me = useDemo((s) => s.me);
   return (
-    <div className="vc-top">
-      {pathname === "/home" && <Bell />}
-      <Link href="/profile" className="vc-profile__button" aria-label="Your profile" aria-current={pathname === "/profile" ? "page" : undefined}>
-        <Avatar name={me.name} size={40} />
-      </Link>
-    </div>
+    <>
+      {/* Discover draws its own mark and controls in this line */}
+      {pathname !== "/discover" && (
+        <>
+          {/* a band of paper behind the top line, shown when the page under it is paper */}
+          <div className="vc-band" aria-hidden="true" />
+          <Link href="/home" className="vc-word">
+            Vibers Club
+          </Link>
+        </>
+      )}
+      <div className="vc-top">
+        <PostButton />
+        {pathname === "/home" && <Bell />}
+        <Link
+          href="/profile"
+          className="vc-profile__button"
+          aria-label="Your profile"
+          aria-current={pathname === "/profile" ? "page" : undefined}
+        >
+          <Avatar name={me.name} size={40} />
+        </Link>
+      </div>
+    </>
   );
 }
 
@@ -39,13 +59,35 @@ function Bell() {
   const me = useDemo((s) => s.me);
   const seen = useDemo((s) => s.seenNotes);
   // the count depends on today's date, so it is worked out in the browser only
-  const inBrowser = useSyncExternalStore(noop, () => true, () => false);
+  const inBrowser = useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  );
   const count = useMemo(
-    () => (inBrowser ? unseen(notesFor({ liked, connections, rsvps, joinedAt, hosted, blocked, me } as DemoState), seen).length : 0),
+    () =>
+      inBrowser
+        ? unseen(
+            notesFor({
+              liked,
+              connections,
+              rsvps,
+              joinedAt,
+              hosted,
+              blocked,
+              me,
+            } as DemoState),
+            seen,
+          ).length
+        : 0,
     [inBrowser, liked, connections, rsvps, joinedAt, hosted, blocked, me, seen],
   );
   return (
-    <Link href="/inbox" className="vc-bell" aria-label={`Chats and notifications${count ? `, ${count} new` : ""}`}>
+    <Link
+      href="/inbox"
+      className="vc-bell"
+      aria-label={`Chats and notifications${count ? `, ${count} new` : ""}`}
+    >
       <HugeiconsIcon icon={Notification01Icon} size={20} strokeWidth={1.8} />
       {count > 0 && (
         <span className="vc-profile__badge" aria-hidden="true">

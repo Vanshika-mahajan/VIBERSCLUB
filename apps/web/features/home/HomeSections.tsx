@@ -6,6 +6,7 @@ import CircularCarousel from "@/components/reactbits/CircularCarousel";
 import { portrait } from "@/features/club/shared";
 import { HealthStatus } from "@/components/HealthStatus";
 import { Section } from "@/components/ui";
+import { Chapter } from "./Chapter";
 import { EventCard } from "@/features/events/EventCard";
 import { hashtag, interpret } from "@/features/discover/interpret";
 import { discover } from "@/features/discover/rank";
@@ -17,8 +18,9 @@ import { areas, interestById } from "@/lib/taxonomy";
 const noop = () => () => {};
 
 /**
- * What used to be the Today page, now the body of Home under the hero: your vibe and requests, a quick
- * post, Vibers like you, what's on this week, day plans and the system status.
+ * The body of Home under the opening, in the chapters the contents list: I your vibe and requests
+ * (its title is the last frame of the opening), a quick post, II Vibers like you, III this week and
+ * IV day plans, each opening on a photograph that gathers out of stardust; then the system status.
  */
 export function HomeSections({ post }: { post?: ReactNode }) {
   const me = useDemo((s) => s.me);
@@ -56,8 +58,8 @@ export function HomeSections({ post }: { post?: ReactNode }) {
   }, [me.interests, hosted]);
 
   return (
-    <div className="pt-4">
-      <Section n="01" title="Your vibe">
+    <div>
+      <section id="your-vibe" aria-label="Your vibe" className="scroll-mt-6 border-t border-ink pt-5 md:pt-6">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr] md:gap-14">
           <div aria-labelledby="vibe-title">
             <p className="kicker" id="vibe-title">
@@ -95,11 +97,11 @@ export function HomeSections({ post }: { post?: ReactNode }) {
             </Link>
           </section>
         </div>
-      </Section>
+      </section>
 
       {post && <div id="post" className="mt-16 scroll-mt-6">{post}</div>}
 
-      <Section n="02" title="Vibers like you" action={<Link href="/discover" className="link text-sm">Discover <span className="arrow" aria-hidden="true">→</span></Link>}>
+      <Section id="vibers-like-you" title="Vibers like you" opener={<Chapter n="II" title="Vibers like you" img="/journey/meadow.webp" y={0.55} />} action={<Link href="/discover" className="link text-sm">Discover <span className="arrow" aria-hidden="true">→</span></Link>}>
         {/* relevant profiles on a slowly turning ring: drag to spin, click one to bring it to the front */}
         <div className="relative -mx-4 h-[380px] md:mx-0 md:h-[440px]">
           {ring.length > 0 && (
@@ -129,7 +131,7 @@ export function HomeSections({ post }: { post?: ReactNode }) {
         </ul>
       </Section>
 
-      <Section n="03" title="Happening this week" action={<Link href="/events" className="link text-sm">All events <span className="arrow" aria-hidden="true">→</span></Link>}>
+      <Section id="this-week" title="This week" opener={<Chapter n="III" title="This week" img="/journey/day.webp" y={0.75} />} action={<Link href="/events" className="link text-sm">All events <span className="arrow" aria-hidden="true">→</span></Link>}>
         {/* asymmetric: the closest match leads, larger; the next two stack beside it */}
         <div className="grid gap-8 md:grid-cols-[1.5fr_1fr] md:gap-10">
           {upcoming.map((e, i) => (
@@ -140,7 +142,7 @@ export function HomeSections({ post }: { post?: ReactNode }) {
         </div>
       </Section>
 
-      <Section n="04" title="Explore Manali" action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
+      <Section id="day-plans" title="Day plans" opener={<Chapter n="IV" title="Day plans" img="/journey/meadow.webp" y={0.85} />} action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
         <ol className="border-t border-line2">
           {roadmaps.map((r, i) => (
             <li key={r.id} className="border-b border-line2">

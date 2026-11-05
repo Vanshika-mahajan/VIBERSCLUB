@@ -414,3 +414,19 @@ ARPIT picked option A (Syne) from the type study. Applied across the frontend; t
 - Section and PageHeader in `components/ui.tsx`: espresso hairline, Syne titles, optional oversized sage number.
 - Events, Posts like yours, Day plans and Inbox lists became editorial listings (hairline above, no box); the first event leads at double width.
 - Tests: 131 pass; only "home shows API OK" fails, because the backend isn't running in the cloud workspace.
+
+## Contents carousel and the Home opening (2026-11-05)
+
+ARPIT approved demo v5 (Shopify Editions style contents) and asked for it to be built, with the Spring '26 ideas left for later.
+
+**What changed**
+- `components/contents/Contents.tsx`: the contents replace the bottom pill bar on every app page. One flat list, I to VII: Your vibe, Vibers like you, This week, Day plans (anchors on Home), then Discover, Events, Explore. At the very top of Home it sits centred in a thin frame with the title (the page's h1) and a standfirst. The first scroll pours it into the corner at the same size (title top left, list bottom left, numerals close up to the longest word), each word a beat after the line above and each numeral a beat behind its word (FLIP, about 0.55 s). Back at the very top of Home it flies back into the frame. Hover only underlines. A chapter link glides to the chapter on Home. On phones the docked list is an ivory strip along the foot of the screen. Each line is ivory over regions marked `data-tone="dark"` and espresso on paper.
+- `components/TopBar.tsx`: the wordmark (back to Home) at the left; + Post (moved from the pill bar) and your initial at the right; a paper band appears behind the line when the page under it is paper. Discover keeps its own mark in that corner.
+- `app/globals.css`: the page column keeps clear of the docked contents on wider screens (`--main-ml`, `--main-pl`); `.vc-bleed` reaches back to the screen edge. Discover's first screen uses the same variables.
+- `features/home/Opening.tsx`: the opening of Home, scrubbed by scroll on a sticky stage: your thought and your best match's meet over the meadow, a spark, the meadow breaks into stardust and gathers into our Earth (`public/home/earth.webp`, cropped from the journey still), then chapter I rises. Where the 3D journey runs, the live three.js planet from the journey fades in over the still and keeps turning (`openingPlanet.ts`), toned in sage. `dust.ts` is the Canvas 2D stardust.
+- `features/home/Chapter.tsx`: chapter openers II to IV; the photograph gathers out of stardust as it scrolls in. `Section` takes `id` and `opener`.
+- The old cover (masthead, headline over the photo, stats) is removed from ClubHome and its CSS.
+
+**Tests**: `pnpm test` 95 passed; `pnpm lint` clean; `pnpm build` ok. e2e (phone and desktop): home, club, sound, discover, demo, sweep, motion, journey, journey-3d, journey-sound, universe all pass, except "home shows API OK", which needs the backend on :8000 (not running in this workspace). New e2e: the contents list I to VII and reach every page; centred, docked on scroll and back at the top; a chapter link glides to it.
+
+**Known issues**: the PillNav component is no longer used but kept in `components/reactbits`. Photographs are placeholders.

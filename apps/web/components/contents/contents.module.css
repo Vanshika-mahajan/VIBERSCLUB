@@ -1,0 +1,201 @@
+/* The contents: one flat list, after Shopify Editions. Centred in a thin frame at the top of Home,
+   then docked in the corner at the same size: title top left, list bottom left. */
+
+.toc {
+  --pad: max(16px, env(safe-area-inset-left));
+  --fw: min(400px, calc(100vw - 32px));
+  --fh: min(540px, calc(100svh - 150px));
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  color: var(--color-ivory);
+}
+.toc a {
+  pointer-events: auto;
+}
+
+.frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--fw);
+  height: var(--fh);
+  transform: translate(-50%, -46%);
+  border: 1px solid rgb(247 242 232 / 0.8);
+  transition: opacity 0.35s ease;
+}
+.title {
+  position: absolute;
+  margin: 0;
+  width: 8.5ch;
+  font: 700 2.2rem/0.92 var(--font-display);
+  letter-spacing: -0.035em;
+  transition: color 0.3s;
+}
+.stand {
+  position: absolute;
+  margin: 0;
+  max-width: 25ch;
+  font: 400 15px/1.3 var(--font-sans);
+  transition: opacity 0.35s;
+}
+.nav {
+  display: contents;
+}
+.list {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.list li {
+  transition: color 0.3s;
+}
+.list a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  text-decoration: none;
+  color: inherit;
+}
+/* the words: Syne, tight; hover draws a thin underline and nothing else */
+.t {
+  display: inline-block;
+  font: 700 1.25rem/1.04 var(--font-display);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-decoration: underline 1px transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s;
+}
+.list a:hover .t,
+.list a:focus-visible .t {
+  text-decoration-color: currentColor;
+}
+.list a:focus-visible {
+  outline: none;
+}
+/* the numerals: a roman serif, small */
+.n {
+  display: inline-block;
+  font:
+    400 12px/1 Georgia,
+    "Times New Roman",
+    serif;
+  font-style: normal;
+  letter-spacing: 0.03em;
+}
+.credit {
+  position: absolute;
+  margin: 0;
+  font: 400 10.5px/1.35 var(--font-sans);
+  opacity: 0;
+  transition:
+    opacity 0.3s,
+    color 0.3s;
+}
+
+/* centred, inside the frame */
+.toc:not(.dock) .title {
+  left: calc(50% - var(--fw) / 2 + 22px);
+  top: calc(54% - var(--fh) / 2 + 22px);
+}
+.toc:not(.dock) .stand {
+  left: calc(50% - var(--fw) / 2 + 22px);
+  top: calc(54% - var(--fh) / 2 + 146px);
+}
+.toc:not(.dock) .list {
+  left: calc(50% - var(--fw) / 2 + 22px);
+  right: calc(50% - var(--fw) / 2 + 22px);
+  bottom: calc(46% - var(--fh) / 2 + 22px);
+}
+
+/* docked: the same sizes; only the numerals close up to the longest word */
+.dock .frame,
+.dock .stand {
+  opacity: 0;
+}
+.dock .stand {
+  visibility: hidden;
+  transition:
+    opacity 0.35s,
+    visibility 0s 0.35s;
+}
+.dock .title {
+  left: var(--pad);
+  top: calc(78px + env(safe-area-inset-top));
+}
+.dock .list {
+  left: var(--pad);
+  width: max-content;
+  bottom: 58px;
+}
+.dock .credit {
+  left: var(--pad);
+  bottom: max(18px, env(safe-area-inset-bottom));
+  opacity: 0.8;
+  transition:
+    opacity 0.4s 0.55s,
+    color 0.3s;
+}
+/* over the paper, espresso */
+.toc .paper {
+  color: var(--color-espresso);
+}
+/* the title belongs to Home; other pages keep only the list */
+.inner .title,
+.inner .frame,
+.inner .stand {
+  display: none;
+}
+
+/* phone: docked, the list is a strip of the seven along the foot of the screen */
+@media (max-width: 760px) {
+  .title {
+    font-size: 2rem;
+  }
+  .dock .title,
+  .dock .credit {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .dock .list {
+    left: 0;
+    right: 0;
+    width: auto;
+    bottom: 0;
+    display: flex;
+    gap: 22px;
+    padding: 12px var(--pad) max(14px, env(safe-area-inset-bottom));
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--color-ivory);
+    border-top: 1px solid var(--color-espresso);
+    pointer-events: auto;
+  }
+  .dock .list::-webkit-scrollbar {
+    display: none;
+  }
+  .dock .list li {
+    flex: none;
+    color: var(--color-espresso);
+  }
+  .dock .list a {
+    gap: 6px;
+    justify-content: flex-start;
+    padding: 4px 0;
+  }
+  .dock .t {
+    font-size: 1.05rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame,
+  .stand,
+  .credit {
+    transition: none;
+  }
+}

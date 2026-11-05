@@ -59,9 +59,37 @@ export function PageHeader({ kicker, title, children }: { kicker?: string; title
  * A section of a page: a full-width espresso hairline, then the title in Syne. Give it `n` ("01") for an
  * oversized sage section number beside the title; `quiet` sets the title as a small spaced label instead.
  */
-export function Section({ title, action, n, quiet, children }: { title: string; action?: ReactNode; n?: string; quiet?: boolean; children: ReactNode }) {
+/**
+ * A numbered section of a page. With `opener` (a chapter opener on Home) the opener carries the
+ * title, so the section keeps only its action, at the right.
+ */
+export function Section({
+  title,
+  action,
+  n,
+  quiet,
+  id,
+  opener,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  n?: string;
+  quiet?: boolean;
+  id?: string;
+  opener?: ReactNode;
+  children: ReactNode;
+}) {
+  if (opener)
+    return (
+      <section id={id} aria-label={title} className="mt-16 scroll-mt-4 md:mt-24">
+        {opener}
+        {action && <div className="-mt-6 mb-6 flex justify-end md:mb-8">{action}</div>}
+        {children}
+      </section>
+    );
   return (
-    <section className={quiet ? "mt-10 border-t border-line2 pt-3" : "mt-16 border-t border-ink pt-4 md:mt-20"}>
+    <section id={id} className={`scroll-mt-6 ${quiet ? "mt-10 border-t border-line2 pt-3" : "mt-16 border-t border-ink pt-4 md:mt-20"}`}>
       <div className={`flex items-end justify-between gap-4 ${quiet ? "mb-3" : "mb-6 md:mb-8"}`}>
         <div className="flex min-w-0 items-end gap-4 md:gap-6">
           {n && (

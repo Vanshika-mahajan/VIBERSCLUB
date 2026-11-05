@@ -6,25 +6,51 @@ test("home shows API OK from the real API", async ({ page }) => {
   await expect(page.getByText("API OK")).toBeVisible();
 });
 
-test("the pill bar has Home, Discover, Events and Explore, and follows the page", async ({ page }) => {
+const CONTENTS = ["Your vibe", "Vibers like you", "This week", "Day plans", "Discover", "Events", "Explore"];
+
+test("the contents list the four chapters of Home and the other pages, I to VII, and follow every page", async ({ page }) => {
   await page.goto("/home");
   const nav = page.getByRole("navigation", { name: "Main" });
-  await expect(nav.getByRole("link")).toHaveText(["Home", "Discover", "Events", "Explore"]);
-  // at the foot of the screen, clear of the edge
-  const box = (await nav.boundingBox())!;
-  const viewport = page.viewportSize()!;
-  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
-  expect(box.y + box.height).toBeGreaterThan(viewport.height - 60);
+  for (const name of CONTENTS) await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
+  await expect(nav.getByRole("link")).toHaveCount(CONTENTS.length);
   for (const [label, heading] of [
     ["Discover", "Discover Vibers"],
     ["Events", "Events"],
     ["Explore", "Explore Manali"],
-    ["Home", /Spaces for curious people/],
   ] as const) {
-    await nav.getByRole("link", { name: label }).click();
+    await nav.getByRole("link", { name: label, exact: true }).click();
     await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeAttached();
-    await expect(nav.getByRole("link", { name: label })).toHaveAttribute("aria-current", "page");
+    await expect(nav.getByRole("link", { name: label, exact: true })).toHaveAttribute("aria-current", "page");
   }
+  // the wordmark goes back to Home
+  await page.getByRole("link", { name: "Vibers Club" }).click();
+  await expect(page.getByRole("heading", { name: /Spaces for curious people/, level: 1 })).toBeAttached();
+});
+
+test("on Home the contents sit centred, dock in the corner on scroll, and come back at the top", async ({ page }) => {
+  await page.goto("/home");
+  const list = page.getByRole("navigation", { name: "Main" }).getByRole("list");
+  const viewport = page.viewportSize()!;
+  const centreX = async () => {
+    const b = (await list.boundingBox())!;
+    return b.x + b.width / 2;
+  };
+  // centred in the frame
+  expect(Math.abs((await centreX()) - viewport.width / 2)).toBeLessThan(40);
+  await page.evaluate(() => window.scrollTo(0, 600));
+  // docked: bottom left (on a phone, a strip along the foot of the screen)
+  await expect.poll(async () => (await list.boundingBox())!.x).toBeLessThan(40);
+  await expect.poll(async () => { const b = (await list.boundingBox())!; return b.y + b.height; }).toBeGreaterThan(viewport.height - 80);
+  // back at the very top, it flies back into the frame
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(async () => Math.abs((await centreX()) - viewport.width / 2)).toBeLessThan(40);
+});
+
+test("a chapter in the contents glides to it on Home", async ({ page }) => {
+  await page.goto("/home");
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "This week", exact: true }).click();
+  await expect(page.locator("#this-week")).toBeInViewport({ timeout: 8000 });
+  await expect(page).toHaveURL(/#this-week$/);
 });
 
 test("your initial opens your profile; the gear opens settings", async ({ page }) => {

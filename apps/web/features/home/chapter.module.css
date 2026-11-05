@@ -1,0 +1,36 @@
+/* a chapter opener: a wide photograph from the page column to the right edge of the screen */
+.chapter {
+  position: relative;
+  height: min(66svh, 640px);
+  margin: 0 calc(-1 * (100vw - 100% - var(--main-ml) - var(--main-pl))) 40px 0;
+  overflow: hidden;
+  background: #120c08;
+}
+.title {
+  position: absolute;
+  z-index: 1;
+  left: clamp(20px, 3vw, 40px);
+  bottom: clamp(14px, 2vw, 26px);
+  margin: 0;
+  color: var(--color-ivory);
+  font: 700 clamp(3rem, 9vw, 8.5rem)/0.86 var(--font-display);
+  letter-spacing: -0.045em;
+  will-change: transform, opacity;
+}
+.n {
+  position: absolute;
+  z-index: 1;
+  top: 22px;
+  right: clamp(20px, 3vw, 40px);
+  color: var(--color-ivory);
+  font:
+    400 15px/1 Georgia,
+    serif;
+}
+@media (max-width: 760px) {
+  .chapter {
+    height: 52svh;
+    margin-left: calc(-1 * var(--main-pl));
+    margin-right: calc(-1 * var(--main-pl));
+  }
+}
