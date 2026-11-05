@@ -180,16 +180,16 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
     const a = setTimeout(() => {
       adapter.query(text, corr, 40).then((r) => live && setResult(r));
     }, 90);
-    // people only step out when you send the thought (Enter, the arrow, or a suggestion):
-    // while you type, the sphere just lights up the interests it reads
+    // the thought is read quietly in the background while you type; nothing on screen reacts
+    // until you send it (Enter, the arrow, or a suggestion)
     return () => {
       live = false;
       clearTimeout(a);
     };
   }, [active, text, corr, adapter]);
 
-  const result = active ? latest : null;
-  const parsing = active && !settled;
+  const result = active && settled ? latest : null;
+  const parsing = active && settled && !latest;
   const matches = useMemo(() => (result ? result.matches.filter((m) => !passed.has(m.viber.id)) : []), [result, passed]);
   const searching = !!result && (result.thought.interests.length > 0 || result.thought.area !== null);
   const formedIds = useMemo(() => (settled && searching ? matches.slice(0, screen).map((m) => m.viber.id) : []), [settled, searching, matches, screen]);
@@ -229,10 +229,12 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
     setWhyOpen(false);
     setSettled(false);
   };
+  /** a suggestion fills the box, ready to edit; people come out only on Enter or the arrow */
   const typeText = (t: string) => {
     setText(t);
     setCorr(emptyCorrections());
-    setSettled(true);
+    setSettled(false);
+    inputRef.current?.focus();
   };
 
   /* ---------- picking on the sphere ---------- */
@@ -309,6 +311,7 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
   /* ---------- the line under the chips ---------- */
   function line() {
     if (!text.trim() && !corr.added.length) return <>Say what you&apos;re in the mood for. Your thought is only used to find people.</>;
+    if (!settled) return <>Press Enter or the arrow to see who is thinking like this.</>;
     if (!result) return <>Reading your thought…</>;
     if (!searching) {
       return (
@@ -325,7 +328,6 @@ export function DiscoverScreen({ adapter = sampleAdapter }: { adapter?: Discover
         </>
       );
     }
-    if (!settled) return <>Press Enter or the arrow to see who is thinking like this.</>;
     if (!matches.length) return <>No one here shares all of that yet. Remove a tag above to widen it.</>;
     if (!formed) return <>Reading your thought…</>;
     return (

@@ -28,6 +28,8 @@ test("typing alone shows no one: people come out only when you send the thought"
   await page.getByRole("textbox", { name: "What's on your mind?" }).fill("Trek Hampta this weekend");
   await expect(page.getByText(/Press Enter or the arrow/)).toBeVisible();
   await page.waitForTimeout(1500);
+  // nothing reacts while typing: no tags read back, no people
+  await expect(page.getByRole("list", { name: "What I understood" })).toHaveCount(0);
   await expect(page.getByRole("list", { name: /Vibers who share your thought/ }).getByRole("button")).toHaveCount(0);
   await page.getByRole("button", { name: "Show me who is thinking like this" }).click();
   await expect(page.getByText(/Vibers who share this thought/)).toBeVisible();

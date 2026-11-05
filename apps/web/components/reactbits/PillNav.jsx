@@ -36,12 +36,12 @@ const THEMES = {
     '--pn-text': 'rgba(50, 11, 53, 0.72)',
     '--pn-strong': '#320b35',
     '--pn-pill': '#320b35',
-    '--pn-pill-ink': '#fff3b0',
+    '--pn-pill-ink': '#fff9e3',
     '--pn-pill-shadow': '0 6px 16px -8px rgba(50, 11, 53, 0.45)',
     '--pn-dot': '#9b82b5',
     '--pn-ring': 'rgba(50, 11, 53, 0.5)',
     '--pn-row-hover': 'rgba(50, 11, 53, 0.06)',
-    '--pn-tile': '#fff3b0',
+    '--pn-tile': '#fff9e3',
     '--pn-tile-rim':
       'inset 0 0 0 1px rgba(50, 11, 53, 0.12), 0 4px 10px -6px rgba(50, 11, 53, 0.3)'
   },

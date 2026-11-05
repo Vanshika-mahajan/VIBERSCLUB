@@ -14,6 +14,11 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## Discover waits for Enter, and Vanilla Tint (2026-11-05)
+- Discover reads your thought quietly while you type, but nothing on screen reacts (no tags read back, no sphere glow, no people) until you press Enter or the arrow. The example thoughts and "Use my vibe" now fill the box for you to edit, and Enter sends them.
+- Soft Butter `#FFF3B0` replaced by Vanilla Tint `#FFF9E3` everywhere (token `--color-butter`, alias `--color-vanilla`), including the Discover sphere background and the theme colour.
+- Tests: vitest 95 passed; Playwright all passed except "API OK", which needs the backend API running.
+
 ## Soft yellow world, deep plum voice (2026-11-05)
 ARPIT's new palette: Soft Butter `#FFF3B0` for the page, panels and cards (about 65 percent), Deep Plum `#320B35` for type, logo, navigation, buttons, icons and borders (25 percent), Almond Cream `#F5F0C9` as the softer card layer (7 percent), Dusty Lavender `#9B82B5` for small accents only (3 percent). Lavender is never used as text on yellow because it fails contrast; small accent text uses `#5B3F75` instead.
 - `app/globals.css`: every token rewritten to the light set; `color-scheme: light`; grain switched to multiply; brand fills (selected chips, toasts, chat bubbles, the + button) are plum with butter text.

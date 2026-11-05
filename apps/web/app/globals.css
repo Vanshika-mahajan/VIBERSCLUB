@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /* Vibers Club look: SOFT YELLOW WORLD, DEEP PLUM VOICE (2026-11-05). A club for music, places and
-   people, styled like a creative label, not an app. About 65 percent Soft Butter (the page, panels,
-   negative space), 25 percent Deep Plum (type, logo, navigation, buttons, icons, borders), 7 percent
+   people, styled like a creative label, not an app. About 65 percent Vanilla Tint, which replaced
+   Soft Butter on 2026-11-05 (the page, panels, negative space), 25 percent Deep Plum (type, logo, navigation, buttons, icons, borders), 7 percent
    Almond Cream (a softer layer for cards between the yellow and the plum) and 3 percent Dusty Lavender
    (small accents, selected washes, quiet illustrations). Flat colour, fine paper grain, no glow.
    Every text pairing is at least 4.5:1; lavender is never used for text on yellow.
@@ -10,7 +10,8 @@
    No apostrophes in comments inside this block: Tailwind drops every token after one. */
 @theme static {
   /* the palette, by name */
-  --color-butter: #fff3b0;
+  --color-butter: #fff9e3;
+  --color-vanilla: #fff9e3;
   --color-deep-plum: #320b35;
   --color-almond: #f5f0c9;
   --color-lavender: #9b82b5;
@@ -24,7 +25,7 @@
 
   /* surfaces: recess (wells, inputs), canvas (the page), surface (cards), raised (hover, menus) */
   --color-recess: #fffaf0;
-  --color-canvas: #fff3b0;
+  --color-canvas: #fff9e3;
   --color-surface: #f5f0c9;
   --color-raised: #fbf6d6;
   --color-sand: #f2eac0;
@@ -36,7 +37,7 @@
   /* the main call to action: Deep Plum, set in butter */
   --color-cta: #320b35;
   --color-cta-hover: #4a1a4e;
-  --color-on-cta: #fff3b0;
+  --color-on-cta: #fff9e3;
   /* accent: a readable lavender plum for small text and icons; a pale lavender wash behind tags */
   --color-accent: #5b3f75;
   --color-accent-hover: #320b35;
@@ -58,7 +59,7 @@
   --color-silver: #a5949f;
   --color-line: rgba(50, 11, 53, 0.12);
   --color-line2: rgba(50, 11, 53, 0.24);
-  --color-on-dark: #fff3b0;
+  --color-on-dark: #fff9e3;
   --color-on-wine: #5b3f75;
   --color-on-forest: #320b35;
   /* status, readable on butter */
@@ -82,7 +83,7 @@
 }
 
 body {
-  /* flat, warm butter: the yellow world */
+  /* flat, warm vanilla: the yellow world */
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);

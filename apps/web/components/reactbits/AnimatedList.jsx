@@ -51,7 +51,7 @@ const THEMES = {
     '--al-frame-edge': 'rgba(50, 11, 53, 0.14)',
     '--al-frame-highlight': 'rgba(255, 250, 224, 0.9)',
     '--al-frame-shadow': '0 22px 44px -26px rgba(50, 11, 53, 0.35), 0 6px 16px -10px rgba(50, 11, 53, 0.16)',
-    '--al-tile': '#fff3b0',
+    '--al-tile': '#fff9e3',
     '--al-tile-edge': 'rgba(50, 11, 53, 0.12)',
     '--al-tile-highlight': 'rgba(255, 250, 224, 0.9)',
     '--al-tile-shadow': '0 4px 10px -6px rgba(50, 11, 53, 0.25)',

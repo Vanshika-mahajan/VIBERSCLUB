@@ -19,6 +19,7 @@ test("the pitch journey: vibe → discover → like → connect → chat → RSV
   // 2. Discover with your own vibe
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Discover" }).click();
   await page.getByRole("button", { name: "Use my vibe" }).click();
+  await page.keyboard.press("Enter");
   await expect(page.getByText(/Vibers who share this thought/)).toBeVisible();
 
   // 3. Meera already liked you: liking back is mutual, and a request connects

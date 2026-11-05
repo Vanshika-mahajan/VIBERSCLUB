@@ -81,7 +81,7 @@ const WORLD_AR = 1.36;
 const SCREEN_AR = 1.5;
 // warm alpine palette, matching the theme tokens in app/globals.css
 const KIND_COL: Record<string, string> = { event: "#6E4F8A", place: "#432556" };
-const PEARL = ["#F5F0C9", "#FFF3B0", "#ECE3F0", "#F2EAC0"];
+const PEARL = ["#F5F0C9", "#FFF9E3", "#ECE3F0", "#F2EAC0"];
 const INK = "#320B35";
 const FONT = "Manrope, system-ui, sans-serif";
 
@@ -916,9 +916,9 @@ export class Sphere {
     }
     // soft yellow world: flat butter, a touch lighter behind the sphere, no tints or rays
     const gr = g.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.5, Math.max(W, H) * 0.78);
-    gr.addColorStop(0, "#FFF7CC");
-    gr.addColorStop(0.55, "#FFF3B0");
-    gr.addColorStop(1, "#FBEDA6");
+    gr.addColorStop(0, "#FFFDF4");
+    gr.addColorStop(0.55, "#FFF9E3");
+    gr.addColorStop(1, "#F8F0D4");
     g.fillStyle = gr;
     g.fillRect(0, 0, W, H);
     this.bg = c;

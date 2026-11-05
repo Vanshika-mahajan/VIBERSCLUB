@@ -201,7 +201,7 @@ function TemplateGallery({ onUse, mine }: { onUse: (p: Plan) => void; mine: Plan
           grayscale={false}
           overlayColor="#320b35"
           accentColor="#9b82b5"
-          textColor="#fff3b0"
+          textColor="#fff9e3"
           trigger="hover"
         />
       </div>

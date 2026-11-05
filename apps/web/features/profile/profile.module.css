@@ -107,7 +107,7 @@
   padding: 0;
   border: 0;
   background: #1a051c;
-  color: #fff3b0;
+  color: #fff9e3;
 }
 .viewer::backdrop {
   background: #1a051c;
@@ -138,12 +138,12 @@
   height: 2.5px;
   overflow: hidden;
   border-radius: 2px;
-  background: rgb(255 243 176 / 0.3);
+  background: rgb(255 249 227 / 0.3);
 }
 .bar i {
   display: block;
   height: 100%;
-  background: #fff3b0;
+  background: #fff9e3;
   transform-origin: left;
 }
 .bar i[data-state="done"] {
@@ -345,7 +345,7 @@
   height: 28px;
   border: 0;
   border-radius: 999px;
-  background: rgb(255 243 176 / 0.92);
+  background: rgb(255 249 227 / 0.92);
   color: var(--color-ink);
   cursor: pointer;
 }

@@ -70,7 +70,7 @@ export function portrait(name: string): string {
   const forest =
     [...name].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 2 === 0;
   const ground = g.createLinearGradient(0, 0, 600, 780);
-  ground.addColorStop(0, forest ? "#f5f0c9" : "#fff3b0");
+  ground.addColorStop(0, forest ? "#f5f0c9" : "#fff9e3");
   ground.addColorStop(1, forest ? "#e4daee" : "#f2eac0");
   g.fillStyle = ground;
   g.fillRect(0, 0, 600, 780);
@@ -109,7 +109,7 @@ export function landscape(name: string): string {
     return (seed & 0xffff) / 0xffff;
   };
   const sky = g.createLinearGradient(0, 0, 0, 1100);
-  sky.addColorStop(0, "#fff3b0");
+  sky.addColorStop(0, "#fff9e3");
   sky.addColorStop(0.55, "#f5f0c9");
   sky.addColorStop(1, "#ece3f0");
   g.fillStyle = sky;

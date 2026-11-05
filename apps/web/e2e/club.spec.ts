@@ -85,7 +85,7 @@ test("Discover sits on the butter page like the rest of the club", async ({ page
   await page.goto("/discover");
   const bg = (sel: string) =>
     page.locator(sel).first().evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(await bg("[data-formed]")).toBe("rgb(255, 243, 176)");
+  expect(await bg("[data-formed]")).toBe("rgb(255, 249, 227)");
 });
 
 test("events: join and leave", async ({ page }) => {
