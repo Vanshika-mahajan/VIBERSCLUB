@@ -1,7 +1,7 @@
 # The entry experience
 
 Scene 1 "A World Awaits" → a real 3D door opens → the Vibers World comes alive → a paraglider whose
-canopy covers the screen → the real site (Home opens the canopy like a curtain). One screen, one sequence; demo page `/intro-demo`.
+canopy covers the screen → the real site (Home opens the canopy like a curtain). One screen, one sequence, at `/` (reviewed first on `/intro-demo`, which now sends you to `/`).
 
 ## Files
 - `IntroExperience.tsx`: the screen. Scene 1's words and button, the painted still, Scene 2.
@@ -50,4 +50,4 @@ If the painting changes, the door face has to be unfolded again from the new pai
 - `timelines/flight.ts` (times are listed at its top): the paraglider (`public/intro/paraglider.webp`) appears exactly over the one painted in the sky, which is painted out (`scene2-glider-patch.webp`), glides across banking, then swoops overhead until its canopy fills the screen; the canopy's cloth (`canopy-fabric.webp`, from ARPIT's canopy picture) takes over and ripples (`canopy.module.css`).
 - `world/cover.ts` maps painting pixels to the screen exactly as the living world draws them, so the glider sits on the picture on any screen (on phones it flies in from the right edge).
 - The hand-over: the entry raises a flag (`handoff.ts`) and moves to `/home`; `CanopyReveal` (mounted on the Home page, inert on a normal visit) draws the same cloth on Home's first frame and opens it from the middle outward. To retime the curtain, change the two tweens in `CanopyReveal.tsx`.
-- Coming back to `/intro-demo` starts again at Scene 1.
+- Coming back to `/` starts again at Scene 1.

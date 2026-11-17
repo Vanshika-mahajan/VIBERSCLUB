@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+// The old door and Earth journey no longer opens the site: the new entry (features/intro, e2e/intro.spec.ts)
+// replaced it at "/" on 2026-11-18. These checks are kept, skipped, until ARPIT approves deleting the old journey.
+test.skip(true, "the old journey was replaced at / by the new entry");
+
 // Two versions of the opening play: the 3D scene where WebGL2 runs well, and the layered CSS scene
 // everywhere else. Most tests here check the CSS scene, so WebGL is turned off for them; the 3D
 // scene has its own tests at the end, in software WebGL.

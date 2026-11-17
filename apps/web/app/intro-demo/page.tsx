@@ -1,12 +1,6 @@
-import type { Metadata } from "next";
-import { IntroExperience } from "@/features/intro/IntroExperience";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Entry demo",
-  robots: { index: false },
-};
-
-/** The new entry experience, for review before it replaces the first page. Not linked from the site. */
+/** The entry was reviewed here before it became the first page; old links land on it. */
 export default function IntroDemoPage() {
-  return <IntroExperience />;
+  redirect("/");
 }

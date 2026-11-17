@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+// The old door and Earth journey no longer opens the site: the new entry (features/intro, e2e/intro.spec.ts)
+// replaced it at "/" on 2026-11-18. These checks are kept, skipped, until ARPIT approves deleting the old journey.
+test.skip(true, "the old journey was replaced at / by the new entry");
+
 test("the door page has its own sound switch, on by default and remembered", async ({ page }) => {
   await page.goto("/?world=css");
   const sound = page.getByRole("button", { name: "Sound", exact: true });

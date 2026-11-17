@@ -25,6 +25,10 @@ ARPIT asked to replace the door and Earth journey at `/` with a cinematic entry 
 - Waiting on ARPIT: the people and props as real transparent PNGs (the checkerboard is painted into the sheets they sent); optionally Scene 1 with an empty doorway.
 - Tests: vitest 99 passed (new `tests/unit/intro.test.ts`: the sequence starts once and only moves forward; the camera ends inside the doorway and starts with the door in view on every screen shape). Lint and typecheck clean. Checked frame by frame at 1280 x 720 and 430 x 932.
 
+## The new entry replaces the journey at `/` (2026-11-18)
+ARPIT reviewed the entry and said "swap". `/` now renders `IntroExperience`; `/intro-demo` redirects to `/`. The old door and Earth journey (`features/journey`) is no longer routed but kept, because Home's opening reuses its planet and deleting the rest needs ARPIT's OK. Its e2e specs (`journey`, `journey-3d`, `journey-sound`) are skipped with a note until then; the new `e2e/intro.spec.ts` covers the entry: the button runs once, the entry reaches Home and the canopy lets go, the reduced-motion path, a plain Home visit never shows the canopy, and the old address redirects. CLAUDE.md updated.
+- Tests: lint and typecheck clean; unit 101 of 101; e2e intro, sweep, home and journey: 50 passed, 20 skipped (the old journey), 2 failed. Both failures are "API OK", which needs the backend.
+
 ## Journey sounds (2026-11-05)
 Asked by ARPIT after checkpoint 1; nothing else changed. `features/journey/sound.ts` makes every sound in the browser with Web Audio (no files, no licences):
 - Door page: soft gusting wind over the grass while you are there; it dies down as the door opens.

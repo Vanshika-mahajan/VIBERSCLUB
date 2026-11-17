@@ -1,6 +1,6 @@
-import { JourneyScreen } from "@/features/journey/JourneyScreen";
+import { IntroExperience } from "@/features/intro/IntroExperience";
 
-/** The first page: the door, the thought, and the journey to your people in Manali. */
+/** The first page: "A World Awaits", the door, the living Vibers World, and the paraglider into the site. */
 export default function HomePage() {
-  return <JourneyScreen />;
+  return <IntroExperience />;
 }

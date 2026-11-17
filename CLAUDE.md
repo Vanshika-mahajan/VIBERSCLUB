@@ -62,7 +62,7 @@ uv run pytest                            # needs TEST_DATABASE_URL; tests/unit n
 
 **Routes:**
 - `app/` holds thin route files. Screens live in `features/<area>/`.
-- `/` is the journey: a three.js door, then the Earth diving into Manali. It lands on `/home`.
+- `/` is the entry (`features/intro`, README there): "A World Awaits", a three.js door opens onto the living Vibers World, a paraglider's canopy covers the screen, and Home (`CanopyReveal`) opens it like a curtain. The old door and Earth journey (`features/journey`) is no longer routed; Home's opening still reuses its planet.
 - `/home` is the club home: one long scrolling "issue", chapters I to VII.
 - Discover, Events and Explore render inline on Home as chapters V to VII (`features/home/HomeMore.tsx`, `inline` props). They also keep their own routes.
 
@@ -104,7 +104,7 @@ uv run pytest                            # needs TEST_DATABASE_URL; tests/unit n
   - Sage `#879A6B` is for atmosphere and photo toning (luminosity onto `#64754b`).
   - Amber `#D5851F` is for small accents only.
 - Use hairlines and square controls. Avoid rounded cards, heavy shadows, glass, gradients and a SaaS look.
-- The journey (door and Earth) keeps Fraunces and Manrope and is deliberately untouched.
+- The old journey (door and Earth) keeps Fraunces and Manrope and is deliberately untouched.
 
 **Where styles live:**
 - Feature styles are CSS modules.

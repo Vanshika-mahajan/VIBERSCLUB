@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+// The old door and Earth journey no longer opens the site: the new entry (features/intro, e2e/intro.spec.ts)
+// replaced it at "/" on 2026-11-18. These checks are kept, skipped, until ARPIT approves deleting the old journey.
+test.skip(true, "the old journey was replaced at / by the new entry");
+
 // The 3D opening, in software WebGL. This machine has no GPU, so frames take about half a second:
 // enough to check the 3D scene takes over, plays, skips and gives way, not to watch it at speed
 // (the frame-by-frame review videos do that). ?world=3d insists on 3D despite the slow frames.
