@@ -5,9 +5,9 @@ import { gsap } from "@/lib/motion/gsap";
  * Scene 2, alive: the Vibers World painting drawn by one shader that moves what would move at dusk.
  * The river runs, the campfire and the lantern flicker and throw sparks and smoke, the string lights
  * twinkle and the neon sign hums, clouds and the valley mist drift, leaves, flowers and grass sway,
- * the three Vibers in front breathe, fireflies rise over the meadow and steam curls off the mug.
+ * every Viber and the dog breathe and stir, fireflies rise over the meadow and steam curls off the mug.
  *
- * Every place is in the painting's own pixels (1671 x 941), listed in REGIONS below, so new art
+ * Every place is in the painting's own pixels (1671 x 941), listed in REGIONS, FIGURES, DOG and CROWDS below, so new art
  * only needs those numbers moved. The picture covers the screen the way the doorway showed it, so the
  * arrival through the door is seamless, then the view drifts slowly closer.
  */
@@ -30,13 +30,104 @@ export const REGIONS = {
   sign: { l: 1235, t: 210, r: 1480, b: 300 },
   sky: { t: 0, b: 105 },
   mist: { l: 440, t: 195, r: 920, b: 300 },
-  // the three Vibers in front: their outline box, and where they sit (the breath is anchored there)
-  people: [
-    { l: 495, t: 535, r: 715, b: 770 },
-    { l: 755, t: 570, r: 960, b: 790 },
-    { l: 1068, t: 572, r: 1185, b: 712 },
-  ],
 };
+
+type Box = [l: number, t: number, r: number, b: number];
+type Figure = {
+  name: string;
+  /** the person's outline */
+  box: Box;
+  /** where they sit or stand: the breath and the sway are anchored here */
+  base: number;
+  /** their head, which looks about a little on its own */
+  head: Box;
+  /** how deep a breath is (a share of their height) and how fast (radians a second) */
+  amp: number;
+  rate: number;
+};
+
+/** every Viber in the picture who is big enough to see breathe, nearest first */
+export const FIGURES: Figure[] = [
+  { name: "man with the backpack", box: [488, 535, 718, 772], base: 762, head: [518, 538, 608, 622], amp: 0.011, rate: 1.25 },
+  { name: "woman with the camera", box: [752, 568, 962, 792], base: 782, head: [780, 568, 868, 652], amp: 0.011, rate: 1.45 },
+  { name: "woman on the yoga mat", box: [1066, 572, 1186, 712], base: 704, head: [1118, 574, 1162, 616], amp: 0.016, rate: 0.85 },
+  { name: "fireside, left", box: [652, 485, 720, 582], base: 572, head: [674, 486, 706, 520], amp: 0.02, rate: 1.6 },
+  { name: "fireside, red jumper", box: [702, 485, 760, 582], base: 572, head: [712, 486, 746, 520], amp: 0.02, rate: 1.35 },
+  { name: "fireside, right", box: [800, 487, 850, 582], base: 572, head: [806, 488, 836, 520], amp: 0.02, rate: 1.5 },
+  { name: "fireside, far right", box: [842, 487, 900, 582], base: 574, head: [848, 488, 882, 520], amp: 0.02, rate: 1.2 },
+  { name: "man at the laptop", box: [1038, 463, 1122, 592], base: 585, head: [1058, 463, 1096, 502], amp: 0.016, rate: 1.3 },
+  { name: "table, woman", box: [1232, 476, 1278, 566], base: 560, head: [1240, 476, 1268, 505], amp: 0.02, rate: 1.55 },
+  { name: "table, blue shirt", box: [1268, 478, 1312, 566], base: 560, head: [1276, 478, 1304, 506], amp: 0.02, rate: 1.4 },
+];
+
+/** the dog: its outline, the middle of its ribcage (the breath swells out from there) and its head */
+export const DOG = { box: [598, 672, 808, 845] as Box, chest: [672, 800], head: [676, 680, 792, 770] as Box };
+
+/** groups too small to breathe one by one (walkers by the tents and the bridge, the lodge inside and
+ * on its balconies): each figure-sized strip of them sways a little on its own */
+export const CROWDS: Box[] = [
+  [262, 440, 665, 560],
+  [880, 470, 1040, 540],
+  [1040, 420, 1530, 535],
+  [1250, 140, 1420, 215],
+  [1490, 225, 1650, 300],
+  [1030, 320, 1230, 370],
+];
+
+const v4 = (b: Box) => `vec4(${b.map((n) => n.toFixed(1)).join(", ")})`;
+
+/** the shader code that moves every person and the dog, in the painting's pixels (p) */
+function peopleCode() {
+  const figures = FIGURES.map((f, i) => {
+    const h = f.base - f.box[1];
+    const headSize = (f.head[2] - f.head[0]) / 40;
+    return `{ // ${f.name}
+      float m = box(p, ${v4(f.box)}, 6.0);
+      if (m > 0.0) {
+        // 0 where they sit, 1 at the top of their head
+        float u = clamp((${f.base.toFixed(1)} - p.y) / ${h.toFixed(1)}, 0.0, 1.0);
+        // a breath: in quicker than out, with a short rest at the bottom
+        float ph = t * ${f.rate.toFixed(2)} + ${(i * 1.7).toFixed(2)};
+        float breath = pow(0.5 + 0.5 * sin(ph + 0.35 * sin(ph)), 1.6);
+        p.y += u * ${(f.amp * h).toFixed(2)} * breath * m;
+        // the body settles and sways a little, more at the shoulders than the hips
+        p.x += u * u * (noise(vec2(t * 0.22, ${(i * 7.3).toFixed(1)})) - 0.5) * ${(2.2 * headSize).toFixed(2)} * m;
+        // the head turns and nods on its own, now and then
+        float hm = box(p, ${v4(f.head)}, 5.0);
+        vec2 look = vec2(noise(vec2(t * 0.16, ${(i * 3.1).toFixed(1)})), noise(vec2(t * 0.21, ${(i * 5.9 + 2).toFixed(1)}))) - 0.5;
+        p += look * vec2(${(3.2 * headSize).toFixed(2)}, ${(1.6 * headSize).toFixed(2)}) * hm;
+      }
+    }`;
+  }).join("\n    ");
+  const [cx, cy] = DOG.chest;
+  const dog = `{ // the dog: its ribcage swells with quick, easy breaths; its head lifts and turns now and then
+      float m = box(p, ${v4(DOG.box)}, 8.0);
+      if (m > 0.0) {
+        vec2 d = p - vec2(${cx.toFixed(1)}, ${cy.toFixed(1)});
+        float w = exp(-dot(d / vec2(80.0, 48.0), d / vec2(80.0, 48.0)) * 1.6);
+        float breath = 0.5 + 0.5 * sin(t * 2.3);
+        p -= d * 0.035 * breath * w * m;
+        float hm = box(p, ${v4(DOG.head)}, 8.0);
+        float ear = noise(vec2(t * 0.5, 31.0));
+        vec2 look = vec2(noise(vec2(t * 0.14, 17.0)) - 0.5, (noise(vec2(t * 0.19, 23.0)) - 0.5) + 0.25 * sin(t * 2.3));
+        // the head turns about the neck, so the top of it moves most
+        float up = clamp((770.0 - p.y) / 90.0, 0.0, 1.0);
+        p += look * vec2(5.0, 2.4) * hm * up + vec2(0.0, (ear - 0.5) * 1.5) * hm * up * up;
+      }
+    }`;
+  const crowds = CROWDS.map(
+    (b) => `{
+      float m = box(p, ${v4(b)}, 6.0);
+      if (m > 0.0) {
+        float strip = floor(p.x / 14.0);
+        float u = clamp((${b[3].toFixed(1)} - p.y) / ${(b[3] - b[1]).toFixed(1)}, 0.0, 1.0);
+        p.x += (noise(vec2(strip * 1.7, t * 0.45)) - 0.5) * 1.6 * u * m;
+        p.y += (0.5 + 0.5 * sin(t * (1.2 + fract(strip * 0.37)) + strip)) * 0.8 * u * m;
+      }
+    }`,
+  ).join("\n    ");
+  return `${figures}\n    ${dog}\n    ${crowds}`;
+}
 
 const VERT = /* glsl */ `
   varying vec2 vUv;
@@ -82,17 +173,8 @@ const FRAG = /* glsl */ `
     vec2 p = vec2(uv.x, 1.0 - uv.y) * SIZE;
     float t = uTime;
 
-    // ---- the three Vibers in front breathe: a slow stretch anchored where they sit
-    ${REGIONS.people
-      .map(
-        (b, i) => `{
-      vec4 b = vec4(${b.l}.0, ${b.t}.0, ${b.r}.0, ${b.b}.0);
-      float m = box(p, b, 14.0);
-      float breath = sin(t * ${(1.05 + i * 0.17).toFixed(2)} + ${i * 2}.0) * 0.5 + 0.5;
-      p.y += (b.w - p.y) * 0.0045 * breath * m;
-    }`,
-      )
-      .join("\n    ")}
+    // ---- everyone breathes, the dog too; bodies settle and heads look about
+    ${peopleCode()}
 
     // ---- wind: leaves at the top and the sides, flowers and grass at the bottom
     // (not the open door at the far left, x < 260, which is wood)
@@ -166,7 +248,7 @@ const FRAG = /* glsl */ `
     vec2 md = p - mp;
     float up = clamp(-md.y / 70.0, 0.0, 1.0);
     float steam = exp(-pow((md.x - sin(md.y * 0.12 + t * 1.3) * 6.0 * up) / (3.0 + 8.0 * up), 2.0)) * smoothstep(0.0, 0.1, up) * (1.0 - up);
-    c += vec3(0.9) * steam * fbm(vec2(md.x * 0.1, md.y * 0.08 + t)) * 0.28;
+    c += vec3(0.95, 0.9, 0.85) * steam * fbm(vec2(md.x * 0.1, md.y * 0.08 + t)) * 0.16;
 
     // ---- fireflies drifting up over the meadow
     for (int i = 0; i < 14; i++) {
@@ -226,9 +308,24 @@ export async function createLivingWorld(canvas: HTMLCanvasElement, src: string):
   resize();
 
   let time = 0;
+  let held: number | null = null;
+  // development only: the review script holds the clock to take frames at exact times
+  if (process.env.NODE_ENV !== "production")
+    Object.assign(window, {
+      __living: {
+        hold: (t: number | null, push?: number) => {
+          held = t;
+          if (push !== undefined) {
+            gsap.killTweensOf(params);
+            params.push = push;
+          }
+          frame(0, 0);
+        },
+      },
+    });
   const frame = (_t: number, deltaMs: number) => {
     resize();
-    time += Math.min(deltaMs, 50) / 1000;
+    time = held ?? time + Math.min(deltaMs, 50) / 1000;
     uniforms.uTime.value = time;
     uniforms.uPush.value = params.push;
     uniforms.uLook.value.set(params.lookX, params.lookY);
