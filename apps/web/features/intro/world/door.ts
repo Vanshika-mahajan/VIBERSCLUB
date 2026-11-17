@@ -68,15 +68,11 @@ const ROOM_FRAG = /* glsl */ `
     float r = length(p);
     float flick = 0.97 + 0.03 * sin(uTime * 6.0 + vUv.y * 11.0);
     vec3 warm = mix(vec3(1.0, 0.86, 0.64) * 2.0, vec3(1.0, 0.55, 0.22) * 1.2, smoothstep(0.0, 0.9, r)) * flick;
-    // closed: the painting's own doorway (the lit gap with the crowd in it, painting px 1044 to 1110),
-    // mirrored across the part the leaf hides, so the hand-over from the painting is seamless
-    // (while the leaf stands as painted, the painting itself shows round its edges; the 3D leaf is a
-    // touch smaller in perspective than the painted one)
-    float x0 = 840.0 + vUv.x * 284.0;
-    float m = mod(max(1044.0 - x0, 0.0), 132.0);
-    float xp = mix(x0, max(x0, 1044.0 + (m < 66.0 ? m : 132.0 - m)), uOpen);
-    vec3 painted = texture2D(uPlate, vec2(xp / 1672.0, (vUv.y * 618.0 + 141.0) / 941.0)).rgb;
-    vec3 c = mix(painted, world, uGlow);
+    // ARPIT: the room beyond the door is dark brown (the reference has a pink one), warmest low in
+    // the middle where its light falls, deepest at the edges; we push through it into the world
+    // (linear colours: about #3A2416 in the middle, deep espresso #1E120B at the edges)
+    vec3 room = mix(vec3(0.04, 0.018, 0.007), vec3(0.012, 0.006, 0.003), smoothstep(0.0, 1.0, r));
+    vec3 c = mix(room, world, uGlow);
     // the blaze adds to the world rather than hiding it, strongest low in the middle
     // a warm glow low in the opening, like lamplight; it adds to the world, never washes it out
     // it lights the world (multiplies) more than it fogs it (adds), so the picture keeps its contrast
@@ -86,7 +82,7 @@ const ROOM_FRAG = /* glsl */ `
     // the light at the gaps hugs the edges of the opening instead of washing over the world
     vec2 e = abs(vUv - 0.5) * 2.0;
     float rim = pow(max(e.x, e.y * 0.9), 6.0);
-    c += vec3(1.0, 0.62, 0.3) * uSeam * max(uOpen, uGlow) * (0.06 * (1.0 - uGlow * 0.7) + 0.5 * rim * (1.0 - uGlow) * (1.0 - uGlow));
+    c += vec3(1.0, 0.62, 0.3) * uSeam * max(uOpen, uGlow) * (0.012 * (1.0 - uGlow * 0.7) + 0.12 * rim * (1.0 - uGlow) * (1.0 - uGlow));
     gl_FragColor = vec4(c, 1.0);
     #include <colorspace_fragment>
   }
@@ -181,8 +177,9 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
           uFlare: uniforms.flare,
           uTime: uniforms.time,
         },
-        // drawn before the leaf and without depth, so the leaf can swing in and stay visible
-        depthWrite: false,
+        // it writes depth: the leaf swings outward, in front of it, and the far mist (drawn later,
+        // depth tested) must not fog the doorway
+        depthWrite: true,
       }),
     ),
   );

@@ -34,6 +34,13 @@ ARPIT's points from their recording: everything real, moving and 3D; a soft wind
 - Door: its smeared hinge side was rebuilt (`tools/cleanface.py`), its panels are carved into the leaf with bevels, and the scene's light takes over from the painted glow as it moves. It opens to 90 degrees over 1.9 s with a gentle ease.
 - Tests: lint and typecheck clean; unit 101 of 101; e2e intro and sweep 36 of 36.
 
+## Entry refinement: a closed door that opens outward onto a dark brown room (2026-11-18)
+
+At ARPIT's request: the door stands closed at first (warm light at its gaps), swings outward toward us, and opens onto a dark brown room (the reference's room is pink) that we push straight through; the Vibers World comes up out of the brown at the end of the push. The far mist no longer fogs the doorway (the room now writes depth).
+
+**Tests**
+- lint, typecheck: clean. Unit: 101 passed. e2e intro and sweep: 36 passed (before the last colour-only shader tweaks).
+
 ## Entry refinement: the door transition framed like ARPIT's reference (2026-11-18)
 
 The camera now glides round to face the door square on and centred (close enough that the painting still fills the screen) while the door swings open onto the Vibers World, then pushes straight in through the middle of the doorway along its line of sight, so the door grows in place instead of sliding across the screen. About 2.5 s from the click.

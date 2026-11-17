@@ -4,7 +4,6 @@ import { gsap } from "@/lib/motion/gsap";
 import { makeWoodenDoor } from "./door";
 import { makeSceneLife } from "./life";
 import {
-  AJAR,
   LEAF_OPEN,
   cameraAt,
   DOOR,
@@ -477,8 +476,9 @@ export async function createDoorStage(
     camera.fov = fov;
     camera.updateProjectionMatrix();
 
-    door.hinge.rotation.y = LEAF_OPEN * p.leaf;
-    door.uniforms.open.value = Math.min(1, Math.max(0, (p.leaf - AJAR) / 0.08));
+    // negative: the leaf swings outward, toward us
+    door.hinge.rotation.y = -LEAF_OPEN * p.leaf;
+    door.uniforms.open.value = Math.min(1, Math.max(0, p.leaf / 0.06));
     door.uniforms.time.value = time;
     door.uniforms.glow.value = p.glow;
     door.uniforms.seam.value = p.seam;

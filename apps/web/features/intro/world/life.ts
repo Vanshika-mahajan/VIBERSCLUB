@@ -319,7 +319,8 @@ export function makeSceneLife(
           },
           transparent: true,
           depthWrite: false,
-          depthTest: false,
+          // tested against the door and the room beyond it, so the far mist never fogs the doorway
+          depthTest: true,
         }),
       ),
     );

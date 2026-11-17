@@ -28,8 +28,7 @@ export type IntroParams = {
   rest: number;
 };
 
-/** radians: fully open, the leaf has swung away from us into the doorway, 90 degrees (any further
- * and it swings out past the frame, behind the painted wall) */
+/** radians: fully open, 90 degrees. The leaf swings outward, toward us, as in ARPIT's reference */
 export const LEAF_OPEN = Math.PI / 2;
 /** the painted door stands ajar at 0.735 radians (the angle its face was unfolded at): the 3D leaf
  * starts there, given as a share of fully open */
@@ -38,16 +37,17 @@ export const AJAR = 0.735 / LEAF_OPEN;
 export const initialIntroParams = (): IntroParams => ({
   focus: 0,
   travel: 0,
-  leaf: AJAR,
-  seam: 0.4,
-  // as painted: warm light and the world beyond showing through the gap
+  // the door stands closed (ARPIT), warm light glowing at its gaps
+  leaf: 0,
+  seam: 0.6,
   glow: 0,
-  flare: 0.6,
+  flare: 0.25,
   warp: 0,
   lookX: 0,
   lookY: 0,
   life: 1,
-  painted: 1, rest: 0,
+  painted: 0,
+  rest: 0,
 });
 
 /**
