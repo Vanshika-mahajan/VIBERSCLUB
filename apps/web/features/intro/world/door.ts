@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { DOOR } from "./params";
+import { AJAR, DOOR, LEAF_OPEN } from "./params";
 import { dotSprite, plankTextures } from "./textures";
 
 /**
  * The door as a real object, set into the painted doorway of Scene 1: a solid leaf with thickness,
- * ARPIT's painted panel on its front, battens on its back, iron knuckles on its hinge edge. It
+ * the painting's own door on its front (unfolded from Scene 1), battens on its back, iron knuckles on its hinge edge. It
  * replaces the painted leaf exactly, so in Scene 1 it looks like the picture, and then it swings
  * open on its hinge.
  *
@@ -30,6 +30,8 @@ export type WoodenDoor = {
     world: THREE.IUniform<THREE.Texture | null>;
     /** Scene 1's painting: before the door opens, the doorway shows the painting's own glow */
     plate: THREE.IUniform<THREE.Texture | null>;
+    /** 0 while the leaf stands ajar as painted, 1 once it has swung a little further */
+    open: THREE.IUniform<number>;
   };
   /** per frame: glow drives the light spilling out */
   update: () => void;
@@ -48,6 +50,7 @@ const ROOM_FRAG = /* glsl */ `
   uniform vec2 uRes;
   uniform float uWorldAspect;
   uniform float uGlow;
+  uniform float uOpen;
   uniform float uSeam;
   uniform float uFlare;
   uniform float uTime;
@@ -67,20 +70,23 @@ const ROOM_FRAG = /* glsl */ `
     vec3 warm = mix(vec3(1.0, 0.86, 0.64) * 2.0, vec3(1.0, 0.55, 0.22) * 1.2, smoothstep(0.0, 0.9, r)) * flick;
     // closed: the painting's own doorway (the lit gap with the crowd in it, painting px 1044 to 1110),
     // mirrored across the part the leaf hides, so the hand-over from the painting is seamless
-    float xp = 840.0 + vUv.x * 284.0;
-    float m = mod(max(1044.0 - xp, 0.0), 132.0);
-    xp = max(xp, 1044.0 + (m < 66.0 ? m : 132.0 - m));
+    // (while the leaf stands as painted, the painting itself shows round its edges; the 3D leaf is a
+    // touch smaller in perspective than the painted one)
+    float x0 = 840.0 + vUv.x * 284.0;
+    float m = mod(max(1044.0 - x0, 0.0), 132.0);
+    float xp = mix(x0, max(x0, 1044.0 + (m < 66.0 ? m : 132.0 - m)), uOpen);
     vec3 painted = texture2D(uPlate, vec2(xp / 1672.0, (vUv.y * 618.0 + 141.0) / 941.0)).rgb;
     vec3 c = mix(painted, world, uGlow);
     // the blaze adds to the world rather than hiding it, strongest low in the middle
     // a warm glow low in the opening, like lamplight; it adds to the world, never washes it out
     // it lights the world (multiplies) more than it fogs it (adds), so the picture keeps its contrast
     float fall = 1.0 - clamp(r, 0.0, 1.0);
-    c = c * (1.0 + warm * uFlare * 0.3 * fall) + warm * uFlare * 0.035 * fall;
+    float lit = uFlare * max(uOpen, uGlow);
+    c = c * (1.0 + warm * lit * 0.3 * fall) + warm * lit * 0.035 * fall;
     // the light at the gaps hugs the edges of the opening instead of washing over the world
     vec2 e = abs(vUv - 0.5) * 2.0;
     float rim = pow(max(e.x, e.y * 0.9), 6.0);
-    c += vec3(1.0, 0.62, 0.3) * uSeam * (0.06 * (1.0 - uGlow * 0.7) + 0.5 * rim * (1.0 - uGlow) * (1.0 - uGlow));
+    c += vec3(1.0, 0.62, 0.3) * uSeam * max(uOpen, uGlow) * (0.06 * (1.0 - uGlow * 0.7) + 0.5 * rim * (1.0 - uGlow) * (1.0 - uGlow));
     gl_FragColor = vec4(c, 1.0);
     #include <colorspace_fragment>
   }
@@ -95,9 +101,9 @@ export type DoorFace = {
   env: THREE.Texture | null;
 };
 
-// where the handle is painted on the panel, in the panel's pixels (682 x 1463)
+// where the handle is painted on the door, in door-painted.webp's pixels (682 x 1463)
 const PANEL = { w: 682, h: 1463 };
-const HANDLE = { roseX: 634, roseY: 690, leverL: 520, plateT: 610, plateB: 835, plateL: 612, plateR: 652 };
+const HANDLE = { roseX: 620, roseY: 726, leverL: 559, plateT: 646, plateB: 872, plateL: 604, plateR: 640 };
 
 // The light that blooms out over the frame and the vines from the gaps and then the open doorway,
 // as a lens would see a bright light against a darker painting.
@@ -110,7 +116,7 @@ const HALO_FRAG = /* glsl */ `
     vec2 d = max(abs(p) - uHole, 0.0);
     float r = length(d / (1.0 - uHole));
     float inside = 1.0 - step(0.0001, length(d));
-    float a = exp(-r * 4.5) * (1.0 - inside * 0.6) * smoothstep(1.0, 0.7, max(abs(p.x), abs(p.y)));
+    float a = exp(-r * 4.5) * (1.0 - inside * 0.95) * smoothstep(1.0, 0.7, max(abs(p.x), abs(p.y)));
     gl_FragColor = vec4(vec3(1.0, 0.62, 0.3) * a * uAmount, 1.0);
   }
 `;
@@ -131,6 +137,7 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
     worldAspect: { value: 1671 / 941 },
     world: { value: null as THREE.Texture | null },
     plate: { value: null as THREE.Texture | null },
+    open: { value: 0 },
   };
   const { width: W, height: H, thickness: T } = DOOR;
 
@@ -144,6 +151,7 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
         uniforms: {
           uWorld: uniforms.world,
           uPlate: uniforms.plate,
+          uOpen: uniforms.open,
           uRes: uniforms.res,
           uWorldAspect: uniforms.worldAspect,
           uGlow: uniforms.glow,
@@ -161,13 +169,17 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
   group.add(room);
 
   // ---- the leaf on its hinge
-  // the front is ARPIT's painted door panel; the back is built from planks
+  // the front is the painting's own door; the back is built from planks
   const backWood = plankTextures(5, { seed: 11 });
   [backWood.map, backWood.bump].forEach(keep);
-  // the panel is graded to the painting; lit by the scene's sun and sky, its grain and mouldings
-  // catch the light and it falls into shade as it turns away (FACE_GAIN and the tint match it to the painting
-  // when it faces us)
-  const FACE_GAIN = 1.0;
+  // the front is cut from the painting itself. Most of it glows as painted (emissive), so facing us it
+  // is the painting exactly; the rest is lit by the scene, so its grain and mouldings catch the light.
+  // As it turns away the painted part dims by hand (see update). LIT and EMIT are the lit and glowing
+  // shares (measured to add up to the painting); the tint balances the warm lights.
+  const LIT = 0.3;
+  const EMIT = 0.86;
+  const TURN_AJAR = Math.sin(LEAF_OPEN * AJAR);
+  const FACE_TINT = new THREE.Color(1.44, 2.39, 6.2);
   const face = keep(
     // painted wood has little sheen; a full one turns the leaf to a pale sliver when seen edge on
     new THREE.MeshPhysicalMaterial({
@@ -178,8 +190,10 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
       roughnessMap: art.rough,
       roughness: 1,
       metalness: 0,
-      color: new THREE.Color(0.96, 1.29, 2.4).multiplyScalar(FACE_GAIN),
-      emissive: new THREE.Color(0, 0, 0),
+      color: FACE_TINT.clone().multiplyScalar(LIT),
+      emissiveMap: art.map,
+      emissive: new THREE.Color(1, 1, 1),
+      emissiveIntensity: EMIT,
     }),
   );
   // the leaf's edges: end grain, lit warm by the doorway as the leaf turns
@@ -335,7 +349,11 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
       const turn = Math.sin(Math.abs(hinge.rotation.y));
       const f = uniforms.flare.value;
       edge.color.copy(EDGE).multiplyScalar(0.7 + 0.3 * (1 - turn)).lerp(EDGE_LIT, 0.35 * turn * g * (0.4 + 0.6 * f));
-      face.emissive.setRGB(0.2, 0.08, 0.02).multiplyScalar(turn * g * f * 0.4);
+      // the painting already shows the leaf ajar, so the dimming counts from there
+      const away = Math.max(0, (turn - TURN_AJAR) / (1 - TURN_AJAR));
+      face.emissiveIntensity = EMIT * (1 - 0.6 * away);
+      face.color.copy(FACE_TINT).multiplyScalar(LIT * (1 - 0.6 * away));
+      face.emissive.setRGB(1, 1, 1).lerp(new THREE.Color(1.3, 0.85, 0.55), turn * g * f * 0.6);
       poolMat.opacity = Math.min(g * 1.4, 1) * 0.6;
       spill.intensity = 2 * uniforms.seam.value + g * 9;
       inside.intensity = g * 3 * (0.5 + 0.5 * f);

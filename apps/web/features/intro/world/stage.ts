@@ -3,6 +3,8 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { gsap } from "@/lib/motion/gsap";
 import { makeWoodenDoor } from "./door";
 import {
+  AJAR,
+  LEAF_OPEN,
   cameraAt,
   DOOR,
   FOV,
@@ -10,6 +12,7 @@ import {
   PACK,
   PLATE,
   SKATEBOARD,
+  VINES,
   type Framing,
   type IntroParams,
 } from "./params";
@@ -20,10 +23,12 @@ export const ART = {
   plate: "/intro/scene1-plate.webp",
   pack: "/intro/scene1-pack.webp",
   skateboard: "/intro/scene1-skateboard.webp",
-  leaf: "/intro/door-leaf.webp",
-  /** the panel's relief (a normal map) and sheen (roughness), made from door-leaf.webp */
-  leafNormal: "/intro/door-leaf-normal.webp",
-  leafRough: "/intro/door-leaf-rough.webp",
+  vines: "/intro/scene1-vines.webp",
+  /** the painting's own door, unfolded from Scene 1 onto the 3D leaf (see README), with its relief
+   * (a normal map) and sheen (roughness) */
+  leaf: "/intro/door-painted.webp",
+  leafNormal: "/intro/door-painted-normal.webp",
+  leafRough: "/intro/door-painted-rough.webp",
   world: "/intro/scene2-world.webp",
 };
 
@@ -142,7 +147,7 @@ export async function createDoorStage(
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.setClearColor(0x000000, 0);
   const loader = new THREE.TextureLoader();
-  const [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex] = await Promise.all([
+  const [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex] = await Promise.all([
     loadTex(loader, ART.plate),
     loadTex(loader, ART.pack),
     loadTex(loader, ART.skateboard),
@@ -150,6 +155,7 @@ export async function createDoorStage(
     loadTex(loader, ART.leaf),
     loadTex(loader, ART.leafNormal, false),
     loadTex(loader, ART.leafRough, false),
+    loadTex(loader, ART.vines),
   ]);
   // a softly lit room for the brass to reflect
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -234,10 +240,11 @@ export async function createDoorStage(
   painted.renderOrder = 4;
   scene.add(painted);
 
-  // the backpack, the camera and the skateboard stay in front of the door and the vines, as painted
+  // the backpack, the camera, the skateboard and the vines over the hinge stay in front of the door
   for (const [tex, at] of [
     [packTex, PACK],
     [skateTex, SKATEBOARD],
+    [vinesTex, VINES],
   ] as const) {
     const cut = new THREE.Mesh(
       new THREE.PlaneGeometry(at.width, at.height),
@@ -303,7 +310,6 @@ export async function createDoorStage(
   observer.observe(canvas);
   resize();
 
-  const LEAF_OPEN = 1.75; // radians: the leaf swings away from us into the doorway, about 100 degrees
   let time = 0;
   const frame = (_t: number, deltaMs: number) => {
     resize();
@@ -327,6 +333,7 @@ export async function createDoorStage(
     camera.updateProjectionMatrix();
 
     door.hinge.rotation.y = LEAF_OPEN * p.leaf;
+    door.uniforms.open.value = Math.min(1, Math.max(0, (p.leaf - AJAR) / 0.08));
     door.uniforms.time.value = time;
     door.uniforms.glow.value = p.glow;
     door.uniforms.seam.value = p.seam;
@@ -350,7 +357,7 @@ export async function createDoorStage(
       gsap.ticker.remove(frame);
       observer.disconnect();
       door.dispose();
-      [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, envTex, dotTex].forEach((t) => t.dispose());
+      [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, envTex, dotTex].forEach((t) => t.dispose());
       scene.traverse((o) => {
         const mesh = o as THREE.Mesh;
         if (mesh.geometry) mesh.geometry.dispose();

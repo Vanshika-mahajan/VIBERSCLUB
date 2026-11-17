@@ -17,8 +17,9 @@ canopy covers the screen → the real site. One screen, one sequence; demo page 
 |---|---|---|
 | `scene1-plate.webp` | Scene 1 without its text | 1672 × 941 |
 | `scene1-pack.webp`, `scene1-skateboard.webp` | cut out of Scene 1 so they stay in front of the door | as cut |
-| `door-leaf.webp` | the front of the door, trimmed to the panel and graded to the painting | any, about 0.46 wide per 1 tall |
-| `door-leaf-normal.webp`, `door-leaf-rough.webp` | the panel's relief and sheen, so it catches the light as it turns; regenerate them when the panel changes (a Sobel normal map and an inverted-luminance roughness map of `door-leaf.webp`, same size) | same as the panel |
+| `door-painted.webp` | the front of the 3D door: the painting's own door, unfolded from `scene1-plate.webp` as seen from the starting camera with the leaf ajar (`features/intro/tools/paintleaf.py`; the backpack and vines that overlap it were filled with wood) | 682 x 1463 |
+| `door-painted-normal.webp`, `door-painted-rough.webp` | its relief and sheen, so it catches the light as it turns (a Sobel normal map and an inverted-luminance roughness map of the face) | same as the face |
+| `scene1-vines.webp` | the vines and flowers over the hinge side, cut from the painting so they stay in front of the leaf | any |
 | `scene2-world.webp` | the Vibers World | 1671 × 941 |
 
 Same size and composition: replace the file and you're done. A new Scene 1 with the door somewhere else: change the doorway box in `params.ts` (`DOOR`, in the painting's pixels) the boxes of the cut-outs (`PACK`, `SKATEBOARD`), the painted-door overlay (`OVER` in `stage.ts`) and the angle the painted door stands at (`AJAR`).
@@ -28,3 +29,6 @@ Same size and composition: replace the file and you're done. A new Scene 1 with 
 
 ## Retiming
 `timelines/door.ts`: the second argument of each tween is the time from the click, the `duration` its length. The camera's framing for each screen shape is `framingFor()` in `params.ts`.
+
+
+If the painting changes, the door face has to be unfolded again from the new painting, and the handle position (`HANDLE` in `world/door.ts`, in the face's pixels) moved to where the new painting has it. `door-leaf.webp` and its maps are ARPIT's separate panel, no longer used; they are kept until ARPIT says they can go.

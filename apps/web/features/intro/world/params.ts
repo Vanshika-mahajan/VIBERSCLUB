@@ -28,6 +28,8 @@ export type IntroParams = {
 
 /** the painted door stands ajar: the 3D leaf starts at the same angle (as a share of fully open) */
 export const AJAR = 0.42;
+/** radians: fully open, the leaf has swung away from us into the doorway, about 100 degrees */
+export const LEAF_OPEN = 1.75;
 
 export const initialIntroParams = (): IntroParams => ({
   focus: 0,
@@ -71,6 +73,8 @@ const cutout = (l: number, t: number, r: number, b: number) => ({
 /** the backpack and camera, and the skateboard: they stay in front of the door */
 export const PACK = cutout(720, 610, 920, 880);
 export const SKATEBOARD = cutout(1140, 535, 1300, 835);
+/** the vines and flowers that hang over the hinge side of the door, kept in front of the leaf */
+export const VINES = cutout(800, 140, 1010, 480);
 
 export const FOV = 40;
 const TAN = Math.tan(((FOV / 2) * Math.PI) / 180);
