@@ -74,6 +74,9 @@ export const CROWDS: Box[] = [
   [1030, 320, 1230, 370],
 ];
 
+/** how strongly everyone breathes and moves, overall (1 is a quiet, real breath; this reads on screen) */
+const BREATH = 2.6;
+
 const v4 = (b: Box) => `vec4(${b.map((n) => n.toFixed(1)).join(", ")})`;
 
 /** the shader code that moves every person and the dog, in the painting's pixels (p) */
@@ -89,13 +92,13 @@ function peopleCode() {
         // a breath: in quicker than out, with a short rest at the bottom
         float ph = t * ${f.rate.toFixed(2)} + ${(i * 1.7).toFixed(2)};
         float breath = pow(0.5 + 0.5 * sin(ph + 0.35 * sin(ph)), 1.6);
-        p.y += u * ${(f.amp * h).toFixed(2)} * breath * m;
+        p.y += u * ${(f.amp * BREATH * h).toFixed(2)} * breath * m;
         // the body settles and sways a little, more at the shoulders than the hips
-        p.x += u * u * (noise(vec2(t * 0.22, ${(i * 7.3).toFixed(1)})) - 0.5) * ${(2.2 * headSize).toFixed(2)} * m;
+        p.x += u * u * (noise(vec2(t * 0.22, ${(i * 7.3).toFixed(1)})) - 0.5) * ${(7.0 * headSize).toFixed(2)} * m;
         // the head turns and nods on its own, now and then
         float hm = box(p, ${v4(f.head)}, 5.0);
         vec2 look = vec2(noise(vec2(t * 0.16, ${(i * 3.1).toFixed(1)})), noise(vec2(t * 0.21, ${(i * 5.9 + 2).toFixed(1)}))) - 0.5;
-        p += look * vec2(${(3.2 * headSize).toFixed(2)}, ${(1.6 * headSize).toFixed(2)}) * hm;
+        p += look * vec2(${(10.0 * headSize).toFixed(2)}, ${(5.0 * headSize).toFixed(2)}) * hm;
       }
     }`;
   }).join("\n    ");
@@ -106,13 +109,13 @@ function peopleCode() {
         vec2 d = p - vec2(${cx.toFixed(1)}, ${cy.toFixed(1)});
         float w = exp(-dot(d / vec2(80.0, 48.0), d / vec2(80.0, 48.0)) * 1.6);
         float breath = 0.5 + 0.5 * sin(t * 2.3);
-        p -= d * 0.035 * breath * w * m;
+        p -= d * 0.09 * breath * w * m;
         float hm = box(p, ${v4(DOG.head)}, 8.0);
         float ear = noise(vec2(t * 0.5, 31.0));
         vec2 look = vec2(noise(vec2(t * 0.14, 17.0)) - 0.5, (noise(vec2(t * 0.19, 23.0)) - 0.5) + 0.25 * sin(t * 2.3));
         // the head turns about the neck, so the top of it moves most
         float up = clamp((770.0 - p.y) / 90.0, 0.0, 1.0);
-        p += look * vec2(5.0, 2.4) * hm * up + vec2(0.0, (ear - 0.5) * 1.5) * hm * up * up;
+        p += look * vec2(14.0, 7.0) * hm * up + vec2(0.0, (ear - 0.5) * 4.0) * hm * up * up;
       }
     }`;
   const crowds = CROWDS.map(
@@ -121,8 +124,8 @@ function peopleCode() {
       if (m > 0.0) {
         float strip = floor(p.x / 14.0);
         float u = clamp((${b[3].toFixed(1)} - p.y) / ${(b[3] - b[1]).toFixed(1)}, 0.0, 1.0);
-        p.x += (noise(vec2(strip * 1.7, t * 0.45)) - 0.5) * 1.6 * u * m;
-        p.y += (0.5 + 0.5 * sin(t * (1.2 + fract(strip * 0.37)) + strip)) * 0.8 * u * m;
+        p.x += (noise(vec2(strip * 1.7, t * 0.6)) - 0.5) * 4.5 * u * m;
+        p.y += (0.5 + 0.5 * sin(t * (1.2 + fract(strip * 0.37)) + strip)) * 2.0 * u * m;
       }
     }`,
   ).join("\n    ");
