@@ -35,7 +35,7 @@ export const initialIntroParams = (): IntroParams => ({
   leaf: AJAR,
   seam: 0.4,
   // as painted: warm light and the world beyond showing through the gap
-  glow: 0.35,
+  glow: 0,
   flare: 0.6,
   warp: 0,
   lookX: 0,
@@ -150,11 +150,12 @@ export function cameraAt(
     y: mix(p.y, f.through.y, b),
     z: mix(p.z, f.through.z, b),
   };
-  // never look past the painting's bottom or sides (the sky above it is fine on phones)
+  // never look past the painting's edges (no empty band of page above, below or beside it)
   const viewH = 2 * pose.z * Math.tan(((fov / 2) * Math.PI) / 180);
   const viewW = viewH * f.aspect;
   const room = Math.max(0, (PLATE.width - viewW) / 2);
   pose.x = clamp(pose.x, -room, room);
-  pose.y = Math.max(pose.y, -PLATE.height / 2 + viewH / 2);
+  const low = -PLATE.height / 2 + viewH / 2;
+  pose.y = clamp(pose.y, low, Math.max(low, PLATE.height / 2 - viewH / 2));
   return pose;
 }

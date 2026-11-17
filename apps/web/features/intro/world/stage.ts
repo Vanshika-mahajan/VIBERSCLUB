@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { gsap } from "@/lib/motion/gsap";
 import { makeWoodenDoor } from "./door";
 import {
@@ -20,6 +21,9 @@ export const ART = {
   pack: "/intro/scene1-pack.webp",
   skateboard: "/intro/scene1-skateboard.webp",
   leaf: "/intro/door-leaf.webp",
+  /** the panel's relief (a normal map) and sheen (roughness), made from door-leaf.webp */
+  leafNormal: "/intro/door-leaf-normal.webp",
+  leafRough: "/intro/door-leaf-rough.webp",
   world: "/intro/scene2-world.webp",
 };
 
@@ -113,9 +117,9 @@ const DUST_FRAG = /* glsl */ `
   }
 `;
 
-async function loadTex(loader: THREE.TextureLoader, url: string) {
+async function loadTex(loader: THREE.TextureLoader, url: string, colour = true) {
   const t = await loader.loadAsync(url);
-  t.colorSpace = THREE.SRGBColorSpace;
+  t.colorSpace = colour ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   t.anisotropy = 4;
   return t;
 }
@@ -138,13 +142,21 @@ export async function createDoorStage(
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.setClearColor(0x000000, 0);
   const loader = new THREE.TextureLoader();
-  const [plateTex, packTex, skateTex, worldTex, leafTex] = await Promise.all([
+  const [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex] = await Promise.all([
     loadTex(loader, ART.plate),
     loadTex(loader, ART.pack),
     loadTex(loader, ART.skateboard),
     loadTex(loader, ART.world),
     loadTex(loader, ART.leaf),
+    loadTex(loader, ART.leafNormal, false),
+    loadTex(loader, ART.leafRough, false),
   ]);
+  // a softly lit room for the brass to reflect
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const roomEnv = new RoomEnvironment();
+  const envTex = pmrem.fromScene(roomEnv, 0.04).texture;
+  roomEnv.dispose();
+  pmrem.dispose();
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.05, 100);
@@ -179,8 +191,9 @@ export async function createDoorStage(
   scene.add(sun);
 
   // the door, standing in its painted doorway
-  const door = makeWoodenDoor(leafTex);
+  const door = makeWoodenDoor({ map: leafTex, normal: normalTex, rough: roughTex, env: envTex });
   door.uniforms.world.value = worldTex;
+  door.uniforms.plate.value = plateTex;
   door.group.position.set(DOOR.x, DOOR.y, 0.01);
   scene.add(door.group);
 
@@ -297,7 +310,10 @@ export async function createDoorStage(
     const p = params;
     time += (Math.min(deltaMs, 50) / 1000) * (0.25 + 0.75 * p.life);
     const life = p.life;
-    const cam = cameraAt(framing, p.focus, p.travel, FOV + p.warp);
+    // the lens widens as we step through, but never past the painting's height (tall phone screens)
+    const z = cameraAt(framing, p.focus, p.travel).z;
+    const fov = Math.min(FOV + p.warp, (2 * Math.atan(PLATE.height / 2 / z) * 180) / Math.PI);
+    const cam = cameraAt(framing, p.focus, p.travel, fov);
     // a little breathing and a little parallax from the pointer, fading out as we walk in
     const still = 1 - Math.min(1, p.focus);
     const breathe = Math.sin(time * 0.5) * 0.03 * life * still;
@@ -307,7 +323,7 @@ export async function createDoorStage(
       cam.z,
     );
     camera.lookAt(camera.position.x, camera.position.y, 0);
-    camera.fov = FOV + p.warp;
+    camera.fov = fov;
     camera.updateProjectionMatrix();
 
     door.hinge.rotation.y = LEAF_OPEN * p.leaf;
@@ -334,7 +350,7 @@ export async function createDoorStage(
       gsap.ticker.remove(frame);
       observer.disconnect();
       door.dispose();
-      [plateTex, packTex, skateTex, worldTex, leafTex, dotTex].forEach((t) => t.dispose());
+      [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, envTex, dotTex].forEach((t) => t.dispose());
       scene.traverse((o) => {
         const mesh = o as THREE.Mesh;
         if (mesh.geometry) mesh.geometry.dispose();

@@ -28,6 +28,8 @@ export type WoodenDoor = {
     res: THREE.IUniform<THREE.Vector2>;
     worldAspect: THREE.IUniform<number>;
     world: THREE.IUniform<THREE.Texture | null>;
+    /** Scene 1's painting: before the door opens, the doorway shows the painting's own glow */
+    plate: THREE.IUniform<THREE.Texture | null>;
   };
   /** per frame: glow drives the light spilling out */
   update: () => void;
@@ -42,6 +44,7 @@ const ROOM_VERT = /* glsl */ `
 // Vibers World inside it; the light clears (flare falls) as we pass through, leaving the world.
 const ROOM_FRAG = /* glsl */ `
   uniform sampler2D uWorld;
+  uniform sampler2D uPlate;
   uniform vec2 uRes;
   uniform float uWorldAspect;
   uniform float uGlow;
@@ -62,18 +65,57 @@ const ROOM_FRAG = /* glsl */ `
     float r = length(p);
     float flick = 0.97 + 0.03 * sin(uTime * 6.0 + vUv.y * 11.0);
     vec3 warm = mix(vec3(1.0, 0.86, 0.64) * 2.0, vec3(1.0, 0.55, 0.22) * 1.2, smoothstep(0.0, 0.9, r)) * flick;
-    // closed: dark, with only the glow at the seam showing
-    vec3 c = mix(vec3(0.05, 0.025, 0.01), world, uGlow);
+    // closed: the painting's own doorway (the lit gap with the crowd in it, painting px 1044 to 1110),
+    // mirrored across the part the leaf hides, so the hand-over from the painting is seamless
+    float xp = 840.0 + vUv.x * 284.0;
+    float m = mod(max(1044.0 - xp, 0.0), 132.0);
+    xp = max(xp, 1044.0 + (m < 66.0 ? m : 132.0 - m));
+    vec3 painted = texture2D(uPlate, vec2(xp / 1672.0, (vUv.y * 618.0 + 141.0) / 941.0)).rgb;
+    vec3 c = mix(painted, world, uGlow);
     // the blaze adds to the world rather than hiding it, strongest low in the middle
     // a warm glow low in the opening, like lamplight; it adds to the world, never washes it out
-    c += warm * uFlare * 0.18 * (1.0 - clamp(r, 0.0, 1.0));
-    c += vec3(1.0, 0.62, 0.3) * uSeam * (1.0 - uGlow) * 0.35;
+    // it lights the world (multiplies) more than it fogs it (adds), so the picture keeps its contrast
+    float fall = 1.0 - clamp(r, 0.0, 1.0);
+    c = c * (1.0 + warm * uFlare * 0.3 * fall) + warm * uFlare * 0.035 * fall;
+    // the light at the gaps hugs the edges of the opening instead of washing over the world
+    vec2 e = abs(vUv - 0.5) * 2.0;
+    float rim = pow(max(e.x, e.y * 0.9), 6.0);
+    c += vec3(1.0, 0.62, 0.3) * uSeam * (0.06 * (1.0 - uGlow * 0.7) + 0.5 * rim * (1.0 - uGlow) * (1.0 - uGlow));
     gl_FragColor = vec4(c, 1.0);
     #include <colorspace_fragment>
   }
 `;
 
-export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
+/** The panel's maps: its colour, and the relief and sheen that let it catch the light as it turns. */
+export type DoorFace = {
+  map: THREE.Texture;
+  normal: THREE.Texture;
+  rough: THREE.Texture;
+  /** a reflection of a softly lit room, for the brass */
+  env: THREE.Texture | null;
+};
+
+// where the handle is painted on the panel, in the panel's pixels (682 x 1463)
+const PANEL = { w: 682, h: 1463 };
+const HANDLE = { roseX: 634, roseY: 690, leverL: 520, plateT: 610, plateB: 835, plateL: 612, plateR: 652 };
+
+// The light that blooms out over the frame and the vines from the gaps and then the open doorway,
+// as a lens would see a bright light against a darker painting.
+const HALO_FRAG = /* glsl */ `
+  uniform float uAmount;
+  uniform vec2 uHole;
+  varying vec2 vUv;
+  void main() {
+    vec2 p = (vUv - 0.5) * 2.0;
+    vec2 d = max(abs(p) - uHole, 0.0);
+    float r = length(d / (1.0 - uHole));
+    float inside = 1.0 - step(0.0001, length(d));
+    float a = exp(-r * 4.5) * (1.0 - inside * 0.6) * smoothstep(1.0, 0.7, max(abs(p.x), abs(p.y)));
+    gl_FragColor = vec4(vec3(1.0, 0.62, 0.3) * a * uAmount, 1.0);
+  }
+`;
+
+export function makeWoodenDoor(art: DoorFace): WoodenDoor {
   const group = new THREE.Group();
   const trash: { dispose: () => void }[] = [];
   const keep = <T extends { dispose: () => void }>(x: T) => {
@@ -88,6 +130,7 @@ export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
     res: { value: new THREE.Vector2(1, 1) },
     worldAspect: { value: 1671 / 941 },
     world: { value: null as THREE.Texture | null },
+    plate: { value: null as THREE.Texture | null },
   };
   const { width: W, height: H, thickness: T } = DOOR;
 
@@ -100,6 +143,7 @@ export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
         fragmentShader: ROOM_FRAG,
         uniforms: {
           uWorld: uniforms.world,
+          uPlate: uniforms.plate,
           uRes: uniforms.res,
           uWorldAspect: uniforms.worldAspect,
           uGlow: uniforms.glow,
@@ -120,18 +164,37 @@ export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
   // the front is ARPIT's painted door panel; the back is built from planks
   const backWood = plankTextures(5, { seed: 11 });
   [backWood.map, backWood.bump].forEach(keep);
-  // the panel is graded to the painting (dark, warm, shaded at the hinge, lit at the latch), so it
-  // is drawn as it is when it faces us, and darkened by hand as it turns away from the light
-  const face = keep(new THREE.MeshBasicMaterial({ map: faceTex }));
-  const EDGE = new THREE.Color("#3a2010");
-  const edge = keep(new THREE.MeshBasicMaterial({ color: EDGE.clone() }));
+  // the panel is graded to the painting; lit by the scene's sun and sky, its grain and mouldings
+  // catch the light and it falls into shade as it turns away (FACE_GAIN and the tint match it to the painting
+  // when it faces us)
+  const FACE_GAIN = 1.0;
+  const face = keep(
+    // painted wood has little sheen; a full one turns the leaf to a pale sliver when seen edge on
+    new THREE.MeshPhysicalMaterial({
+      specularIntensity: 0.2,
+      map: art.map,
+      normalMap: art.normal,
+      normalScale: new THREE.Vector2(1.3, 1.3),
+      roughnessMap: art.rough,
+      roughness: 1,
+      metalness: 0,
+      color: new THREE.Color(0.96, 1.29, 2.4).multiplyScalar(FACE_GAIN),
+      emissive: new THREE.Color(0, 0, 0),
+    }),
+  );
+  // the leaf's edges: end grain, lit warm by the doorway as the leaf turns
+  const edgeWood = plankTextures(1, { seed: 5 });
+  [edgeWood.map, edgeWood.bump].forEach(keep);
+  // shaded by hand (see update): lit, the thin edge caught so much of the sun that it went pale
+  const EDGE = new THREE.Color(0.5, 0.36, 0.28);
+  const EDGE_LIT = new THREE.Color(1.0, 0.55, 0.25);
+  const edge = keep(new THREE.MeshBasicMaterial({ map: edgeWood.map, color: EDGE.clone() }));
   const back = keep(
-    new THREE.MeshStandardMaterial({
+    new THREE.MeshLambertMaterial({
       map: backWood.map,
       bumpMap: backWood.bump,
       bumpScale: 1.5,
-      roughness: 0.85,
-      color: new THREE.Color(0.8, 0.72, 0.66),
+      color: new THREE.Color(0.15, 0.09, 0.06),
     }),
   );
   // a hair narrower than the opening: a line of light shows at the latch side
@@ -163,7 +226,45 @@ export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
   brace.rotation.z = Math.atan2(leafW * 0.78, H * 0.76);
   hinge.add(brace);
 
-  // iron hinge knuckles on the hinge edge (the panel already has its handle and hinge plates painted)
+  // the brass lever handle, over the painted one, standing off the wood
+  const brass = keep(
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#b8873a"),
+      metalness: 1,
+      roughness: 0.32,
+      envMap: art.env,
+      envMapIntensity: 0.9,
+    }),
+  );
+  const pxw = leafW / PANEL.w,
+    pxh = (H * 0.996) / PANEL.h;
+  const at = (x: number, y: number) => [x * pxw, H * 0.498 - y * pxh] as const;
+  const [rx, ry] = at(HANDLE.roseX, HANDLE.roseY);
+  const plateH = (HANDLE.plateB - HANDLE.plateT) * pxh,
+    plateW = (HANDLE.plateR - HANDLE.plateL) * pxw;
+  const backplate = new THREE.Mesh(
+    keep(new RoundedBoxGeometry(plateW, plateH, 0.025, 4, plateW * 0.45)),
+    brass,
+  );
+  const [, plateY] = at(0, (HANDLE.plateT + HANDLE.plateB) / 2);
+  backplate.position.set(at((HANDLE.plateL + HANDLE.plateR) / 2, 0)[0], plateY, 0.012);
+  const rose = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.05, 0.055, 0.06, 24)), brass);
+  rose.rotation.x = Math.PI / 2;
+  rose.position.set(rx, ry, 0.05);
+  const leverLen = (HANDLE.roseX - HANDLE.leverL) * pxw;
+  const leverGeo = keep(new THREE.CapsuleGeometry(0.021, leverLen, 6, 16));
+  const lever = new THREE.Mesh(leverGeo, brass);
+  lever.rotation.z = Math.PI / 2;
+  lever.position.set(rx - leverLen / 2, ry, 0.075);
+  const neck = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.022, 0.022, 0.06, 16)), brass);
+  neck.rotation.x = Math.PI / 2;
+  neck.position.set(rx, ry, 0.07);
+  for (const m of [backplate, rose, lever, neck]) {
+    m.renderOrder = 3;
+    hinge.add(m);
+  }
+
+  // iron hinge knuckles on the hinge edge
   const iron = keep(
     new THREE.MeshStandardMaterial({
       color: "#2b2723",
@@ -197,6 +298,32 @@ export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
   const spill = new THREE.PointLight(0xffa452, 0, 14, 1.4);
   spill.position.set(0.4, H * 0.45, 1.8);
   group.add(spill);
+  // and a light inside the doorway, so the face and edge of the opening leaf glow warm from behind
+  const inside = new THREE.PointLight(0xffb066, 0, 8, 1.6);
+  inside.position.set(W * 0.4, H * 0.35, -3);
+  group.add(inside);
+
+  // the bloom of the light over the frame
+  const holeX = 1 / 1.7,
+    holeY = 1 / 1.25;
+  const haloUniforms = { uAmount: { value: 0 }, uHole: { value: new THREE.Vector2(holeX, holeY) } };
+  const halo = new THREE.Mesh(
+    keep(new THREE.PlaneGeometry(W * 1.7, H * 1.25)),
+    keep(
+      new THREE.ShaderMaterial({
+        vertexShader: ROOM_VERT,
+        fragmentShader: HALO_FRAG,
+        uniforms: haloUniforms,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    ),
+  );
+  halo.position.set(0, H / 2, T + 0.08);
+  halo.renderOrder = 4.6;
+  group.add(halo);
 
   return {
     group,
@@ -204,12 +331,15 @@ export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
     uniforms,
     update: () => {
       const g = uniforms.glow.value;
-      // turning away, the face falls into shade; its edge catches the warm light from the doorway
+      // turning away, the face falls into shade on its own; its edge catches the warm doorway light
       const turn = Math.sin(Math.abs(hinge.rotation.y));
-      face.color.setScalar(1 - 0.5 * turn);
-      edge.color.copy(EDGE).lerp(new THREE.Color(0.62, 0.3, 0.1), 0.5 * turn * (0.3 + g));
+      const f = uniforms.flare.value;
+      edge.color.copy(EDGE).multiplyScalar(0.7 + 0.3 * (1 - turn)).lerp(EDGE_LIT, 0.35 * turn * g * (0.4 + 0.6 * f));
+      face.emissive.setRGB(0.2, 0.08, 0.02).multiplyScalar(turn * g * f * 0.4);
       poolMat.opacity = Math.min(g * 1.4, 1) * 0.6;
-      spill.intensity = 2 * uniforms.seam.value + g * 30;
+      spill.intensity = 2 * uniforms.seam.value + g * 9;
+      inside.intensity = g * 3 * (0.5 + 0.5 * f);
+      haloUniforms.uAmount.value = 0.12 * uniforms.seam.value * (1 - g) + 0.55 * f * g;
     },
     dispose: () => trash.forEach((d) => d.dispose()),
   };
