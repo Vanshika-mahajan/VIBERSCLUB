@@ -312,8 +312,9 @@ export async function createDoorStage(
 
   let time = 0;
   const frame = (_t: number, deltaMs: number) => {
-    resize();
     const p = params;
+    if (p.rest) return;
+    resize();
     time += (Math.min(deltaMs, 50) / 1000) * (0.25 + 0.75 * p.life);
     const life = p.life;
     // the lens widens as we step through, but never past the painting's height (tall phone screens)

@@ -32,3 +32,7 @@ Same size and composition: replace the file and you're done. A new Scene 1 with 
 
 
 If the painting changes, the door face has to be unfolded again from the new painting, and the handle position (`HANDLE` in `world/door.ts`, in the face's pixels) moved to where the new painting has it. `door-leaf.webp` and its maps are ARPIT's separate panel, no longer used; they are kept until ARPIT says they can go.
+
+## The living Vibers World (Phases 2 and 3)
+
+`WorldScene.tsx` mounts as we start through the door and draws `world/living.ts`: Scene 2's painting through one shader that moves the river, the fire (flicker, sparks, smoke), the lantern, the string lights and the neon sign, the clouds and mist, the leaves and grass, the three Vibers in front (breathing), fireflies and the steam off the mug. Every place is in `REGIONS` at the top of `living.ts`, in the painting's pixels, so new art only needs those numbers moved. The view drifts about 6% closer over 24 seconds. Without 3D or with reduced motion the painted still stays.

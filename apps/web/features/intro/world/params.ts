@@ -24,6 +24,8 @@ export type IntroParams = {
   life: number;
   /** the painted door from the picture, over the 3D one: 1 in Scene 1, dissolving as the door moves */
   painted: number;
+  /** 1 once the Vibers World has taken over the screen: the door stage stops drawing */
+  rest: number;
 };
 
 /** the painted door stands ajar: the 3D leaf starts at the same angle (as a share of fully open) */
@@ -43,7 +45,7 @@ export const initialIntroParams = (): IntroParams => ({
   lookX: 0,
   lookY: 0,
   life: 1,
-  painted: 1,
+  painted: 1, rest: 0,
 });
 
 /**

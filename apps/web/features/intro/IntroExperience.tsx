@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/motion/gsap";
 import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
 import { DoorScene } from "./DoorScene";
+import { WorldScene } from "./WorldScene";
 import { buildDoorOpening } from "./timelines/door";
 import { useIntro, type IntroPhase } from "./useIntro";
 import { initialIntroParams } from "./world/params";
@@ -22,12 +23,14 @@ const ANNOUNCE: Partial<Record<IntroPhase, string>> = {
  * click on, timelines run the sequence and report back to the director (useIntro) at each scene's
  * end. The stage carries data-phase so CSS and tests can follow along.
  *
- * Phase 1 (this demo): Scene 1, the button and the 3D door, ending in the Vibers World as a still.
+ * Phase 1: Scene 1, the button and the 3D door. Phases 2 and 3: through the door into the Vibers World,
+ * which comes alive (WorldScene).
  */
 export function IntroExperience() {
   const { phase, start, advance, reset } = useIntro();
   const [params, setParams] = useState(initialIntroParams);
   const [has3D, setHas3D] = useState(false);
+  const [alive, setAlive] = useState(false);
   const copy = useRef<HTMLDivElement>(null);
   const world = useRef<HTMLDivElement>(null);
   const running = useRef<gsap.core.Timeline | null>(null);
@@ -44,7 +47,13 @@ export function IntroExperience() {
     const arrive = () => {
       advance("world");
       if (world.current)
-        gsap.fromTo(world.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: has3D ? 0.45 : 0.9, ease: "power1.out" });
+        gsap.fromTo(world.current, { autoAlpha: 0 }, {
+          autoAlpha: 1,
+          duration: has3D ? 0.45 : 0.9,
+          ease: "power1.out",
+          // the door stage is hidden now: it stops drawing, leaving the GPU to the living world
+          onComplete: () => void (params.rest = 1),
+        });
     };
     if (!has3D || prefersReducedMotion()) {
       // the painted still: a short dissolve into the world instead of the walk through the door
@@ -60,6 +69,7 @@ export function IntroExperience() {
     if (process.env.NODE_ENV !== "production")
       Object.assign(window, { __introTimeline: running.current });
   }, [start, advance, has3D, params]);
+  const live = has3D && !prefersReducedMotion() && phase !== "idle" && phase !== "door";
 
   const replay = useCallback(() => {
     running.current?.kill();
@@ -68,6 +78,7 @@ export function IntroExperience() {
     // a fresh set of numbers puts the door and the camera back where they started
     setParams(initialIntroParams());
     setHas3D(false);
+    setAlive(false);
     reset();
   }, [reset]);
 
@@ -105,13 +116,19 @@ export function IntroExperience() {
         </button>
       </div>
 
-      {/* Scene 2 as a still for now: Phase 2 brings it to life */}
+      {/* Scene 2: the Vibers World */}
       <div ref={world} className={s.world} aria-hidden={phase !== "world"}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={ART.world} alt="The Vibers World: a lodge with a Vibers Club sign by a river, Vibers around a campfire at dusk" />
+        <img
+          className={alive ? s.hidden : undefined}
+          src={ART.world}
+          alt="The Vibers World: a lodge with a Vibers Club sign by a river, Vibers around a campfire at dusk"
+        />
+        {/* the world comes alive: river, fire, lights, people (painted still underneath until ready) */}
+        {live && <WorldScene src={ART.world} onReady={() => setAlive(true)} />}
         {phase === "world" && (
           <div className={s.demoBar}>
-            <span>Phase 1 ends here. Phase 2 brings the Vibers World to life.</span>
+            <span>Phase 3 ends here. Next, the paraglider.</span>
             <button type="button" onClick={replay}>
               Replay
             </button>
