@@ -77,17 +77,18 @@ const WIND = /* glsl */ `
     // where things move
     float branch = smoothstep(0.36, 0.0, q.y) * smoothstep(0.55, 0.08, q.x);
     float trunk = smoothstep(0.17, 0.05, q.x) * smoothstep(0.5, 0.2, q.y);
-    float door = box(q, vec4(0.505, 0.21, 0.665, 0.83), 0.008);
-    float vines = box(q, vec4(0.42, 0.1, 0.76, 0.9), 0.03) * (1.0 - door);
+    // the doorframe (both jambs and the lintel) stays rigid: warping it made its straight edges wavy
+    float frame = box(q, vec4(0.48, 0.14, 0.71, 0.86), 0.012);
+    float vines = box(q, vec4(0.42, 0.1, 0.76, 0.9), 0.03) * (1.0 - frame);
     float pines = smoothstep(0.73, 0.82, q.x) * smoothstep(0.28, 0.4, q.y) * smoothstep(0.78, 0.66, q.y);
     float forest = smoothstep(0.45, 0.35, q.x) * smoothstep(0.48, 0.58, q.y) * smoothstep(0.8, 0.7, q.y);
-    float grass = smoothstep(0.76, 0.84, q.y) * (1.0 - door);
+    float grass = smoothstep(0.76, 0.84, q.y) * (1.0 - frame);
     float near = smoothstep(0.8, 1.0, q.y);
     vec2 d = vec2(0.0);
     // the branch sways as a whole (more toward its tip) and its leaves flutter
     d += branch * (1.0 - trunk) * (vec2(sin(t * 0.8 + q.x * 2.0), 0.5 * cos(t * 0.65)) * 0.0045 * smoothstep(0.08, 0.45, q.x) + slow * 0.006 + flutter * 0.0022) * gust;
-    // the vines and their flowers tremble and lean with the gusts
-    d += vines * (flutter * 0.003 + slow * 0.0022 + vec2(0.0012, 0.0) * gust);
+    // the vines outside the frame lean gently with the gusts (no fine flutter, which read as jitter)
+    d += vines * (slow * 0.0016 + vec2(0.0009, 0.0) * gust);
     // the pines nod, the far trees in the mist barely
     d += pines * (slow * 0.0026 + vec2(0.0012 * gust, 0.0));
     d += forest * slow * 0.0012;
