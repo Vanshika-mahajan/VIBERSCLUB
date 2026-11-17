@@ -25,6 +25,15 @@ ARPIT asked to replace the door and Earth journey at `/` with a cinematic entry 
 - Waiting on ARPIT: the people and props as real transparent PNGs (the checkerboard is painted into the sheets they sent); optionally Scene 1 with an empty doorway.
 - Tests: vitest 99 passed (new `tests/unit/intro.test.ts`: the sequence starts once and only moves forward; the camera ends inside the doorway and starts with the door in view on every screen shape). Lint and typecheck clean. Checked frame by frame at 1280 x 720 and 430 x 932.
 
+## Entry refinement, round 1: the door scene (2026-11-18)
+ARPIT's points from their recording: everything real, moving and 3D; a soft wind through the whole scene; a dimensional button with softly curved corners; the headline stays until the transition; a truly 3D door that opens smoothly; stop at 90 degrees.
+- Wind (`WIND` in `world/stage.ts`): gusts roll across; the branch sways and its leaves flutter, the vines and flowers tremble (the vines cut-out too), the pines nod, the meadow ripples most near us, the mist drifts.
+- Depth: Scene 1 is drawn in depth from a hand-built map (`tools/depth.py`, `scene1-depth.png`) and the camera drifts gently, so the branch, door, trees and mountains slide against each other. The depth fades as we walk through.
+- Button: an espresso slab with a lit top edge, a soft shadow, 14px corners, a slow sheen and an amber arrow key; it lifts on hover and presses in.
+- The headline stays until we walk through the doorway (fades at 1.8 s); only the button steps back on click.
+- Door: its smeared hinge side was rebuilt (`tools/cleanface.py`), its panels are carved into the leaf with bevels, and the scene's light takes over from the painted glow as it moves. It opens to 90 degrees over 1.9 s with a gentle ease.
+- Tests: lint and typecheck clean; unit 101 of 101; e2e intro and sweep 36 of 36.
+
 ## The new entry replaces the journey at `/` (2026-11-18)
 ARPIT reviewed the entry and said "swap". `/` now renders `IntroExperience`; `/intro-demo` redirects to `/`. The old door and Earth journey (`features/journey`) is no longer routed but kept, because Home's opening reuses its planet and deleting the rest needs ARPIT's OK. Its e2e specs (`journey`, `journey-3d`, `journey-sound`) are skipped with a note until then; the new `e2e/intro.spec.ts` covers the entry: the button runs once, the entry reaches Home and the canopy lets go, the reduced-motion path, a plain Home visit never shows the canopy, and the old address redirects. CLAUDE.md updated.
 - Tests: lint and typecheck clean; unit 101 of 101; e2e intro, sweep, home and journey: 50 passed, 20 skipped (the old journey), 2 failed. Both failures are "API OK", which needs the backend.

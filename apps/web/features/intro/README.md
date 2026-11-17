@@ -25,6 +25,8 @@ Libraries: three.js for the door and the living world (no React wrapper), GSAP f
 | `door-painted.webp` | the front of the 3D door: the painting's own door, unfolded from `scene1-plate.webp` as seen from the starting camera with the leaf ajar (`features/intro/tools/paintleaf.py`; the backpack and vines that overlap it were filled with wood) | 682 x 1463 |
 | `door-painted-normal.webp`, `door-painted-rough.webp` | its relief and sheen, so it catches the light as it turns (a Sobel normal map and an inverted-luminance roughness map of the face) | same as the face |
 | `scene1-vines.webp` | the vines and flowers over the hinge side, cut from the painting so they stay in front of the leaf | any |
+| `scene1-depth.png` | how far away each part of Scene 1 is (made by `tools/depth.py`): the painting is pushed into depth so near and far parts slide against each other as the camera drifts | half size |
+| `door-painted-unfolded.webp` | the door face as `tools/paintleaf.py` unfolds it; `tools/cleanface.py` rebuilds its smeared hinge side into `door-painted.webp` and remakes the relief and sheen maps | 682 x 1463 |
 | `scene2-world.webp` | the Vibers World | 1671 × 941 |
 | `scene2-glider-patch.webp` | sky to paint out the painted paraglider once the real one takes off (`GLIDER_PATCH` in `living.ts`) | as cut |
 | `paraglider.webp` | the paraglider with a clean transparent background | 1672 × 941 |
@@ -33,7 +35,10 @@ Libraries: three.js for the door and the living world (no React wrapper), GSAP f
 Same size and composition: replace the file and you're done. A new Scene 1 with the door somewhere else: change the doorway box in `params.ts` (`DOOR`, in the painting's pixels) the boxes of the cut-outs (`PACK`, `SKATEBOARD`), the painted-door overlay (`OVER` in `stage.ts`) and the angle the painted door stands at (`AJAR`).
 
 ## Changing the door
-`world/door.ts`: `DOOR.thickness` in `params.ts` is its depth; the battens and brace on the back, the hinge knuckles and the edge colour are plain three.js meshes. How far it opens: `LEAF_OPEN` in `stage.ts` (radians). Which way: positive swings it away from us.
+`world/door.ts`: the front is carved: its panels (`PANELS`, in the face's pixels) are sunk `RECESS` deep with bevelled edges, and once the door moves the scene's light takes over from the painted glow, so the carving reads. `DOOR.thickness` in `params.ts` is its depth; the battens and brace on the back, the hinge knuckles and the edge colour are plain three.js meshes. How far it opens: `LEAF_OPEN` in `params.ts` (radians, 90 degrees; further and it swings out behind the painted wall). Which way: positive swings it away from us.
+
+## Wind and depth in Scene 1
+`world/stage.ts`: `WIND` is the soft wind (the branch, the vines and their flowers, the pines, the meadow, the mist), with a box for each part in the painting's 0..1; the vines cut-out uses it too. The painting is drawn in depth from `scene1-depth.png`, and the camera drifts gently while you wait (`driftX`, `driftY`; it stands `CLOSER` so the drift never shows past the edges). The depth fades out as the camera walks through the doorway.
 
 ## Retiming
 The door: `timelines/door.ts`. The flight and canopy: `timelines/flight.ts` (times listed at its top). The curtain on Home: the two tweens in `CanopyReveal.tsx`. In each, the second argument of each tween is the time from the click, the `duration` its length. The camera's framing for each screen shape is `framingFor()` in `params.ts`.

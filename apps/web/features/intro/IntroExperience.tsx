@@ -41,6 +41,7 @@ export function IntroExperience() {
   const [has3D, setHas3D] = useState(false);
   const [alive, setAlive] = useState(false);
   const copy = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
   const world = useRef<HTMLDivElement>(null);
   const glider = useRef<HTMLImageElement>(null);
   const fabric = useRef<HTMLDivElement>(null);
@@ -106,7 +107,7 @@ export function IntroExperience() {
       running.current = gsap.timeline().call(() => advance("entering"), [], 0.2).call(arrive, [], 0.3);
       return;
     }
-    running.current = buildDoorOpening(params, { copy: copy.current }, {
+    running.current = buildDoorOpening(params, { copy: copy.current, button: button.current }, {
       entering: () => advance("entering"),
       arrived: arrive,
     });
@@ -123,6 +124,7 @@ export function IntroExperience() {
     if (glider.current) gsap.set(glider.current, { autoAlpha: 0 });
     living.current = null;
     if (copy.current) gsap.set(copy.current, { autoAlpha: 1, y: 0 });
+    if (button.current) gsap.set(button.current, { autoAlpha: 1, y: 0 });
     // a fresh set of numbers puts the door and the camera back where they started
     setParams(initialIntroParams());
     setHas3D(false);
@@ -155,6 +157,7 @@ export function IntroExperience() {
           <path d="M3 13 C 50 3, 120 2, 217 9" />
         </svg>
         <button
+          ref={button}
           type="button"
           className={s.unveil}
           onClick={unveil}

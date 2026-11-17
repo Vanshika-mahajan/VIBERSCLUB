@@ -7,7 +7,7 @@ export type IntroParams = {
   focus: number;
   /** 0 = a few steps away, 1 = the doorway fills the screen (we are in Scene 2) */
   travel: number;
-  /** 0 closed … 1 fully open (about 100 degrees on the hinge) */
+  /** 0 closed … 1 fully open (90 degrees on the hinge) */
   leaf: number;
   /** warm light showing at the gaps before the door opens */
   seam: number;
@@ -28,10 +28,12 @@ export type IntroParams = {
   rest: number;
 };
 
-/** the painted door stands ajar: the 3D leaf starts at the same angle (as a share of fully open) */
-export const AJAR = 0.42;
-/** radians: fully open, the leaf has swung away from us into the doorway, about 100 degrees */
-export const LEAF_OPEN = 1.75;
+/** radians: fully open, the leaf has swung away from us into the doorway, 90 degrees (any further
+ * and it swings out past the frame, behind the painted wall) */
+export const LEAF_OPEN = Math.PI / 2;
+/** the painted door stands ajar at 0.735 radians (the angle its face was unfolded at): the 3D leaf
+ * starts there, given as a share of fully open */
+export const AJAR = 0.735 / LEAF_OPEN;
 
 export const initialIntroParams = (): IntroParams => ({
   focus: 0,

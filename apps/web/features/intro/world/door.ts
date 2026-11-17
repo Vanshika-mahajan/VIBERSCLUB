@@ -103,6 +103,28 @@ export type DoorFace = {
 
 // where the handle is painted on the door, in door-painted.webp's pixels (682 x 1463)
 const PANEL = { w: 682, h: 1463 };
+// the door's carved panels, in the same pixels (left, top, right, bottom): they are sunk into the
+// leaf, with bevelled edges, so the face has real relief that catches the light as the door turns
+const PANELS = [
+  [100, 40, 560, 738],
+  [104, 888, 262, 1398],
+  [348, 888, 560, 1398],
+] as const;
+const RECESS = 0.045;
+const BEVEL = 20;
+const smooth = (t: number) => {
+  const c = Math.min(1, Math.max(0, t));
+  return c * c * (3 - 2 * c);
+};
+/** how deep the face is sunk at a point (face pixels): 0 on the frame, RECESS inside a panel */
+function sunk(x: number, y: number) {
+  let d = 0;
+  for (const [l, t, r, b] of PANELS) {
+    const e = Math.min(x - l, r - x, y - t, b - y);
+    d = Math.max(d, smooth(e / BEVEL));
+  }
+  return d * RECESS;
+}
 const HANDLE = { roseX: 620, roseY: 726, leverL: 559, plateT: 646, plateB: 872, plateL: 604, plateR: 640 };
 
 // The light that blooms out over the frame and the vines from the gaps and then the open doorway,
@@ -186,7 +208,7 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
       specularIntensity: 0.2,
       map: art.map,
       normalMap: art.normal,
-      normalScale: new THREE.Vector2(1.3, 1.3),
+      normalScale: new THREE.Vector2(1.8, 1.8),
       roughnessMap: art.rough,
       roughness: 1,
       metalness: 0,
@@ -213,15 +235,32 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
   );
   // a hair narrower than the opening: a line of light shows at the latch side
   const leafW = W * 0.985;
+  // the slab's own front is left out: the carved face below takes its place
+  const none = keep(new THREE.MeshBasicMaterial({ visible: false }));
   const slab = new THREE.Mesh(
     keep(new RoundedBoxGeometry(leafW, H * 0.996, T, 3, T * 0.12)),
-    [edge, edge, edge, edge, face, back],
+    [edge, edge, edge, edge, none, back],
   );
   slab.position.set(leafW / 2, 0, -T / 2);
   slab.renderOrder = 2;
   const hinge = new THREE.Group();
   hinge.position.set(-W / 2, H / 2, T + 0.01);
   hinge.add(slab);
+
+  // the carved front: the painted face on a finely divided surface, its panels sunk and bevelled
+  const faceH = H * 0.996;
+  const carved = keep(new THREE.PlaneGeometry(leafW, faceH, 150, 320));
+  const pos = carved.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    const fx = (pos.getX(i) / leafW + 0.5) * PANEL.w;
+    const fy = (0.5 - pos.getY(i) / faceH) * PANEL.h;
+    pos.setZ(i, -sunk(fx, fy));
+  }
+  carved.computeVertexNormals();
+  const front = new THREE.Mesh(carved, face);
+  front.position.set(leafW / 2, 0, 0.0005);
+  front.renderOrder = 2;
+  hinge.add(front);
 
   // battens and a diagonal brace on the back, so the back reads as the built side
   const batten = keep(
@@ -351,8 +390,11 @@ export function makeWoodenDoor(art: DoorFace): WoodenDoor {
       edge.color.copy(EDGE).multiplyScalar(0.7 + 0.3 * (1 - turn)).lerp(EDGE_LIT, 0.35 * turn * g * (0.4 + 0.6 * f));
       // the painting already shows the leaf ajar, so the dimming counts from there
       const away = Math.max(0, (turn - TURN_AJAR) / (1 - TURN_AJAR));
-      face.emissiveIntensity = EMIT * (1 - 0.6 * away);
-      face.color.copy(FACE_TINT).multiplyScalar(LIT * (1 - 0.6 * away));
+      // as soon as it moves, the scene's light takes over from the painted glow, so the carving,
+      // the grain and the bevels read in 3D
+      const moving = Math.min(1, away * 3);
+      face.emissiveIntensity = EMIT * (1 - 0.6 * away) * (1 - 0.55 * moving);
+      face.color.copy(FACE_TINT).multiplyScalar(LIT * (1 - 0.6 * away) * (1 + 1.6 * moving));
       face.emissive.setRGB(1, 1, 1).lerp(new THREE.Color(1.3, 0.85, 0.55), turn * g * f * 0.6);
       poolMat.opacity = Math.min(g * 1.4, 1) * 0.6;
       spill.intensity = 2 * uniforms.seam.value + g * 9;
