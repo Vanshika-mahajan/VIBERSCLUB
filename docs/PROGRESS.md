@@ -34,6 +34,16 @@ ARPIT's points from their recording: everything real, moving and 3D; a soft wind
 - Door: its smeared hinge side was rebuilt (`tools/cleanface.py`), its panels are carved into the leaf with bevels, and the scene's light takes over from the painted glow as it moves. It opens to 90 degrees over 1.9 s with a gentle ease.
 - Tests: lint and typecheck clean; unit 101 of 101; e2e intro and sweep 36 of 36.
 
+## Entry refinement: Next 16.4.6, a steady doorframe, and a push through the door (2026-11-18)
+
+- Next.js 16.4.3 → 16.4.6 (security release), at ARPIT's request, with `experimental.agentUpgrade: "security"`.
+- The wind no longer warps the doorframe (ARPIT saw its edges go wavy); the vines only lean, without the fine flutter.
+- The door transition follows ARPIT's reference: the door swings open with warm light spilling out, then one quick accelerating push straight through the doorway (0.75 s, power3.in), and the Vibers World settles from 1.08 to 1. About 2.6 s from the click, down from 3.8.
+
+**Tests**
+- lint, typecheck: clean. Unit: 101 passed.
+- e2e intro and sweep: 36 passed. Home: 50 passed, 2 failed (the known "API OK" test, which needs the backend).
+
 ## Entry refinement: a liquid-chrome "Unveil What Awaits" button (2026-11-18)
 
 ARPIT wanted the button to look like ThreeUI's Get Started Button. Its source can't be reached from here, so ARPIT chose to have it built from their screen recording of the preview: `features/intro/UnveilButton.tsx` and `unveil.module.css`. A chrome rim, a frosted metal face, Geist Mono (new dependency `@fontsource-variable/geist-mono`), a glass orb that turns amber on hover, a faint spectral ring, twinkling grit and pointer scratches on a small canvas. Reduced motion turns off the canvas and transitions.

@@ -92,14 +92,17 @@ export function IntroExperience() {
     if (!start()) return; // already under way: extra clicks do nothing
     const arrive = () => {
       advance("world");
-      if (world.current)
+      if (world.current) {
         gsap.fromTo(world.current, { autoAlpha: 0 }, {
           autoAlpha: 1,
-          duration: has3D ? 0.45 : 0.9,
+          duration: has3D ? 0.2 : 0.9,
           ease: "power1.out",
           // the door stage is hidden now: it stops drawing, leaving the GPU to the living world
           onComplete: () => void (params.rest = 1),
         });
+        // after the push through the door, the world settles back from a touch too close
+        if (has3D) gsap.fromTo(world.current, { scale: 1.08 }, { scale: 1, duration: 1.1, ease: "power3.out" });
+      }
       fly();
     };
     if (!has3D || prefersReducedMotion()) {
@@ -120,7 +123,7 @@ export function IntroExperience() {
 
   const replay = useCallback(() => {
     running.current?.kill();
-    if (world.current) gsap.set(world.current, { autoAlpha: 0 });
+    if (world.current) gsap.set(world.current, { autoAlpha: 0, scale: 1 });
     if (fabric.current) gsap.set(fabric.current, { autoAlpha: 0 });
     if (glider.current) gsap.set(glider.current, { autoAlpha: 0 });
     living.current = null;
