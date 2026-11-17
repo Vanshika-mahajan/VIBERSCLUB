@@ -1,14 +1,14 @@
 import * as THREE from "three";
 
 /**
- * The entry's 3D scene, after ARPIT's reference: an arched doorway standing in a sky of clouds at
- * golden hour, a lit sign over a panelled door, steps up to it. On the click the sign lights up, the
- * door swings outward toward us, and through the doorway the site itself shows (the canvas is
- * transparent there, so Home, rendered underneath, is what you see). Then the camera pushes straight
- * in through the doorway into Home.
+ * The entry's 3D scene, after ARPIT's reference, made with ARPIT's own pictures: their doorframe on a
+ * little island of grass and stones floats in a sky of clouds at golden hour, closed by their wooden
+ * door, with a lit sign over it. On the click the sign lights up, the door swings outward toward us,
+ * and through the doorway the site itself shows (the canvas is transparent there, so Home, rendered
+ * underneath, is what you see). Then the camera pushes straight in through the doorway into Home.
  *
- * Everything is built here in three.js, no art files: the clouds are soft puffs drawn on canvases,
- * the wall and wood get canvas-drawn grain. Colours follow DESIGN.md (espresso, ivory, amber).
+ * Pictures: public/entry/doorframe.webp (ARPIT's doorframe, its opening transparent) and
+ * public/intro/door-leaf.webp (ARPIT's door). The clouds are soft puffs drawn on canvases.
  */
 
 /** Everything the timeline animates, as plain numbers; the scene reads them every frame. */
@@ -25,21 +25,21 @@ export type EntryParams = {
 
 export const initialEntryParams = (): EntryParams => ({ sign: 0, door: 0, push: 0, life: 1 });
 
-// ---- dimensions, in world units (the doorway's floor is at y = 0)
-const ARCH = { w: 4.6, h: 6.6, depth: 0.9, border: 0.55 };
-const INNER = { w: ARCH.w - ARCH.border * 2, h: ARCH.h - ARCH.border };
-const RECESS = -0.45; // the inner wall sits this far back from the arch's face (z = 0)
-const DOOR = { w: 1.5, h: 2.75, t: 0.09 };
-const DOOR_Y = 0; // the threshold
-export const DOORWAY = { x: 0, y: DOOR_Y + DOOR.h / 2, z: RECESS };
-const CAM = { x: 0, y: 3.0, z: 14, fov: 38 };
+// ---- dimensions, in world units (the doorway's floor is at y = 0, the doorframe picture at z = 0)
+// The doorframe picture is 1672 x 941; its opening runs x 759-1042, y 141-807 (the path at 807).
+const FRAME_PX = { w: 1672, h: 941, open: { l: 759, r: 1042, t: 141, b: 807 } };
+const DOOR_H = 2.75;
+const PX = DOOR_H / (FRAME_PX.open.b - FRAME_PX.open.t); // world units per picture pixel
+const OPEN_W = (FRAME_PX.open.r - FRAME_PX.open.l) * PX;
+const OPEN_X = ((FRAME_PX.open.l + FRAME_PX.open.r) / 2) * PX; // the opening centre, in picture units
+// the door sits on the face of the frame, lapping a little over the jambs and the head
+const DOOR = { w: OPEN_W + 0.09, h: DOOR_H + 0.05, t: 0.07, lap: 0.045 };
+const DOOR_Y = 0;
+export const DOORWAY = { x: 0, y: DOOR_Y + DOOR_H / 2, z: 0 };
+const CAM = { x: 0, y: 1.7, z: 10.5, fov: 38 };
 
 const COL = {
-  wall: new THREE.Color("#5a3322"),
-  wallRim: new THREE.Color("#6e4029"),
-  inner: new THREE.Color("#4a2a1b"),
-  wood: new THREE.Color("#3b2216"),
-  stone: new THREE.Color("#e9dccb"),
+  edge: new THREE.Color("#3a2014"),
   gold: new THREE.Color("#d9a24a"),
   sky: { top: new THREE.Color("#c99872"), mid: new THREE.Color("#ecc9a6"), low: new THREE.Color("#f8eadb") },
 };
@@ -94,32 +94,11 @@ function cloudTexture(seed: number) {
   }, false);
 }
 
-/** Fine plaster grain for the arch, wood grain for the door. */
-function grainTexture(kind: "plaster" | "wood") {
-  return canvasTex(512, 512, (g) => {
-    const img = g.createImageData(512, 512);
-    for (let y = 0; y < 512; y++)
-      for (let x = 0; x < 512; x++) {
-        const i = (y * 512 + x) * 4;
-        let v: number;
-        if (kind === "wood") {
-          // fine vertical grain with a slow wander
-          const n = Math.sin(x * 0.55 + Math.sin(y * 0.008 + x * 0.02) * 2.2) * 0.5 + Math.sin(x * 0.13 + 1.7) * 0.5;
-          v = 0.86 + 0.07 * n + 0.05 * (rand() - 0.5);
-        } else v = 0.9 + 0.1 * (rand() - 0.5) + 0.04 * Math.sin(x * 0.05 + y * 0.03);
-        const c = Math.round(255 * v);
-        img.data[i] = img.data[i + 1] = img.data[i + 2] = c;
-        img.data[i + 3] = 255;
-      }
-    g.putImageData(img, 0, 0);
-  });
-}
-
 /** The sign over the door: the club's name in gold capitals, a fine line under it. */
 function signTexture() {
   return canvasTex(1024, 320, (g) => {
     g.clearRect(0, 0, 1024, 320);
-    g.fillStyle = "#e6b45a";
+    g.fillStyle = "#b8742a";
     g.textAlign = "center";
     g.textBaseline = "middle";
     g.font = '700 150px "Syne Variable", Syne, sans-serif';
@@ -166,27 +145,6 @@ const SKY_FRAG = /* glsl */ `
   }
 `;
 
-/** An arch outline: a rectangle with a half-circle on top, its floor at y = 0. */
-function archShape(w: number, h: number, shape = new THREE.Shape()) {
-  const r = w / 2;
-  shape.moveTo(-r, 0);
-  shape.lineTo(-r, h - r);
-  shape.absarc(0, h - r, r, Math.PI, 0, true);
-  shape.lineTo(r, 0);
-  shape.lineTo(-r, 0);
-  return shape;
-}
-function archPath(w: number, h: number) {
-  const p = new THREE.Path();
-  const r = w / 2;
-  p.moveTo(-r, 0);
-  p.lineTo(r, 0);
-  p.lineTo(r, h - r);
-  p.absarc(0, h - r, r, 0, Math.PI, false);
-  p.lineTo(-r, 0);
-  return p;
-}
-
 export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryParams) {
   await document.fonts?.ready;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: true });
@@ -198,6 +156,14 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   const camera = new THREE.PerspectiveCamera(CAM.fov, 1, 0.05, 400);
   const trash: { dispose(): void }[] = [];
   const keep = <T extends { dispose(): void }>(d: T) => (trash.push(d), d);
+  const loader = new THREE.TextureLoader();
+  const picture = async (url: string) => {
+    const t = keep(await loader.loadAsync(url));
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return t;
+  };
+  const [frameTex, leafTex] = await Promise.all([picture("/entry/doorframe.webp"), picture("/intro/door-leaf.webp")]);
 
   // ---- light: a low warm sun from the left, a soft sky fill
   scene.add(new THREE.HemisphereLight(0xfff1dd, 0x8a5a3c, 1.1));
@@ -262,55 +228,19 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   // low in front, over the bottom of the steps (drawn after the doorway, so they stay in front)
   for (let i = 0; i < 9; i++) addCloud(-10 + rand() * 20, -1.3 + rand() * 0.5, 3 + rand() * 4, 3.5 + rand() * 3, 20, 0.95);
 
-  // ---- the arch: a thick rounded frame, and the inner wall set back inside it
-  const plaster = keep(grainTexture("plaster"));
-  plaster.wrapS = plaster.wrapT = THREE.RepeatWrapping;
-  const frameShape = archShape(ARCH.w, ARCH.h);
-  frameShape.holes.push(archPath(INNER.w, INNER.h));
-  const frameGeo = keep(
-    new THREE.ExtrudeGeometry(frameShape, { depth: ARCH.depth, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.08, bevelSegments: 4, curveSegments: 48 }),
+  // ---- ARPIT's doorframe on its island, a flat picture standing upright, its opening over the doorway
+  const frame = new THREE.Mesh(
+    keep(new THREE.PlaneGeometry(FRAME_PX.w * PX, FRAME_PX.h * PX)),
+    keep(new THREE.MeshBasicMaterial({ map: frameTex, transparent: true, depthWrite: false, toneMapped: false })),
   );
-  const wallMat = keep(new THREE.MeshStandardMaterial({ color: COL.wall, roughness: 0.85, map: plaster }));
-  plaster.repeat.set(0.25, 0.25);
-  const frame = new THREE.Mesh(frameGeo, wallMat);
-  frame.position.z = -ARCH.depth + 0.05;
+  frame.position.set((FRAME_PX.w / 2) * PX - OPEN_X, (FRAME_PX.open.b - FRAME_PX.h / 2) * PX, 0);
+  frame.renderOrder = 5;
   scene.add(frame);
-  // the inner wall, with the doorway cut out of it
-  const innerShape = archShape(INNER.w + 0.02, INNER.h + 0.01);
-  const hole = new THREE.Path();
-  const G = 0.015; // the gap round the door
-  hole.moveTo(-DOOR.w / 2 - G, DOOR_Y);
-  hole.lineTo(DOOR.w / 2 + G, DOOR_Y);
-  hole.lineTo(DOOR.w / 2 + G, DOOR_Y + DOOR.h + G);
-  hole.lineTo(-DOOR.w / 2 - G, DOOR_Y + DOOR.h + G);
-  hole.lineTo(-DOOR.w / 2 - G, DOOR_Y);
-  innerShape.holes.push(hole);
-  const innerWall = new THREE.Mesh(
-    keep(new THREE.ShapeGeometry(innerShape, 48)),
-    keep(new THREE.MeshStandardMaterial({ color: COL.inner, roughness: 0.9, map: plaster })),
-  );
-  innerWall.position.z = RECESS;
-  scene.add(innerWall);
-  // the reveal of the recess: the arch's inner faces run back to the inner wall (part of the extrude)
-
-  // a moulded casing round the door
-  const casingMat = keep(new THREE.MeshStandardMaterial({ color: COL.wallRim, roughness: 0.7 }));
-  const casing = new THREE.Group();
-  const cw = 0.14;
-  const addBar = (w: number, h: number, x: number, y: number) => {
-    const b = new THREE.Mesh(keep(new THREE.BoxGeometry(w, h, 0.12)), casingMat);
-    b.position.set(x, y, RECESS + 0.06);
-    casing.add(b);
-  };
-  addBar(cw, DOOR.h + 0.015 + cw, -DOOR.w / 2 - 0.015 - cw / 2, DOOR_Y + (DOOR.h + 0.015 + cw) / 2);
-  addBar(cw, DOOR.h + 0.015 + cw, DOOR.w / 2 + 0.015 + cw / 2, DOOR_Y + (DOOR.h + 0.015 + cw) / 2);
-  addBar(DOOR.w + 0.03 + cw * 2, cw, 0, DOOR_Y + DOOR.h + 0.015 + cw / 2);
-  scene.add(casing);
 
   // ---- the doorway itself: where the canvas turns transparent, showing the site underneath
-  const doorwayZ = RECESS - 0.02;
+  const doorwayZ = -0.01;
   const portal = new THREE.Mesh(
-    keep(new THREE.PlaneGeometry(DOOR.w + 0.03, DOOR.h + 0.015)),
+    keep(new THREE.PlaneGeometry(OPEN_W, DOOR_H)),
     keep(
       new THREE.MeshBasicMaterial({
         color: 0x000000,
@@ -321,30 +251,32 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
       }),
     ),
   );
-  portal.position.set(0, DOOR_Y + (DOOR.h + 0.015) / 2, doorwayZ);
+  portal.position.set(0, DOOR_Y + DOOR_H / 2, doorwayZ);
   portal.renderOrder = 10;
   scene.add(portal);
 
-  // ---- the sign over the door
+  // ---- the sign over the door, standing on the head of the frame
   const signTex = keep(signTexture());
   const signMat = keep(
     new THREE.MeshStandardMaterial({
       map: signTex,
       transparent: true,
       color: COL.gold,
-      emissive: new THREE.Color("#ffb347"),
+      emissive: new THREE.Color("#ff8a1f"),
       emissiveMap: signTex,
       emissiveIntensity: 0,
       metalness: 0.3,
       roughness: 0.35,
+      depthWrite: false,
     }),
   );
-  const signW = 2.9;
+  const signW = 2.3;
   const sign = new THREE.Mesh(keep(new THREE.PlaneGeometry(signW, signW * (320 / 1024))), signMat);
-  sign.position.set(0, DOOR_Y + DOOR.h + 1.05, RECESS + 0.02);
-  sign.renderOrder = 3;
+  const frameTop = (FRAME_PX.open.b - 66) * PX; // the top of the head, in the picture
+  sign.position.set(0, frameTop + 0.5, 0.02);
+  sign.renderOrder = 12;
   scene.add(sign);
-  // its glow on the wall when lit
+  // its glow in the air round it when lit
   const glowTex = keep(
     canvasTex(256, 256, (g) => {
       // round, soft to nothing well inside the edges (stretched into an oval by the plane)
@@ -357,67 +289,27 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     }),
   );
   const glow = new THREE.Mesh(
-    keep(new THREE.PlaneGeometry(4.2, 2.1)),
-    keep(new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false })),
+    keep(new THREE.PlaneGeometry(3.6, 1.8)),
+    // normal blending: added light would wash out to white against the pale sky
+    keep(new THREE.MeshBasicMaterial({ map: glowTex, color: 0xffa040, transparent: true, opacity: 0, depthWrite: false, toneMapped: false })),
   );
-  glow.position.set(0, sign.position.y, sign.position.z + 0.03);
-  glow.renderOrder = 4;
+  glow.position.set(0, sign.position.y, sign.position.z - 0.01);
+  glow.renderOrder = 11;
   scene.add(glow);
   const signLight = new THREE.PointLight(0xffb060, 0, 6, 1.6);
   signLight.position.set(0, sign.position.y - 0.2, sign.position.z + 0.8);
   scene.add(signLight);
 
-  // ---- the door: panelled wood with a brass knob, hinged on the right, swinging outward
-  const woodTex = keep(grainTexture("wood"));
-  const woodMat = keep(new THREE.MeshStandardMaterial({ color: COL.wood, roughness: 0.6, map: woodTex }));
+  // ---- ARPIT's door, hinged on the left (where its hinges are drawn), swinging outward toward us
+  const leafMat = keep(new THREE.MeshBasicMaterial({ map: leafTex, toneMapped: false }));
+  const edgeMat = keep(new THREE.MeshBasicMaterial({ color: COL.edge, toneMapped: false }));
   const hinge = new THREE.Group();
-  hinge.position.set(DOOR.w / 2, DOOR_Y, RECESS + DOOR.t / 2);
-  const leaf = new THREE.Group();
-  leaf.position.x = -DOOR.w / 2;
-  hinge.add(leaf);
-  const slab = new THREE.Mesh(keep(new THREE.BoxGeometry(DOOR.w, DOOR.h, DOOR.t)), woodMat);
-  slab.position.y = DOOR.h / 2;
-  leaf.add(slab);
-  // raised panels on the front: a tall pair and a short pair, as on a classic door
-  const panelMat = keep(new THREE.MeshStandardMaterial({ color: COL.wood.clone().multiplyScalar(1.4), roughness: 0.55, map: woodTex }));
-  const grooveMat = keep(new THREE.MeshStandardMaterial({ color: "#1c0f09", roughness: 0.8 }));
-  const panel = (w: number, h: number, x: number, y: number) => {
-    // a dark groove round each raised panel, so it reads at a distance
-    const g = new THREE.Mesh(keep(new THREE.BoxGeometry(w + 0.05, h + 0.05, 0.012)), grooveMat);
-    g.position.set(x, y, DOOR.t / 2 + 0.006);
-    leaf.add(g);
-    const p = new THREE.Mesh(keep(new THREE.BoxGeometry(w, h, 0.04)), panelMat);
-    p.position.set(x, y, DOOR.t / 2 + 0.02);
-    leaf.add(p);
-  };
-  const pw = DOOR.w * 0.34;
-  panel(pw, DOOR.h * 0.42, -DOOR.w * 0.21, DOOR.h * 0.68);
-  panel(pw, DOOR.h * 0.42, DOOR.w * 0.21, DOOR.h * 0.68);
-  panel(pw, DOOR.h * 0.3, -DOOR.w * 0.21, DOOR.h * 0.24);
-  panel(pw, DOOR.h * 0.3, DOOR.w * 0.21, DOOR.h * 0.24);
-  const brass = keep(new THREE.MeshStandardMaterial({ color: "#c9973f", metalness: 1, roughness: 0.28 }));
-  const knob = new THREE.Mesh(keep(new THREE.SphereGeometry(0.07, 24, 16)), brass);
-  knob.position.set(-DOOR.w / 2 + 0.16, DOOR.h * 0.47, DOOR.t / 2 + 0.08);
-  leaf.add(knob);
-  const stem = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.02, 0.02, 0.07, 12)), brass);
-  stem.rotation.x = Math.PI / 2;
-  stem.position.set(knob.position.x, knob.position.y, DOOR.t / 2 + 0.035);
-  leaf.add(stem);
+  hinge.position.set(-OPEN_W / 2 - DOOR.lap, DOOR_Y, 0.02 + DOOR.t / 2);
+  const slab = new THREE.Mesh(keep(new THREE.BoxGeometry(DOOR.w, DOOR.h, DOOR.t)), [edgeMat, edgeMat, edgeMat, edgeMat, leafMat, leafMat]);
+  slab.position.set(DOOR.w / 2, DOOR.h / 2, 0);
+  slab.renderOrder = 15;
+  hinge.add(slab);
   scene.add(hinge);
-  // light at the gaps of the closed door, as if the room beyond were lit
-  const seamMat = keep(new THREE.MeshBasicMaterial({ color: 0xffc27a, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
-  const seam = new THREE.Mesh(keep(new THREE.PlaneGeometry(DOOR.w + 0.1, 0.05)), seamMat);
-  seam.position.set(0, DOOR_Y + 0.02, RECESS + DOOR.t + 0.01);
-  scene.add(seam);
-
-  // ---- steps up to the door, pale stone
-  const stoneMat = keep(new THREE.MeshStandardMaterial({ color: COL.stone, roughness: 0.8, map: plaster }));
-  for (let i = 0; i < 4; i++) {
-    const w = ARCH.w + 0.6 + i * 0.9;
-    const step = new THREE.Mesh(keep(new THREE.BoxGeometry(w, 0.22, 0.75)), stoneMat);
-    step.position.set(0, -0.11 - i * 0.22, 0.2 + i * 0.75 - 0.4);
-    scene.add(step);
-  }
 
   // ---- sizing
   let w = 1,
@@ -445,19 +337,19 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     }
     // the sign lights up with a little flicker as it catches
     const flick = p.sign > 0 && p.sign < 1 ? 0.75 + 0.25 * Math.sin(time * 60) : 1;
-    signMat.emissiveIntensity = 0.25 + 2.4 * p.sign * flick;
-    (glow.material as THREE.MeshBasicMaterial).opacity = 0.55 * p.sign * flick;
+    signMat.emissiveIntensity = 0.1 + 1.3 * p.sign * flick;
+    (glow.material as THREE.MeshBasicMaterial).opacity = 0.3 * p.sign * flick;
     signLight.intensity = 6 * p.sign;
-    seamMat.opacity = 0.35 + 0.4 * p.sign;
-    // the door swings outward on its right-hand hinge
-    hinge.rotation.y = (Math.PI / 2) * p.door;
+    // the door swings outward on its left-hand hinge, a touch darker as it turns from the light
+    hinge.rotation.y = -(Math.PI / 2) * 1.05 * p.door;
+    leafMat.color.setScalar(1 - 0.35 * Math.sin(Math.PI * 0.5 * p.door));
     // the camera: a slow breath while waiting, then straight in through the doorway; it sits on narrow
-    // screens further back so the arch still fits
+    // screens further back so the doorframe still fits
     const portrait = camera.aspect < 1;
     const startZ = portrait ? CAM.z * (1.25 / Math.max(0.45, camera.aspect)) * 0.62 : CAM.z;
     const breathe = (1 - p.push) * p.life;
     // ending just short of the doorway, where the opening overfills the screen (all transparent)
-    const endZ = doorwayZ + 0.35;
+    const endZ = doorwayZ + 0.12;
     const z = startZ + (endZ - startZ) * p.push;
     const k = (z - doorwayZ) / (startZ - doorwayZ);
     camera.position.set(
@@ -467,7 +359,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     );
     camera.fov = CAM.fov + 8 * p.push * p.push;
     camera.updateProjectionMatrix();
-    // always looking straight ahead, so the arch stands upright and the push runs dead straight
+    // always looking straight ahead, so the doorframe stands upright and the push runs dead straight
     camera.lookAt(camera.position.x, camera.position.y, doorwayZ - 10);
     renderer.render(scene, camera);
   };

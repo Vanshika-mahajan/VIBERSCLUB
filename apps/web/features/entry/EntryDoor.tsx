@@ -17,7 +17,7 @@ import s from "./entry.module.css";
  *   0.10  the sign catches and lights up, flickering once            (sign)
  *   0.60  the door swings outward on its right-hand hinge, to 90°     (door)
  *   1.55  the push, straight in through the doorway, faster and faster (push)
- *   2.55  the canvas lets go; Home is there
+ *   2.55  the canvas lets go; Home is there (it was showing through the doorway already)
  *
  * Without WebGL, or with reduced motion, there is no entry: Home shows straight away.
  */
@@ -73,7 +73,8 @@ export function EntryDoor() {
       .to(p, { life: 0.4, duration: 1.0, ease: "none" }, 0.6)
       // one quick push straight in, accelerating all the way
       .to(p, { push: 1, duration: 1.0, ease: "power3.in" }, 1.55)
-      .to(root.current, { autoAlpha: 0, duration: 0.15, ease: "none" }, 2.45);
+      // the push ends with the open doorway over the whole screen, so the canvas is clear by then
+      .to(root.current, { autoAlpha: 0, duration: 0.1, ease: "none" }, 2.55);
     running.current = tl;
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __entryTimeline: tl });
   }, [state]);

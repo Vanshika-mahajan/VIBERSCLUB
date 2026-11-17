@@ -34,6 +34,14 @@ ARPIT dropped the earlier door and door opening and asked for the whole entry ag
 
 **Known issues:** it still looks more CG than the reference (flat steps, simple clouds). ARPIT will tweak it step by step.
 
+**Round 2, ARPIT's pictures (same day):** ARPIT asked to use their own pictures instead of the drawn scene, which looked plastic. The drawn arch, steps and panelled door are gone. In their place:
+- ARPIT's doorframe on its island of grass and stones (`public/entry/doorframe.webp`, from their upload), floating in the clouds. Its opening is exactly the transparent doorway onto Home.
+- ARPIT's wooden door (`public/intro/door-leaf.webp`), hinged on the left where its hinges are drawn, swinging outward.
+- The sign stands over the frame and glows orange, without washing out to white against the sky.
+- The push ends closer, so the doorway fills the screen before the overlay steps aside.
+
+Tests: lint and typecheck clean, unit 101 passed, the `/entry-demo` check passed on phone and desktop.
+
 ## New entry experience, Phase 1 demo (2026-11-17)
 ARPIT asked to replace the door and Earth journey at `/` with a cinematic entry built from their storyboard: Scene 1 "A World Awaits", a real 3D door, the Vibers World, a paraglider whose canopy covers the screen, then the real site. Built as a demo first, on its own page `/intro-demo` (not linked). Nothing else changed: `/`, the journey and Home are untouched.
 - `features/intro/`: `IntroExperience` (the screen), `useIntro` (the sequence: idle, door, entering, world, paraglider, canopy, reveal, active; a second click is refused), `DoorScene` (hosts three.js, loads it only where `canUse3D()` allows), `world/stage.ts` (one renderer, the painting as a living backdrop with wind and pollen), `world/door.ts` (the leaf with thickness on a hinge, ARPIT's door panel on the front, battens on the back, a doorway that shows Scene 2), `timelines/door.ts` (the 3.8 second walk through the door). How to swap art and retime it: `features/intro/README.md`.
