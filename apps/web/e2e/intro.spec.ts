@@ -1,11 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+// "A World Awaits" (features/intro) no longer opens the site: the door in the clouds (features/entry,
+// e2e/entry.spec.ts) replaced it at "/" on 2026-11-18. Its checks are kept, skipped, until ARPIT
+// approves deleting it; the last two still hold and still run.
+
 /**
  * The first page: "A World Awaits", the door, the Vibers World, the paraglider, then Home. The full
  * motion is reviewed frame by frame (features/intro/README.md); these check the sequence works end to
  * end on the still version (?world=css) and that the 3D door takes over where WebGL is available.
  */
-test("Scene 1 shows the headline and the button, and the button runs once", async ({
+test.skip("Scene 1 shows the headline and the button, and the button runs once", async ({
   page,
 }) => {
   await page.goto("/?world=css");
@@ -18,7 +22,7 @@ test("Scene 1 shows the headline and the button, and the button runs once", asyn
   await expect(unveil).toBeDisabled();
 });
 
-test("the entry runs straight into Home and the canopy lets go", async ({
+test.skip("the entry runs straight into Home and the canopy lets go", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -36,7 +40,7 @@ test("the entry runs straight into Home and the canopy lets go", async ({
 
 test.describe("reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
-  test("the still version still reaches Home", async ({ page }) => {
+  test.skip("the still version still reaches Home", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Unveil What Awaits" }).click();
     await page.waitForURL("**/home", { timeout: 20_000 });

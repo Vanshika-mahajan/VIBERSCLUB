@@ -62,7 +62,7 @@ uv run pytest                            # needs TEST_DATABASE_URL; tests/unit n
 
 **Routes:**
 - `app/` holds thin route files. Screens live in `features/<area>/`.
-- `/` is the entry (`features/intro`, README there): "A World Awaits", a three.js door opens onto the living Vibers World, a paraglider's canopy covers the screen, and Home (`CanopyReveal`) opens it like a curtain. The old door and Earth journey (`features/journey`) is no longer routed; Home's opening still reuses its planet.
+- `/` is the entry (`features/entry`): Home with an overlay on top. ARPIT's doorframe and wooden door float in clouds under a "VIBERS" sign; a tap or Enter lights the sign, swings the door outward and pushes the camera through the doorway into Home, which shows through a transparent portal in the canvas. Review frames at `/entry-demo` too. The previous entry ("A World Awaits", `features/intro`) and the old journey (`features/journey`) are no longer routed but kept until ARPIT approves deleting them; Home's opening still reuses the journey's planet.
 - `/home` is the club home: one long scrolling "issue", chapters I to VII.
 - Discover, Events and Explore render inline on Home as chapters V to VII (`features/home/HomeMore.tsx`, `inline` props). They also keep their own routes.
 

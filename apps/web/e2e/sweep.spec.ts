@@ -38,8 +38,8 @@ for (const route of routes) {
         errors.push(m.text());
     });
     await page.goto(route, { waitUntil: "load" });
-    // the door's headline animates in, so on the first page it only has to be there
-    if (route === "/") await expect(page.locator("h1").first()).toBeAttached({ timeout: 15_000 });
+    // on the first page Home sits under the entry's door, so its headings only have to be there
+    if (route === "/") await expect(page.locator("h1, h2").first()).toBeAttached({ timeout: 15_000 });
     else await expect(page.locator("h1, h2").first()).toBeVisible({ timeout: 15_000 });
     await page.waitForTimeout(800);
 

@@ -14,6 +14,12 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: the door in the clouds goes live at `/`
+
+ARPIT said "go": `/` is now Home with the new entry over it (`app/page.tsx`), the same as `/entry-demo`. "A World Awaits" (`features/intro`) is no longer routed. Its code and e2e checks are kept (skipped) until ARPIT approves deleting them. The new checks are in `e2e/entry.spec.ts`.
+
+Tests: lint and typecheck clean. e2e entry, intro, sweep, home and club: 79 passed, 7 skipped (the replaced intro), 2 failed. Both failures are "API OK", which needs the backend. The sweep's first-page check now looks for Home's headings, since Home has no h1.
+
 ## 2026-11-18: the entry rebuilt from scratch, after ARPIT's reference
 
 ARPIT dropped the earlier door and door opening and asked for the whole entry again, copying the reference video first and then tweaking it step by step.
