@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-11-04
+**Last updated:** 2026-11-17
 
 ## Completed milestones
 - Phase 0 to 2: discovery, PRD, blueprint, ADR-0001 to ADR-0019 (all Accepted; ADR-0013 pending user validation).
@@ -13,6 +13,15 @@
 
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
+
+## New entry experience, Phase 1 demo (2026-11-17)
+ARPIT asked to replace the door and Earth journey at `/` with a cinematic entry built from their storyboard: Scene 1 "A World Awaits", a real 3D door, the Vibers World, a paraglider whose canopy covers the screen, then the real site. Built as a demo first, on its own page `/intro-demo` (not linked). Nothing else changed: `/`, the journey and Home are untouched.
+- `features/intro/`: `IntroExperience` (the screen), `useIntro` (the sequence: idle, door, entering, world, paraglider, canopy, reveal, active; a second click is refused), `DoorScene` (hosts three.js, loads it only where `canUse3D()` allows), `world/stage.ts` (one renderer, the painting as a living backdrop with wind and pollen), `world/door.ts` (the leaf with thickness on a hinge, ARPIT's door panel on the front, battens on the back, a doorway that shows Scene 2), `timelines/door.ts` (the 3.8 second walk through the door). How to swap art and retime it: `features/intro/README.md`.
+- Art in `public/intro/`: Scene 1 with its baked-in text removed, the backpack and the skateboard cut out of it so they stay in front of the door, ARPIT's door panel and vine arch, Scene 2.
+- Reduced motion or no WebGL: the painted still, and the button dissolves straight into Scene 2.
+- Phase 1 ends on Scene 2 as a still, with Replay and "Go to the site".
+- Waiting on ARPIT: the people and props as real transparent PNGs (the checkerboard is painted into the sheets they sent); optionally Scene 1 with an empty doorway.
+- Tests: vitest 99 passed (new `tests/unit/intro.test.ts`: the sequence starts once and only moves forward; the camera ends inside the doorway and starts with the door in view on every screen shape). Lint and typecheck clean. Checked frame by frame at 1280 x 720 and 430 x 932.
 
 ## Journey sounds (2026-11-05)
 Asked by ARPIT after checkpoint 1; nothing else changed. `features/journey/sound.ts` makes every sound in the browser with Web Audio (no files, no licences):

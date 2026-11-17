@@ -1,0 +1,240 @@
+/* The entry experience. Full screen over the app layout, no navigation.
+   Scene 1 is a warm mountain evening: espresso type on the haze, a square ivory control. */
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  /* the sky continues above the painting on tall phones */
+  background: linear-gradient(180deg, #efc9a8 0%, #f3d3b8 40%, #e3c5a9 100%);
+  color: #2a1b13;
+  font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+/* the painted still: covers the screen like the 3D view does, door kept in frame */
+.plate {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% 50%;
+  transition: opacity 0.5s ease;
+}
+.hidden {
+  opacity: 0;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* ---------- the words ---------- */
+
+.copy {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  padding: clamp(20px, 3.2vw, 44px) clamp(20px, 5vw, 80px);
+}
+
+.wordmark {
+  font-family: "Syne Variable", Syne, sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.6vw, 24px);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.headline {
+  position: absolute;
+  left: clamp(20px, 5.6vw, 96px);
+  top: 33%;
+  margin: 0;
+  font-family: "Syne Variable", Syne, sans-serif;
+  font-weight: 700;
+  font-size: clamp(44px, 6.2vw, 112px);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  max-width: 7ch;
+}
+.headline span {
+  display: block;
+}
+
+/* the hand-drawn stroke under the headline, in the one amber accent */
+.swash {
+  position: absolute;
+  left: calc(clamp(20px, 5.6vw, 96px) + clamp(44px, 6.2vw, 112px) * 0.9);
+  top: calc(33% + clamp(44px, 6.2vw, 112px) * 2.05);
+  width: clamp(120px, 14vw, 240px);
+  height: auto;
+  fill: none;
+  stroke: #d5851f;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.unveil {
+  pointer-events: auto;
+  position: absolute;
+  left: clamp(20px, 5.6vw, 96px);
+  top: calc(33% + clamp(44px, 6.2vw, 112px) * 2.55);
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 22px 15px 24px;
+  border: 1px solid #2a1b13;
+  background: #f7f2e8;
+  color: #2a1b13;
+  font: 500 15px/1 "Inter Variable", Inter, sans-serif;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.35s ease;
+}
+/* on hover, espresso fills in from the left behind the words, and the arrow steps on */
+.unveil::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #2a1b13;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.unveil:hover:not(:disabled),
+.unveil:focus-visible {
+  color: #f7f2e8;
+}
+.unveil:hover:not(:disabled)::before,
+.unveil:focus-visible::before {
+  transform: scaleX(1);
+}
+.unveil:focus-visible {
+  outline: 2px solid #d5851f;
+  outline-offset: 3px;
+}
+.arrow {
+  display: inline-block;
+  transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.unveil:hover:not(:disabled) .arrow,
+.unveil:focus-visible .arrow {
+  transform: translateX(5px);
+}
+.unveil:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.unveil:disabled {
+  cursor: default;
+}
+
+/* ---------- Scene 2 ---------- */
+
+.world {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  opacity: 0;
+}
+.world img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  display: block;
+}
+
+/* the demo's own controls, kept plain */
+.demoBar {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100% - 32px);
+  padding: 12px 14px 12px 18px;
+  background: #f7f2e8;
+  border: 1px solid #2a1b13;
+  font-size: 14px;
+  color: #2a1b13;
+}
+.demoBar button,
+.demoBar a {
+  flex: none;
+  border: 1px solid #2a1b13;
+  padding: 8px 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.demoBar a {
+  background: #2a1b13;
+  color: #f7f2e8;
+}
+
+/* ---------- phones: the headline in the sky above the door, the button down on the grass ---------- */
+
+@media (max-aspect-ratio: 4/5) {
+  .plate {
+    top: auto;
+    height: 86%;
+    object-position: 58.7% 50%;
+  }
+  .headline {
+    top: calc(env(safe-area-inset-top) + 64px);
+    font-size: clamp(40px, 12vw, 64px);
+    max-width: none;
+  }
+  .headline span {
+    display: inline;
+  }
+  .swash {
+    top: calc(env(safe-area-inset-top) + 64px + clamp(40px, 12vw, 64px) * 1.05);
+    left: calc(clamp(20px, 5.6vw, 96px) + clamp(40px, 12vw, 64px) * 2.6);
+    width: 34vw;
+  }
+  .unveil {
+    top: auto;
+    bottom: calc(env(safe-area-inset-bottom) + 40px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .unveil:active:not(:disabled) {
+    transform: translate(-50%, 1px);
+  }
+  .demoBar {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unveil,
+  .unveil::before,
+  .arrow,
+  .plate {
+    transition: none;
+  }
+}
