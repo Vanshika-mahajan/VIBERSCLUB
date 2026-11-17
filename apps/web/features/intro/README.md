@@ -1,7 +1,7 @@
 # The entry experience
 
-Scene 1 "A World Awaits" → a real 3D door opens → the Vibers World → (later phases) a paraglider whose
-canopy covers the screen → the real site. One screen, one sequence; demo page `/intro-demo`.
+Scene 1 "A World Awaits" → a real 3D door opens → the Vibers World comes alive → a paraglider whose
+canopy covers the screen → the real site (Home opens the canopy like a curtain). One screen, one sequence; demo page `/intro-demo`.
 
 ## Files
 - `IntroExperience.tsx`: the screen. Scene 1's words and button, the painted still, Scene 2.
@@ -11,6 +11,11 @@ canopy covers the screen → the real site. One screen, one sequence; demo page 
 - `world/door.ts`: the door. A solid leaf on a hinge, the doorway behind it shows Scene 2 lined up with the screen.
 - `world/params.ts`: the numbers the timelines animate, where things sit in the painting, and the camera path for each screen shape.
 - `timelines/door.ts`: the walk through the door, with every time written down.
+- `WorldScene.tsx`, `world/living.ts`: the living Vibers World (see below).
+- `timelines/flight.ts`, `world/cover.ts`: the paraglider's flight and the canopy covering the screen.
+- `handoff.ts`, `CanopyReveal.tsx`, `canopy.module.css`: the hand-over to Home and the curtain opening there.
+
+Libraries: three.js for the door and the living world (no React wrapper), GSAP for every timeline (its ticker also drives the render loops), CSS modules for the rest. No new dependencies.
 
 ## Replacing the art (`public/intro/`)
 | File | What | Size |
@@ -21,6 +26,9 @@ canopy covers the screen → the real site. One screen, one sequence; demo page 
 | `door-painted-normal.webp`, `door-painted-rough.webp` | its relief and sheen, so it catches the light as it turns (a Sobel normal map and an inverted-luminance roughness map of the face) | same as the face |
 | `scene1-vines.webp` | the vines and flowers over the hinge side, cut from the painting so they stay in front of the leaf | any |
 | `scene2-world.webp` | the Vibers World | 1671 × 941 |
+| `scene2-glider-patch.webp` | sky to paint out the painted paraglider once the real one takes off (`GLIDER_PATCH` in `living.ts`) | as cut |
+| `paraglider.webp` | the paraglider with a clean transparent background | 1672 × 941 |
+| `canopy-fabric.webp` | the canopy's cloth that fills the screen | any, landscape |
 
 Same size and composition: replace the file and you're done. A new Scene 1 with the door somewhere else: change the doorway box in `params.ts` (`DOOR`, in the painting's pixels) the boxes of the cut-outs (`PACK`, `SKATEBOARD`), the painted-door overlay (`OVER` in `stage.ts`) and the angle the painted door stands at (`AJAR`).
 
@@ -28,7 +36,7 @@ Same size and composition: replace the file and you're done. A new Scene 1 with 
 `world/door.ts`: `DOOR.thickness` in `params.ts` is its depth; the battens and brace on the back, the hinge knuckles and the edge colour are plain three.js meshes. How far it opens: `LEAF_OPEN` in `stage.ts` (radians). Which way: positive swings it away from us.
 
 ## Retiming
-`timelines/door.ts`: the second argument of each tween is the time from the click, the `duration` its length. The camera's framing for each screen shape is `framingFor()` in `params.ts`.
+The door: `timelines/door.ts`. The flight and canopy: `timelines/flight.ts` (times listed at its top). The curtain on Home: the two tweens in `CanopyReveal.tsx`. In each, the second argument of each tween is the time from the click, the `duration` its length. The camera's framing for each screen shape is `framingFor()` in `params.ts`.
 
 
 If the painting changes, the door face has to be unfolded again from the new painting, and the handle position (`HANDLE` in `world/door.ts`, in the face's pixels) moved to where the new painting has it. `door-leaf.webp` and its maps are ARPIT's separate panel, no longer used; they are kept until ARPIT says they can go.
