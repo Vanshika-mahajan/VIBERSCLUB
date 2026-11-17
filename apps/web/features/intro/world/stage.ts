@@ -30,6 +30,8 @@ export const ART = {
   vines: "/intro/scene1-vines.webp",
   /** how far away each part of Scene 1 is (see DEPTH in README): it gives the painting real depth */
   depth: "/intro/scene1-depth.png",
+  /** white where the vines have leaves and flowers (tools/foliage.py) */
+  foliage: "/intro/scene1-foliage.png",
   /** the painting's own door, unfolded from Scene 1 onto the 3D leaf (see README), with its relief
    * (a normal map) and sheen (roughness) */
   leaf: "/intro/door-painted.webp",
@@ -57,6 +59,7 @@ export type DoorStage = {
 // the grass and flowers in the meadow ripple (more the nearer they are), and the mist drifts.
 // WIND is shared with the cut-outs in front of the door, so the vines over the hinge move with the rest.
 const WIND = /* glsl */ `
+  uniform sampler2D uFoliage;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float noise(vec2 p) {
     vec2 i = floor(p), f = fract(p);
@@ -77,9 +80,10 @@ const WIND = /* glsl */ `
     // where things move
     float branch = smoothstep(0.36, 0.0, q.y) * smoothstep(0.55, 0.08, q.x);
     float trunk = smoothstep(0.17, 0.05, q.x) * smoothstep(0.5, 0.2, q.y);
-    // the doorframe (both jambs and the lintel) stays rigid: warping it made its straight edges wavy
+    // the doorframe (both jambs and the lintel) stays rigid: warping it made its straight edges wavy.
+    // Round the door only the leaves and flowers move (the foliage mask), never the wood under them.
     float frame = box(q, vec4(0.48, 0.14, 0.71, 0.86), 0.012);
-    float vines = box(q, vec4(0.42, 0.1, 0.76, 0.9), 0.03) * (1.0 - frame);
+    float vines = box(q, vec4(0.42, 0.1, 0.76, 0.9), 0.03) * texture2D(uFoliage, clamp(uv, 0.0, 1.0)).r;
     float pines = smoothstep(0.73, 0.82, q.x) * smoothstep(0.28, 0.4, q.y) * smoothstep(0.78, 0.66, q.y);
     float forest = smoothstep(0.45, 0.35, q.x) * smoothstep(0.48, 0.58, q.y) * smoothstep(0.8, 0.7, q.y);
     float grass = smoothstep(0.76, 0.84, q.y) * (1.0 - frame);
@@ -87,8 +91,8 @@ const WIND = /* glsl */ `
     vec2 d = vec2(0.0);
     // the branch sways as a whole (more toward its tip) and its leaves flutter
     d += branch * (1.0 - trunk) * (vec2(sin(t * 0.8 + q.x * 2.0), 0.5 * cos(t * 0.65)) * 0.0045 * smoothstep(0.08, 0.45, q.x) + slow * 0.006 + flutter * 0.0022) * gust;
-    // the vines outside the frame lean gently with the gusts (no fine flutter, which read as jitter)
-    d += vines * (slow * 0.0016 + vec2(0.0009, 0.0) * gust);
+    // the vines' leaves and flowers tremble and lean with the gusts
+    d += vines * (flutter * 0.0026 + slow * 0.002 + vec2(0.0011, 0.0) * gust);
     // the pines nod, the far trees in the mist barely
     d += pines * (slow * 0.0026 + vec2(0.0012 * gust, 0.0));
     d += forest * slow * 0.0012;
@@ -242,7 +246,7 @@ export async function createDoorStage(
   renderer.setClearColor(0x000000, 0);
   renderer.autoClear = false;
   const loader = new THREE.TextureLoader();
-  const [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, depthTex, branchTex] = await Promise.all([
+  const [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, depthTex, branchTex, foliageTex] = await Promise.all([
     loadTex(loader, ART.plate3d),
     loadTex(loader, ART.pack),
     loadTex(loader, ART.skateboard),
@@ -253,6 +257,7 @@ export async function createDoorStage(
     loadTex(loader, ART.vines),
     loadTex(loader, ART.depth, false),
     loadTex(loader, ART.branch),
+    loadTex(loader, ART.foliage, false),
   ]);
   // a softly lit room for the brass to reflect
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -274,6 +279,7 @@ export async function createDoorStage(
     uOpacity: { value: 1 },
     uFeather: { value: 0 },
     uDepth: { value: depthTex },
+    uFoliage: { value: foliageTex },
     uEye: { value: new THREE.Vector3(0, 0, 13) },
     uDepthOn: { value: 1 },
     uOver: { value: 1.2 },
@@ -312,6 +318,7 @@ export async function createDoorStage(
     uMap: plateUniforms.uMap,
     uTime: plateUniforms.uTime,
     uWind: plateUniforms.uWind,
+    uFoliage: plateUniforms.uFoliage,
     uRect: {
       value: new THREE.Vector4(
         OVER.l / 1672,
@@ -365,7 +372,13 @@ export async function createDoorStage(
       new THREE.ShaderMaterial({
         vertexShader: CUT_VERT,
         fragmentShader: CUT_FRAG,
-        uniforms: { uMap: { value: tex }, uTime: plateUniforms.uTime, uWind: wind, uRect: { value: rect } },
+        uniforms: {
+          uMap: { value: tex },
+          uTime: plateUniforms.uTime,
+          uWind: wind,
+          uRect: { value: rect },
+          uFoliage: plateUniforms.uFoliage,
+        },
         transparent: true,
         depthWrite: false,
       }),
@@ -500,7 +513,7 @@ export async function createDoorStage(
       observer.disconnect();
       door.dispose();
       sceneLife.dispose();
-      [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, depthTex, branchTex, envTex, dotTex].forEach((t) => t.dispose());
+      [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, depthTex, branchTex, foliageTex, envTex, dotTex].forEach((t) => t.dispose());
       [scene, backdrop].forEach((sc) => sc.traverse((o) => {
         const mesh = o as THREE.Mesh;
         if (mesh.geometry) mesh.geometry.dispose();
