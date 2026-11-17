@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    // Next.js checks for security releases and prompts an upgrade to the patched version
+    agentUpgrade: "security",
+  },
   // Today is now part of Home
   async redirects() {
     return [{ source: "/today", destination: "/home", permanent: false }];
