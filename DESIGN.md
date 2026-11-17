@@ -55,7 +55,7 @@ Rules:
 - The primary button is Deep Espresso with ivory type. Controls are square or near-square (`border-radius: 0` to `2px`).
 - On hover the fill sweeps in from the left and the arrow steps forward. Focus shows a 2px amber outline, offset by 3px.
 - A secondary button is a 1px espresso outline on ivory.
-- The one exception is the entry's **"Unveil What Awaits"** button. At ARPIT's request it is a raised espresso slab with a 14px radius, a soft shadow, a slow sheen and an amber arrow key.
+- The one exception is the entry's **"Unveil What Awaits"** button (`features/intro/UnveilButton.tsx`). At ARPIT's request it is a liquid-chrome pill: a polished chrome rim, a frosted brushed-metal face with twinkling grit, uppercase Geist Mono, and a glass orb holding the arrow that lights molten amber on hover while the pointer leaves faint light scratches on the metal.
 - Pills (`999px`) are only for chips, tags and avatars.
 
 **Cards and panels**

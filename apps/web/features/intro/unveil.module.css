@@ -1,0 +1,239 @@
+/* "Unveil What Awaits": liquid chrome (see UnveilButton.tsx). Positioned by intro.module.css. */
+
+.unveil {
+  --h: 66px;
+  --rim: 7px;
+  --orb: calc(var(--h) - var(--rim) * 2 - 8px);
+  /* positioned (absolute) by the page that places it, which the rim glint below relies on */
+  display: inline-block;
+  height: var(--h);
+  padding: var(--rim);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  isolation: isolate;
+  /* the polished chrome rim: bright sky above, the dark horizon line, ground light below */
+  background:
+    linear-gradient(180deg, #ffffff 0%, #c4c6cc 10%, #50525a 28%, #141518 46%, #2a2b30 56%, #a4a6ad 72%, #f4f5f7 86%, #7d7f86 100%);
+  box-shadow:
+    0 0 0 1px rgba(10, 8, 6, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.5),
+    0 18px 30px -12px rgba(20, 12, 8, 0.75),
+    0 6px 12px -6px rgba(20, 12, 8, 0.6);
+  transition: box-shadow 0.4s ease;
+}
+/* a warm glint slides along the lower rim when the orb lights up */
+.unveil::after {
+  content: "";
+  position: absolute;
+  left: 30%;
+  right: 22%;
+  bottom: -1px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 210, 150, 0.95), rgba(255, 170, 80, 0) 100%);
+  opacity: 0;
+  transform: translateX(-10%);
+  transition:
+    opacity 0.5s ease,
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+/* the frosted, brushed-metal face inside the rim */
+.face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  height: 100%;
+  padding: 0 4px 0 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.9' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.4 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)' opacity='0.08'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' seed='8'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 2.6 -1.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(120% 140% at 30% 20%, #f1f1ef 0%, rgba(241, 241, 239, 0) 60%),
+    linear-gradient(180deg, #dcdcda 0%, #cbcbc8 55%, #b7b7b4 100%);
+  box-shadow:
+    inset 0 3px 4px -1px rgba(0, 0, 0, 0.45),
+    inset 0 -2px 3px -1px rgba(255, 255, 255, 0.75),
+    inset 10px 0 14px -10px rgba(0, 0, 0, 0.3),
+    inset -10px 0 14px -10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* the orb's warm light spilling across the metal on hover */
+.face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(70% 160% at calc(100% - var(--orb) / 2 - 5px) 50%, rgba(255, 196, 132, 0.85) 0%, rgba(255, 214, 170, 0.45) 35%, rgba(255, 220, 180, 0) 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.label {
+  position: relative;
+  z-index: 2;
+  color: #2a1b13;
+  font: 500 15px/1 "Geist Mono Variable", "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* the glass orb: polished chrome at rest, molten amber when lit */
+.orb {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--orb);
+  height: var(--orb);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 26%, #ffffff 0 7%, rgba(255, 255, 255, 0) 16%),
+    radial-gradient(circle at 50% 120%, #f2f3f6 0%, rgba(242, 243, 246, 0) 55%),
+    radial-gradient(circle at 45% 40%, #d9dbe1 0%, #8c8f97 45%, #34363c 78%, #1c1d21 100%);
+  box-shadow:
+    0 0 0 3px #5a5b60,
+    0 0 0 4px rgba(255, 255, 255, 0.55),
+    0 3px 8px 2px rgba(0, 0, 0, 0.35),
+    inset 0 -3px 6px rgba(255, 255, 255, 0.35);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s ease;
+}
+.orb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 33% 24%, #fff7da 0 6%, rgba(255, 247, 218, 0) 15%),
+    radial-gradient(circle at 50% 115%, #ffd257 0%, rgba(255, 196, 64, 0) 50%),
+    radial-gradient(circle at 48% 45%, #9b2c05 0%, #c6460a 30%, #ee7a14 62%, #ffb02e 88%, #ffd76a 100%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+/* a faint spectral ring, the light refracted round the glass, turning slowly when lit */
+.orb::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #ff6b6b, #ffd36b, #8dff9b, #6bd6ff, #b18bff, #ff6b6b);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  transition: opacity 0.5s ease;
+  animation: spin 9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.orb svg {
+  position: relative;
+  width: 46%;
+  height: 46%;
+  fill: none;
+  stroke: #1d1e22;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition:
+    stroke 0.4s ease,
+    transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* lit: on hover and keyboard focus */
+.unveil:hover:not(:disabled) .face::after,
+.unveil:focus-visible .face::after,
+.unveil:hover:not(:disabled) .orb::before,
+.unveil:focus-visible .orb::before {
+  opacity: 1;
+}
+.unveil:hover:not(:disabled)::after,
+.unveil:focus-visible::after {
+  opacity: 1;
+  transform: translateX(10%);
+}
+.unveil:hover:not(:disabled) .orb,
+.unveil:focus-visible .orb {
+  box-shadow:
+    0 0 0 3px #5a5b60,
+    0 0 0 4px rgba(255, 255, 255, 0.55),
+    0 0 22px 4px rgba(255, 140, 30, 0.55),
+    inset 0 -3px 6px rgba(255, 220, 120, 0.4);
+}
+.unveil:hover:not(:disabled) .orb::after,
+.unveil:focus-visible .orb::after {
+  opacity: 0.5;
+}
+.unveil:hover:not(:disabled) .orb svg,
+.unveil:focus-visible .orb svg {
+  stroke: #fff4e2;
+  transform: translateX(2px);
+}
+.unveil:focus-visible {
+  outline: 2px solid #d5851f;
+  outline-offset: 4px;
+}
+
+/* pressed: the face and the orb give a little under the finger */
+.unveil:active:not(:disabled) .face {
+  transform: scale(0.985);
+}
+.unveil:active:not(:disabled) .orb {
+  transform: scale(0.94);
+}
+.unveil:disabled {
+  cursor: default;
+}
+
+@media (max-width: 760px) {
+  .unveil {
+    --h: 58px;
+  }
+  .face {
+    gap: 16px;
+    padding-left: 22px;
+  }
+  .label {
+    font-size: 13.5px;
+    letter-spacing: 0.1em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unveil,
+  .unveil::after,
+  .face,
+  .face::after,
+  .orb,
+  .orb::before,
+  .orb::after,
+  .orb svg {
+    transition: none;
+  }
+  .orb::after {
+    animation: none;
+  }
+}

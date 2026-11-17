@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/motion/gsap";
 import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
 import { DoorScene } from "./DoorScene";
+import { UnveilButton } from "./UnveilButton";
 import { WorldScene } from "./WorldScene";
 import { handoff } from "./handoff";
 import { buildDoorOpening } from "./timelines/door";
@@ -156,18 +157,7 @@ export function IntroExperience() {
         <svg className={s.swash} viewBox="0 0 220 18" aria-hidden="true">
           <path d="M3 13 C 50 3, 120 2, 217 9" />
         </svg>
-        <button
-          ref={button}
-          type="button"
-          className={s.unveil}
-          onClick={unveil}
-          disabled={phase !== "idle"}
-        >
-          <span>Unveil What Awaits</span>
-          <span className={s.arrow} aria-hidden="true">
-            →
-          </span>
-        </button>
+        <UnveilButton ref={button} className={s.unveil} onClick={unveil} disabled={phase !== "idle"} />
       </div>
 
       {/* Scene 2: the Vibers World */}

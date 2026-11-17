@@ -34,6 +34,14 @@ ARPIT's points from their recording: everything real, moving and 3D; a soft wind
 - Door: its smeared hinge side was rebuilt (`tools/cleanface.py`), its panels are carved into the leaf with bevels, and the scene's light takes over from the painted glow as it moves. It opens to 90 degrees over 1.9 s with a gentle ease.
 - Tests: lint and typecheck clean; unit 101 of 101; e2e intro and sweep 36 of 36.
 
+## Entry refinement: a liquid-chrome "Unveil What Awaits" button (2026-11-18)
+
+ARPIT wanted the button to look like ThreeUI's Get Started Button. Its source can't be reached from here, so ARPIT chose to have it built from their screen recording of the preview: `features/intro/UnveilButton.tsx` and `unveil.module.css`. A chrome rim, a frosted metal face, Geist Mono (new dependency `@fontsource-variable/geist-mono`), a glass orb that turns amber on hover, a faint spectral ring, twinkling grit and pointer scratches on a small canvas. Reduced motion turns off the canvas and transitions.
+
+**Tests**
+- lint, typecheck: clean. Unit: 101 passed.
+- e2e intro and sweep: 36 passed.
+
 ## Entry refinement, round 2: a 3D mountain landscape (2026-11-18)
 
 ARPIT asked for real three.js movement, like the old journey had, and for the mountain landscape to feel 3D, taking inspiration from the ThreeUI landscape while keeping the painting the same.
