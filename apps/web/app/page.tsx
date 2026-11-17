@@ -1,15 +1,6 @@
-import { ClubHome } from "@/features/club/ClubHome";
-import { EntryDoor } from "@/features/entry/EntryDoor";
+import { EntryStart } from "@/features/entry/EntryStart";
 
-/**
- * The first page: Home, with the entry lying over it (features/entry). The door in the clouds opens
- * and the camera goes through the doorway into Home, which was underneath all along.
- */
-export default function HomePage() {
-  return (
-    <>
-      <ClubHome />
-      <EntryDoor />
-    </>
-  );
+/** The first page: on to Home, where the door in the clouds opens onto it (features/entry). */
+export default function FirstPage() {
+  return <EntryStart />;
 }

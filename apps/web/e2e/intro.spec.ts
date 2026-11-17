@@ -56,7 +56,7 @@ test("a normal visit to Home never shows the canopy", async ({ page }) => {
   await expect(page.locator("[class*=reveal]")).toHaveCount(0);
 });
 
-test("the old review address lands on the first page", async ({ page }) => {
+test("the old review address lands on Home, through the first page", async ({ page }) => {
   await page.goto("/intro-demo");
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/home$/);
 });

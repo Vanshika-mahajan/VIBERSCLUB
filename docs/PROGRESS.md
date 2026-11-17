@@ -14,6 +14,14 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: a smooth hand-over from the door to Home
+
+ARPIT: "the transition is not smooth". The jump from `/` to `/home` at the very end was the cause. Now `/` moves to `/home` on its first frame (showing the door's sky meanwhile) with an in-memory flag (`features/entry/handoff.ts`), and `EntryOnHome` lays the door over the real Home there, so there is no change of page at the end. A fresh visit or reload of `/home` never sees the door. The push now gathers speed more gently (power2.in, 1.15 s), and the door and clouds dissolve into Home over the last steps through the doorway.
+
+Home's look is unchanged; `app/home/page.tsx` gains only the inert `<EntryOnHome />`, beside `<CanopyReveal />`.
+
+Tests: lint and typecheck clean, unit 101 passed. e2e entry, intro, sweep, home and club: 79 passed, 7 skipped, 2 failed ("API OK", needs the backend).
+
 ## 2026-11-18: after the door, the real Home at /home
 
 ARPIT saw Home without its contents and top bar after the door: `/` is a full-screen route, which hides them. The entry now moves to `/home` when the push ends, so you land on the real Home, unchanged. Without 3D, or with reduced motion, `/` goes straight to `/home`. No Home files changed.

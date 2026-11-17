@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ClubHome } from "@/features/club/ClubHome";
-import { EntryDoor } from "@/features/entry/EntryDoor";
+import { EntryDemo } from "@/features/entry/EntryDemo";
 
 export const metadata: Metadata = { title: "Vibers Club" };
 
@@ -9,7 +9,7 @@ export default function EntryDemoPage() {
   return (
     <>
       <ClubHome />
-      <EntryDoor />
+      <EntryDemo />
     </>
   );
 }
