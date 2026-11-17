@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-11-17
+**Last updated:** 2026-11-18
 
 ## Completed milestones
 - Phase 0 to 2: discovery, PRD, blueprint, ADR-0001 to ADR-0019 (all Accepted; ADR-0013 pending user validation).
@@ -13,6 +13,26 @@
 
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
+
+## 2026-11-18: the entry rebuilt from scratch, after ARPIT's reference
+
+ARPIT dropped the earlier door and door opening and asked for the whole entry again, copying the reference video first and then tweaking it step by step.
+
+**Where:** `/entry-demo` (the code is in `features/entry/`). `/` is unchanged until ARPIT approves the swap. The old entry and journey are still in the repo.
+
+**What it does:**
+- An arched espresso-brown doorway stands in layered clouds on a warm sky, with stone steps, a "VIBERS / CLUB · MANALI" sign and a closed panelled door.
+- A tap anywhere (or Enter or Space) starts it. The sign lights up with one flicker, the door swings outward on its right hinge, and Home shows through the doorway.
+- The camera then pushes straight in until the doorway fills the screen, and the overlay steps aside onto Home, which was underneath the whole time.
+- Home shows through a transparent "portal" in the canvas, so it is the real page, not a picture of it.
+- Without WebGL, or with reduced motion, there is no entry and Home shows straight away.
+
+**Tests**
+- lint, typecheck: clean
+- unit: 101 passed
+- e2e: a one-off check of `/entry-demo` on phone and desktop (scene ready, no sideways scroll, no serious axe issues, Enter opens onto Home, clean console) passed; sweep `/home` passed.
+
+**Known issues:** it still looks more CG than the reference (flat steps, simple clouds). ARPIT will tweak it step by step.
 
 ## New entry experience, Phase 1 demo (2026-11-17)
 ARPIT asked to replace the door and Earth journey at `/` with a cinematic entry built from their storyboard: Scene 1 "A World Awaits", a real 3D door, the Vibers World, a paraglider whose canopy covers the screen, then the real site. Built as a demo first, on its own page `/intro-demo` (not linked). Nothing else changed: `/`, the journey and Home are untouched.
