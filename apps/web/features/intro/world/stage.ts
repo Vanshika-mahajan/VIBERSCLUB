@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { gsap } from "@/lib/motion/gsap";
 import { makeWoodenDoor } from "./door";
+import { makeSceneLife } from "./life";
 import {
   AJAR,
   LEAF_OPEN,
@@ -21,6 +22,9 @@ import { dotSprite } from "./textures";
 /** Scene 1's art. Swap these files to change the scene; see features/intro/README.md. */
 export const ART = {
   plate: "/intro/scene1-plate.webp",
+  /** the same, with the branch overhead taken out (it sways as its own piece: scene1-branch.webp) */
+  plate3d: "/intro/scene1-plate-3d.webp",
+  branch: "/intro/scene1-branch.webp",
   pack: "/intro/scene1-pack.webp",
   skateboard: "/intro/scene1-skateboard.webp",
   vines: "/intro/scene1-vines.webp",
@@ -105,7 +109,8 @@ const PLATE_VERT = /* glsl */ `
   // moves, near things move against far ones as they would in a real place
   float depthAt(vec2 uv) {
     float v = texture2D(uDepth, uv).r * 255.0;
-    return v >= 230.0 ? (v - 230.0) / 25.0 * 8.0 : (v / 230.0 - 1.0) * 80.0;
+    float n = 1.0 - v / 230.0;
+    return v >= 230.0 ? (v - 230.0) / 25.0 * 8.0 : -200.0 * n * n;
   }
   void main() {
     vUv = (uv - 0.5) * uOver + 0.5;
@@ -126,16 +131,31 @@ const PLATE_FRAG = /* glsl */ `
   uniform vec4 uRect;
   uniform float uOpacity;
   uniform float uFeather;
+  // red: depth; green: the mountains; blue: the open meadow (tools/depth.py)
+  uniform sampler2D uDepth;
   varying vec2 vUv;
   ${WIND}
   void main() {
     vec2 uv = uRect.xy + vUv * uRect.zw;
     vec2 q = vec2(uv.x, 1.0 - uv.y);
     float t = uTime;
+    vec3 masks = texture2D(uDepth, clamp(uv, 0.0, 1.0)).rgb;
     // the mist on the left drifts very slowly
     float mist = smoothstep(0.5, 0.3, q.x) * smoothstep(0.3, 0.45, q.y) * smoothstep(0.85, 0.7, q.y);
     uv += windAt(uv, t) * uWind + vec2(sin(t * 0.07) * 0.004, 0.0) * mist * uWind;
     vec3 c = texture2D(uMap, uv).rgb;
+    // light crossing the mountains: soft cloud shadows drift over the slopes and the ridges between
+    // them catch the low sun, so the range reads as rock in depth rather than a flat picture
+    float cloud = noise(uv * vec2(2.6, 4.5) + vec2(t * 0.018, t * 0.004)) * 0.65 + noise(uv * vec2(6.0, 9.0) + vec2(t * 0.03, 0.0)) * 0.35;
+    float shade = smoothstep(0.42, 0.72, cloud);
+    float mtn = masks.g * uWind;
+    c *= 1.0 - 0.22 * shade * mtn;
+    c += vec3(1.0, 0.7, 0.45) * 0.05 * (1.0 - shade) * mtn;
+    // wind waves rolling through the meadow: the grass bends and shows its paler side in bands
+    float wave = sin(dot(q, vec2(9.0, 22.0)) * 3.0 - t * 1.7 + noise(uv * 6.0 + t * 0.1) * 4.0);
+    float band = smoothstep(0.35, 1.0, wave) * (0.55 + 0.45 * sin(t * 0.55 - q.x * 4.0));
+    c *= 1.0 + 0.09 * band * masks.b * uWind;
+    c += vec3(0.05, 0.04, 0.0) * band * masks.b * uWind;
     // the low sun behind the haze on the left breathes very slightly
     float sun = exp(-pow(length((vec2(q.x, 1.0 - q.y) - vec2(0.22, 0.62)) * vec2(1.0, 1.5)) / 0.35, 2.0));
     c += vec3(1.0, 0.72, 0.45) * sun * 0.035 * (0.5 + 0.5 * sin(uTime * 0.4)) * uWind;
@@ -221,8 +241,8 @@ export async function createDoorStage(
   renderer.setClearColor(0x000000, 0);
   renderer.autoClear = false;
   const loader = new THREE.TextureLoader();
-  const [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, depthTex] = await Promise.all([
-    loadTex(loader, ART.plate),
+  const [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, depthTex, branchTex] = await Promise.all([
+    loadTex(loader, ART.plate3d),
     loadTex(loader, ART.pack),
     loadTex(loader, ART.skateboard),
     loadTex(loader, ART.world),
@@ -231,6 +251,7 @@ export async function createDoorStage(
     loadTex(loader, ART.leafRough, false),
     loadTex(loader, ART.vines),
     loadTex(loader, ART.depth, false),
+    loadTex(loader, ART.branch),
   ]);
   // a softly lit room for the brass to reflect
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -240,7 +261,8 @@ export async function createDoorStage(
   pmrem.dispose();
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(FOV, 1, 0.05, 100);
+  // far enough for the sky, which the depth map puts 160 units behind the painting
+  const camera = new THREE.PerspectiveCamera(FOV, 1, 0.05, 600);
 
   // the painting
   const plateUniforms = {
@@ -352,6 +374,10 @@ export async function createDoorStage(
     scene.add(cut);
   }
 
+  // the branch swaying, mist drifting between the ridges, leaves falling, grass and daisies in front
+  const sceneLife = makeSceneLife(branchTex, { uEye: plateUniforms.uEye, uDepthOn: plateUniforms.uDepthOn });
+  scene.add(sceneLife.group);
+
   // pollen in front of everything
   const N = 70;
   const dustPos = new Float32Array(N * 3);
@@ -447,6 +473,7 @@ export async function createDoorStage(
     plateUniforms.uTime.value = time;
     plateUniforms.uWind.value = life;
     vinesWind.value = life;
+    sceneLife.update(time, life, 1 - Math.min(1, p.travel / 0.45));
     overUniforms.uOpacity.value = p.painted;
     painted.visible = p.painted > 0.001;
     dustUniforms.uTime.value = time;
@@ -458,6 +485,9 @@ export async function createDoorStage(
     renderer.clearDepth();
     renderer.render(scene, camera);
   };
+  // development only: the review script can switch layers off to check them
+  if (process.env.NODE_ENV !== "production")
+    Object.assign(window, { __stage: { scene, backdrop, plateUniforms, overUniforms } });
   gsap.ticker.add(frame);
   frame(0, 16);
 
@@ -468,7 +498,8 @@ export async function createDoorStage(
       gsap.ticker.remove(frame);
       observer.disconnect();
       door.dispose();
-      [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, depthTex, envTex, dotTex].forEach((t) => t.dispose());
+      sceneLife.dispose();
+      [plateTex, packTex, skateTex, worldTex, leafTex, normalTex, roughTex, vinesTex, depthTex, branchTex, envTex, dotTex].forEach((t) => t.dispose());
       [scene, backdrop].forEach((sc) => sc.traverse((o) => {
         const mesh = o as THREE.Mesh;
         if (mesh.geometry) mesh.geometry.dispose();

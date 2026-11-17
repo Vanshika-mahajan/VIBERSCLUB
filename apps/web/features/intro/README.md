@@ -40,6 +40,10 @@ Same size and composition: replace the file and you're done. A new Scene 1 with 
 ## Wind and depth in Scene 1
 `world/stage.ts`: `WIND` is the soft wind (the branch, the vines and their flowers, the pines, the meadow, the mist), with a box for each part in the painting's 0..1; the vines cut-out uses it too. The painting is drawn in depth from `scene1-depth.png`, and the camera drifts gently while you wait (`driftX`, `driftY`; it stands `CLOSER` so the drift never shows past the edges). The depth fades out as the camera walks through the doorway.
 
+The depth map's red channel is the depth (230 is the painting's own plane, the sky sits 160 units behind it), green marks the mountains (cloud shadows drift over them) and blue the meadow (waves of wind roll through it). `tools/depth.py` rebuilds it. The plate is `scene1-plate-3d.webp`: the painting with the branch painted out, because the branch is its own cut-out (`scene1-branch.webp`, from `tools/branch.py`) that sways on its joint with the trunk. The camera's far plane must stay beyond the sky (600), or the sky is clipped.
+
+`world/life.ts` holds the real three.js objects in front of and inside the painting, each placed at the painting's depth: the swaying branch, five mist banks drifting between the ridges, falling leaves that tumble in the wind, and grass blades and daisies along the bottom that bend in the gusts (shorter in front of the door so the threshold stays clear). Colours in its shaders are picked as painting colours and converted with `pow(c, 2.2)` before output.
+
 ## Retiming
 The door: `timelines/door.ts`. The flight and canopy: `timelines/flight.ts` (times listed at its top). The curtain on Home: the two tweens in `CanopyReveal.tsx`. In each, the second argument of each tween is the time from the click, the `duration` its length. The camera's framing for each screen shape is `framingFor()` in `params.ts`.
 

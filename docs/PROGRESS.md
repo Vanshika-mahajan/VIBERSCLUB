@@ -34,6 +34,22 @@ ARPIT's points from their recording: everything real, moving and 3D; a soft wind
 - Door: its smeared hinge side was rebuilt (`tools/cleanface.py`), its panels are carved into the leaf with bevels, and the scene's light takes over from the painted glow as it moves. It opens to 90 degrees over 1.9 s with a gentle ease.
 - Tests: lint and typecheck clean; unit 101 of 101; e2e intro and sweep 36 of 36.
 
+## Entry refinement, round 2: a 3D mountain landscape (2026-11-18)
+
+ARPIT asked for real three.js movement, like the old journey had, and for the mountain landscape to feel 3D, taking inspiration from the ThreeUI landscape while keeping the painting the same.
+
+- The painting is drawn in depth: sky far behind, the mountain ranges at their own distances, the forest and the meadow closer. The camera's gentle drift now shows real parallax between them.
+- Cloud shadows drift over the mountains, mist banks drift between the ridges, and waves of wind roll through the meadow.
+- The branch is cut out and sways from its joint; leaves fall and tumble.
+- Real grass blades and daisies along the bottom bend in the gusts.
+- Fixed: a light box above the door (the camera's far plane clipped the sky).
+
+**Tests**
+- lint, typecheck: clean. Unit: 101 passed.
+- e2e intro and sweep: 36 passed.
+
+**Known issue:** the ThreeUI "Get Started" button source could not be retrieved (the site blocks this environment), so the button is unchanged until ARPIT shares the source.
+
 ## The new entry replaces the journey at `/` (2026-11-18)
 ARPIT reviewed the entry and said "swap". `/` now renders `IntroExperience`; `/intro-demo` redirects to `/`. The old door and Earth journey (`features/journey`) is no longer routed but kept, because Home's opening reuses its planet and deleting the rest needs ARPIT's OK. Its e2e specs (`journey`, `journey-3d`, `journey-sound`) are skipped with a note until then; the new `e2e/intro.spec.ts` covers the entry: the button runs once, the entry reaches Home and the canopy lets go, the reduced-motion path, a plain Home visit never shows the canopy, and the old address redirects. CLAUDE.md updated.
 - Tests: lint and typecheck clean; unit 101 of 101; e2e intro, sweep, home and journey: 50 passed, 20 skipped (the old journey), 2 failed. Both failures are "API OK", which needs the backend.
