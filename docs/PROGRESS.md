@@ -34,6 +34,13 @@ ARPIT's points from their recording: everything real, moving and 3D; a soft wind
 - Door: its smeared hinge side was rebuilt (`tools/cleanface.py`), its panels are carved into the leaf with bevels, and the scene's light takes over from the painted glow as it moves. It opens to 90 degrees over 1.9 s with a gentle ease.
 - Tests: lint and typecheck clean; unit 101 of 101; e2e intro and sweep 36 of 36.
 
+## Entry refinement: the door transition framed like ARPIT's reference (2026-11-18)
+
+The camera now glides round to face the door square on and centred (close enough that the painting still fills the screen) while the door swings open onto the Vibers World, then pushes straight in through the middle of the doorway along its line of sight, so the door grows in place instead of sliding across the screen. About 2.5 s from the click.
+
+**Tests**
+- lint, typecheck: clean. Unit: 101 passed. e2e intro and sweep: 36 passed.
+
 ## Entry refinement: the door opens like ARPIT's reference; the vines move again (2026-11-18)
 
 - The camera now holds still while the door swings open (so the painted door hands over to the 3D one exactly) onto the Vibers World, then one quick accelerating push goes through (turning to the door and going through run together on one curve). The doorway no longer shows the painting's lit gap mirrored, which read as a glass pane.

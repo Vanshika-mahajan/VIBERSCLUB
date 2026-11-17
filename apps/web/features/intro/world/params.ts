@@ -129,7 +129,12 @@ export function framingFor(aspect: number): Framing {
   const throughH = Math.min(DOOR.height, DOOR.width / aspect) * 0.82;
   return {
     start: { x, y, z },
-    near: { x: DOOR.x, y: midY, z: Math.min(z, nearH / (2 * TAN)) },
+    // near enough that the painting still fills the screen with the door centred (no edge shows)
+    near: {
+      x: DOOR.x,
+      y: midY,
+      z: Math.min(z, nearH / (2 * TAN), (PLATE.width - 2 * Math.abs(DOOR.x)) / aspect / (2 * TAN)),
+    },
     through: { x: DOOR.x, y: midY, z: throughH / (2 * TAN) + DOOR.thickness },
     plateShare,
     aspect,
@@ -139,7 +144,12 @@ export function framingFor(aspect: number): Framing {
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const c01 = (t: number) => clamp(t, 0, 1);
 
-/** The camera at a point on its path: start → near (focus), near → through (travel). */
+/**
+ * The camera at a point on its path, framed like ARPIT's reference: first it glides to stand square
+ * in front of the door, centred on it (focus), then it pushes straight in through the doorway (travel).
+ * The push runs along the line of sight to the doorway, so the door grows where it stands on the
+ * screen instead of sliding across it.
+ */
 export function cameraAt(
   f: Framing,
   focus: number,
@@ -153,10 +163,12 @@ export function cameraAt(
     y: mix(f.start.y, f.near.y, a),
     z: mix(f.start.z, f.near.z, a),
   };
+  const z = mix(p.z, f.through.z, b);
+  const k = z / p.z;
   const pose = {
-    x: mix(p.x, f.through.x, b),
-    y: mix(p.y, f.through.y, b),
-    z: mix(p.z, f.through.z, b),
+    x: f.through.x + (p.x - f.through.x) * k,
+    y: f.through.y + (p.y - f.through.y) * k,
+    z,
   };
   // never look past the painting's edges (no empty band of page above, below or beside it)
   const viewH = 2 * pose.z * Math.tan(((fov / 2) * Math.PI) / 180);
