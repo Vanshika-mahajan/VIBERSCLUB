@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { gsap } from "@/lib/motion/gsap";
 import { canUse3D } from "@/features/journey/world/support";
 import { createEntryScene, initialEntryParams } from "./scene";
@@ -10,7 +11,7 @@ import s from "./entry.module.css";
  * The entry, after ARPIT's reference: it lies over Home. An arched doorway stands in the clouds with a
  * sign over a closed door; on the click (or Enter) the sign lights up, the door swings outward, Home
  * shows through the doorway, and the camera pushes straight in until Home fills the screen. Then the
- * entry steps aside and Home is simply there, under it all along.
+ * entry steps aside and moves to /home, the real Home with its contents and top bar, unchanged.
  *
  * Timeline (seconds from the click):
  *   0.00  the hint fades
@@ -28,12 +29,20 @@ export function EntryDoor() {
   const params = useRef(initialEntryParams());
   const running = useRef<gsap.core.Timeline | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "going" | "done">("loading");
+  const router = useRouter();
 
   useEffect(() => {
     if (!canUse3D() || !canvas.current) {
+      // no entry: straight on to Home
+      router.replace("/home");
       setState("done");
       return;
     }
+    router.prefetch("/home");
+    // pages stay mounted when left, so coming back starts the entry afresh
+    Object.assign(params.current, initialEntryParams());
+    gsap.set([root.current, hint.current], { clearProps: "all" });
+    setState("loading");
     let scene: Awaited<ReturnType<typeof createEntryScene>> | null = null;
     let cancelled = false;
     const tick = (_t: number, delta: number) => scene?.render(Math.min(delta, 50) / 1000);
@@ -46,11 +55,12 @@ export function EntryDoor() {
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __gsap: gsap });
     return () => {
       cancelled = true;
+      setState("loading");
       gsap.ticker.remove(tick);
       running.current?.kill();
       scene?.dispose();
     };
-  }, []);
+  }, [router]);
 
   // while the entry is up, the page under it does not scroll
   useEffect(() => {
@@ -66,7 +76,7 @@ export function EntryDoor() {
     if (state !== "ready") return;
     setState("going");
     const p = params.current;
-    const tl = gsap.timeline({ onComplete: () => setState("done") });
+    const tl = gsap.timeline({ onComplete: () => router.replace("/home") });
     if (hint.current) tl.to(hint.current, { autoAlpha: 0, y: 8, duration: 0.4, ease: "power2.in" }, 0);
     tl.to(p, { sign: 1, duration: 0.5, ease: "power2.out" }, 0.1)
       .to(p, { door: 1, duration: 1.2, ease: "power2.inOut" }, 0.6)
@@ -77,7 +87,7 @@ export function EntryDoor() {
       .to(root.current, { autoAlpha: 0, duration: 0.1, ease: "none" }, 2.55);
     running.current = tl;
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __entryTimeline: tl });
-  }, [state]);
+  }, [state, router]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -14,6 +14,14 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: after the door, the real Home at /home
+
+ARPIT saw Home without its contents and top bar after the door: `/` is a full-screen route, which hides them. The entry now moves to `/home` when the push ends, so you land on the real Home, unchanged. Without 3D, or with reduced motion, `/` goes straight to `/home`. No Home files changed.
+
+Tests: lint and typecheck clean. e2e entry, intro, sweep, home and club: 79 passed, 7 skipped, 2 failed ("API OK", needs the backend).
+
+**Known issue (Home, not changed):** leaving any page with Home on it logs a few "getBoundingClientRect" errors from Home's scroll loops. It was already there when leaving `/home` for Discover.
+
 ## 2026-11-18: the door in the clouds goes live at `/`
 
 ARPIT said "go": `/` is now Home with the new entry over it (`app/page.tsx`), the same as `/entry-demo`. "A World Awaits" (`features/intro`) is no longer routed. Its code and e2e checks are kept (skipped) until ARPIT approves deleting them. The new checks are in `e2e/entry.spec.ts`.
