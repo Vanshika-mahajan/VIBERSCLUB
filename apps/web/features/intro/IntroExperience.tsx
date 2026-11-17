@@ -1,21 +1,28 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/motion/gsap";
 import { prefersReducedMotion } from "@/lib/motion/useReducedMotion";
 import { DoorScene } from "./DoorScene";
 import { WorldScene } from "./WorldScene";
+import { handoff } from "./handoff";
 import { buildDoorOpening } from "./timelines/door";
+import { buildFlight } from "./timelines/flight";
 import { useIntro, type IntroPhase } from "./useIntro";
 import { initialIntroParams } from "./world/params";
+import type { LivingWorld } from "./world/living";
 import { ART } from "./world/stage";
+import c from "./canopy.module.css";
 import s from "./intro.module.css";
 
 /** What a screen reader hears as each scene begins. */
 const ANNOUNCE: Partial<Record<IntroPhase, string>> = {
   door: "The door opens.",
   world: "You step into the Vibers World.",
+  paraglider: "A paraglider glides across the sky.",
+  canopy: "It sweeps overhead and its canopy fills the view.",
+  reveal: "The canopy opens onto Vibers Club.",
 };
 
 /**
@@ -24,7 +31,9 @@ const ANNOUNCE: Partial<Record<IntroPhase, string>> = {
  * end. The stage carries data-phase so CSS and tests can follow along.
  *
  * Phase 1: Scene 1, the button and the 3D door. Phases 2 and 3: through the door into the Vibers World,
- * which comes alive (WorldScene).
+ * which comes alive (WorldScene). Phases 4 to 6: a paraglider takes off from the painting, sweeps
+ * overhead until its canopy fills the screen (timelines/flight.ts), and the site takes over: Home
+ * opens the canopy like a curtain (CanopyReveal).
  */
 export function IntroExperience() {
   const { phase, start, advance, reset } = useIntro();
@@ -33,14 +42,49 @@ export function IntroExperience() {
   const [alive, setAlive] = useState(false);
   const copy = useRef<HTMLDivElement>(null);
   const world = useRef<HTMLDivElement>(null);
+  const glider = useRef<HTMLImageElement>(null);
+  const fabric = useRef<HTMLDivElement>(null);
+  const living = useRef<LivingWorld | null>(null);
   const running = useRef<gsap.core.Timeline | null>(null);
+  const router = useRouter();
+  const replayRef = useRef<() => void>(() => {});
 
-  // whatever is running stops when the page is left
+  // whatever is running stops when the page is left, and coming back starts again at Scene 1
   useEffect(() => {
     // development only: the review script steps GSAP's clock by hand to record smooth frames
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __gsap: gsap });
-    return () => void running.current?.kill();
-  }, []);
+    router.prefetch("/home");
+    return () => replayRef.current();
+  }, [router]);
+
+  /** Phases 4 to 6: from the living world to the site */
+  const fly = useCallback(() => {
+    const covered = () => {
+      advance("reveal");
+      handoff.start();
+      router.replace("/home");
+    };
+    if (!glider.current || !fabric.current || !has3D || prefersReducedMotion()) {
+      // without 3D, or with reduced motion: the canopy's cloth fades in, then the site
+      running.current = gsap
+        .timeline()
+        .call(() => advance("canopy"), [], 2.5)
+        .to(fabric.current, { autoAlpha: 1, duration: 0.6 }, 2.5)
+        .call(covered, [], 3.3);
+      return;
+    }
+    running.current = buildFlight(
+      { glider: glider.current, fabric: fabric.current },
+      () => living.current?.params ?? { push: 0, lookX: 0, lookY: 0 },
+      {
+        paraglider: () => advance("paraglider"),
+        canopy: () => advance("canopy"),
+        hideGlider: () => living.current && gsap.set(living.current.params, { glider: 0 }),
+        covered,
+      },
+    );
+    if (process.env.NODE_ENV !== "production") Object.assign(window, { __flightTimeline: running.current });
+  }, [advance, has3D, router]);
 
   const unveil = useCallback(() => {
     if (!start()) return; // already under way: extra clicks do nothing
@@ -54,6 +98,7 @@ export function IntroExperience() {
           // the door stage is hidden now: it stops drawing, leaving the GPU to the living world
           onComplete: () => void (params.rest = 1),
         });
+      fly();
     };
     if (!has3D || prefersReducedMotion()) {
       // the painted still: a short dissolve into the world instead of the walk through the door
@@ -68,12 +113,15 @@ export function IntroExperience() {
     // development only: the review script steps through the timeline frame by frame
     if (process.env.NODE_ENV !== "production")
       Object.assign(window, { __introTimeline: running.current });
-  }, [start, advance, has3D, params]);
+  }, [start, advance, has3D, params, fly]);
   const live = has3D && !prefersReducedMotion() && phase !== "idle" && phase !== "door";
 
   const replay = useCallback(() => {
     running.current?.kill();
     if (world.current) gsap.set(world.current, { autoAlpha: 0 });
+    if (fabric.current) gsap.set(fabric.current, { autoAlpha: 0 });
+    if (glider.current) gsap.set(glider.current, { autoAlpha: 0 });
+    living.current = null;
     if (copy.current) gsap.set(copy.current, { autoAlpha: 1, y: 0 });
     // a fresh set of numbers puts the door and the camera back where they started
     setParams(initialIntroParams());
@@ -81,6 +129,9 @@ export function IntroExperience() {
     setAlive(false);
     reset();
   }, [reset]);
+  useEffect(() => {
+    replayRef.current = replay;
+  });
 
   return (
     <div className={s.intro} data-phase={phase}>
@@ -125,17 +176,23 @@ export function IntroExperience() {
           alt="The Vibers World: a lodge with a Vibers Club sign by a river, Vibers around a campfire at dusk"
         />
         {/* the world comes alive: river, fire, lights, people (painted still underneath until ready) */}
-        {live && <WorldScene src={ART.world} onReady={() => setAlive(true)} />}
-        {phase === "world" && (
-          <div className={s.demoBar}>
-            <span>Phase 3 ends here. Next, the paraglider.</span>
-            <button type="button" onClick={replay}>
-              Replay
-            </button>
-            <Link href="/home">Go to the site</Link>
-          </div>
+        {live && (
+          <WorldScene
+            src={ART.world}
+            patch={ART.worldPatch}
+            onReady={(w) => {
+              living.current = w;
+              setAlive(true);
+            }}
+          />
         )}
+        {/* Phase 4: the paraglider, placed and flown by timelines/flight.ts */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img ref={glider} className={s.glider} src={ART.paraglider} alt="" aria-hidden="true" />
       </div>
+
+      {/* Phase 5: its canopy's cloth fills the screen */}
+      <div ref={fabric} className={`${c.fabric} ${s.fabricStart}`} aria-hidden="true" />
     </div>
   );
 }

@@ -1,0 +1,48 @@
+/* The paraglider's canopy as cloth filling the screen: two layers of the same fabric drifting against
+   each other, so the folds ripple like a canopy in the wind. Used at the end of the entry and by
+   CanopyReveal on Home. */
+
+.fabric {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  overflow: hidden;
+  pointer-events: none;
+  background: #c2441d;
+}
+.fabric::before,
+.fabric::after {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  background: url("/intro/canopy-fabric.webp") center / cover no-repeat;
+  animation: drift 3.2s ease-in-out infinite alternate;
+}
+.fabric::after {
+  transform: scaleX(-1);
+  opacity: 0.35;
+  mix-blend-mode: soft-light;
+  animation: drift2 2.4s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  from { transform: translate3d(-2%, 1%, 0) rotate(-1deg) scale(1.02); }
+  to { transform: translate3d(2%, -1.5%, 0) rotate(0.6deg) scale(1.06); }
+}
+@keyframes drift2 {
+  from { transform: scaleX(-1) translate3d(3%, -1%, 0) scale(1.08); }
+  to { transform: scaleX(-1) translate3d(-3%, 2%, 0) scale(1.03); }
+}
+
+/* on Home: the canopy opens from the middle like a curtain drawn in every direction */
+.reveal {
+  --open: -16;
+  -webkit-mask-image: radial-gradient(ellipse 72% 58% at 50% 56%, transparent calc(var(--open) * 1%), #000 calc(var(--open) * 1% + 16%));
+  mask-image: radial-gradient(ellipse 72% 58% at 50% 56%, transparent calc(var(--open) * 1%), #000 calc(var(--open) * 1% + 16%));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fabric::before,
+  .fabric::after {
+    animation: none;
+  }
+}

@@ -191,36 +191,24 @@
   opacity: 0;
 }
 
-/* the demo's own controls, kept plain */
-.demoBar {
+/* the paraglider: placed in pixels by the flight timeline (x, y, width); hidden until it takes off */
+.world img.glider {
   position: absolute;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  max-width: calc(100% - 32px);
-  padding: 12px 14px 12px 18px;
-  background: #f7f2e8;
-  border: 1px solid #2a1b13;
-  font-size: 14px;
-  color: #2a1b13;
+  width: auto;
+  object-fit: fill;
+  left: 0;
+  top: 0;
+  height: auto;
+  max-width: none;
+  visibility: hidden;
+  opacity: 0;
+  transform-origin: 50% 20%;
+  will-change: transform, width;
+  pointer-events: none;
 }
-.demoBar button,
-.demoBar a {
-  flex: none;
-  border: 1px solid #2a1b13;
-  padding: 8px 12px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-decoration: none;
-  cursor: pointer;
-}
-.demoBar a {
-  background: #2a1b13;
-  color: #f7f2e8;
+.fabricStart {
+  visibility: hidden;
+  opacity: 0;
 }
 
 /* ---------- phones: the painting fills the screen around the door; the words sit in the light sky
@@ -281,11 +269,6 @@
   }
   .unveil:active:not(:disabled) {
     transform: translate(-50%, 1px);
-  }
-  .demoBar {
-    flex-wrap: wrap;
-    justify-content: center;
-    text-align: center;
   }
 }
 

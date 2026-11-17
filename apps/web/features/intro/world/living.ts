@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { gsap } from "@/lib/motion/gsap";
+import { FOCUS, LOOK, PUSH_ZOOM, WORLD } from "./cover";
 
 /**
  * Scene 2, alive: the Vibers World painting drawn by one shader that moves what would move at dusk.
@@ -14,11 +15,13 @@ import { gsap } from "@/lib/motion/gsap";
 
 export type LivingWorld = {
   /** 0..1: how far the slow drift toward the lodge has gone (the timeline can drive it) */
-  params: { push: number; lookX: number; lookY: number };
+  params: { push: number; lookX: number; lookY: number; glider: number };
   dispose: () => void;
 };
 
-const SIZE = { w: 1671, h: 941 };
+const SIZE = WORLD;
+/** the painted paraglider, and the patch of sky (scene2-glider-patch.webp) that paints it out */
+export const GLIDER_PATCH = { l: 1112, t: 40, r: 1232, b: 136 };
 
 /** where things are in the painting, in its pixels (x, y from the top left) */
 export const REGIONS = {
@@ -145,6 +148,9 @@ const FRAG = /* glsl */ `
   uniform float uTime;
   uniform float uPush;
   uniform vec2 uLook;
+  // the paraglider painted in the sky: 1 shown, 0 painted out (a real one flies from there)
+  uniform float uGlider;
+  uniform sampler2D uPatch;
   varying vec2 vUv;
   const vec2 SIZE = vec2(${SIZE.w}.0, ${SIZE.h}.0);
 
@@ -170,9 +176,10 @@ const FRAG = /* glsl */ `
     vec2 uv = s;
     if (a > uAspect) uv.y = (s.y - 0.5) * (uAspect / a) + 0.5;
     else uv.x = (s.x - 0.5) * (a / uAspect) + 0.5;
-    float zoom = 1.0 + 0.06 * uPush;
-    vec2 focus = vec2(0.52, 0.48);
-    uv = (uv - 0.5) / zoom + 0.5 + (focus - 0.5) * (1.0 - 1.0 / zoom) + uLook * 0.006;
+    // (world/cover.ts does the same sum, so page layers can sit on the painting)
+    float zoom = 1.0 + ${PUSH_ZOOM} * uPush;
+    vec2 focus = vec2(${FOCUS.x}, ${FOCUS.y});
+    uv = (uv - 0.5) / zoom + 0.5 + (focus - 0.5) * (1.0 - 1.0 / zoom) + uLook * ${LOOK};
     vec2 p = vec2(uv.x, 1.0 - uv.y) * SIZE;
     float t = uTime;
 
@@ -204,6 +211,10 @@ const FRAG = /* glsl */ `
     p += (vec2(rip, fbm(p * 0.07 + 5.0 - flow * t * 1.7)) - 0.5) * 7.0 * foam;
 
     vec3 c = tex(p);
+    // the painted paraglider steps out of the picture when the real one takes off from its place
+    vec4 gb = vec4(${GLIDER_PATCH.l}.0, ${GLIDER_PATCH.t}.0, ${GLIDER_PATCH.r}.0, ${GLIDER_PATCH.b}.0);
+    float gm = box(p, gb + vec4(3.0, 3.0, -3.0, -3.0), 3.0) * (1.0 - uGlider);
+    if (gm > 0.0) c = mix(c, texture2D(uPatch, vec2((p.x - gb.x) / (gb.z - gb.x), 1.0 - (p.y - gb.y) / (gb.w - gb.y))).rgb, gm);
     // glints racing along the water
     float glint = smoothstep(0.72, 0.95, fbm(p * vec2(0.08, 0.16) - flow * t * 3.0));
     c += vec3(1.0, 0.9, 0.8) * glint * foam * 0.22;
@@ -269,13 +280,18 @@ const FRAG = /* glsl */ `
   }
 `;
 
-export async function createLivingWorld(canvas: HTMLCanvasElement, src: string): Promise<LivingWorld> {
+export async function createLivingWorld(
+  canvas: HTMLCanvasElement,
+  src: string,
+  patchSrc: string,
+): Promise<LivingWorld> {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  const map = await new THREE.TextureLoader().loadAsync(src);
-  map.colorSpace = THREE.SRGBColorSpace;
+  const loader = new THREE.TextureLoader();
+  const [map, patch] = await Promise.all([loader.loadAsync(src), loader.loadAsync(patchSrc)]);
+  for (const t of [map, patch]) t.colorSpace = THREE.SRGBColorSpace;
   map.anisotropy = 4;
-  const params = { push: 0, lookX: 0, lookY: 0 };
+  const params = { push: 0, lookX: 0, lookY: 0, glider: 1 };
   const uniforms = {
     uMap: { value: map },
     uRes: { value: new THREE.Vector2(1, 1) },
@@ -283,6 +299,8 @@ export async function createLivingWorld(canvas: HTMLCanvasElement, src: string):
     uTime: { value: 0 },
     uPush: { value: 0 },
     uLook: { value: new THREE.Vector2() },
+    uGlider: { value: 1 },
+    uPatch: { value: patch },
   };
   const scene = new THREE.Scene();
   const camera = new THREE.Camera();
@@ -332,6 +350,7 @@ export async function createLivingWorld(canvas: HTMLCanvasElement, src: string):
     uniforms.uTime.value = time;
     uniforms.uPush.value = params.push;
     uniforms.uLook.value.set(params.lookX, params.lookY);
+    uniforms.uGlider.value = params.glider;
     renderer.render(scene, camera);
   };
   gsap.ticker.add(frame);
@@ -343,6 +362,7 @@ export async function createLivingWorld(canvas: HTMLCanvasElement, src: string):
       gsap.ticker.remove(frame);
       observer.disconnect();
       map.dispose();
+      patch.dispose();
       quad.geometry.dispose();
       (quad.material as THREE.Material).dispose();
       renderer.dispose();

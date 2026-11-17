@@ -30,6 +30,9 @@ export const ART = {
   leafNormal: "/intro/door-painted-normal.webp",
   leafRough: "/intro/door-painted-rough.webp",
   world: "/intro/scene2-world.webp",
+  /** the sky behind the painted paraglider, to paint it out when the real one takes off */
+  worldPatch: "/intro/scene2-glider-patch.webp",
+  paraglider: "/intro/paraglider.webp",
 };
 
 export type DoorStage = {

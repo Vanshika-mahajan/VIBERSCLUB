@@ -36,3 +36,10 @@ If the painting changes, the door face has to be unfolded again from the new pai
 ## The living Vibers World (Phases 2 and 3)
 
 `WorldScene.tsx` mounts as we start through the door and draws `world/living.ts`: Scene 2's painting through one shader that moves the river, the fire (flicker, sparks, smoke), the lantern, the string lights and the neon sign, the clouds and mist, the leaves and grass, every Viber and the dog (breathing, settling, heads looking about; people are listed in `FIGURES`, the dog in `DOG`, small groups in `CROWDS`), fireflies and the steam off the mug. Every place is in `REGIONS` at the top of `living.ts`, in the painting's pixels, so new art only needs those numbers moved. The view drifts about 6% closer over 24 seconds. Without 3D or with reduced motion the painted still stays.
+
+## The paraglider, the canopy and the hand-over (Phases 4 to 6)
+
+- `timelines/flight.ts` (times are listed at its top): the paraglider (`public/intro/paraglider.webp`) appears exactly over the one painted in the sky, which is painted out (`scene2-glider-patch.webp`), glides across banking, then swoops overhead until its canopy fills the screen; the canopy's cloth (`canopy-fabric.webp`, from ARPIT's canopy picture) takes over and ripples (`canopy.module.css`).
+- `world/cover.ts` maps painting pixels to the screen exactly as the living world draws them, so the glider sits on the picture on any screen (on phones it flies in from the right edge).
+- The hand-over: the entry raises a flag (`handoff.ts`) and moves to `/home`; `CanopyReveal` (mounted on the Home page, inert on a normal visit) draws the same cloth on Home's first frame and opens it from the middle outward. To retime the curtain, change the two tweens in `CanopyReveal.tsx`.
+- Coming back to `/intro-demo` starts again at Scene 1.

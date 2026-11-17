@@ -6,17 +6,18 @@ import type { LivingWorld } from "./world/living";
 import s from "./intro.module.css";
 
 type Props = {
-  /** Scene 2's painting */
+  /** Scene 2's painting, and the patch of sky that paints out its paraglider */
   src: string;
+  patch: string;
   /** called once the first living frame is on screen, so the still underneath can step aside */
-  onReady: () => void;
+  onReady: (world: LivingWorld) => void;
 };
 
 /**
  * Hosts the living Vibers World (world/living.ts) over its painted still. Mounted as we start through
  * the door, only where 3D is allowed; frees the GPU when the page is left.
  */
-export function WorldScene({ src, onReady }: Props) {
+export function WorldScene({ src, patch, onReady }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const world = useRef<LivingWorld | null>(null);
   const ready = useRef(onReady);
@@ -33,7 +34,7 @@ export function WorldScene({ src, onReady }: Props) {
       try {
         const { createLivingWorld } = await import("./world/living");
         if (cancelled) return;
-        living = await createLivingWorld(canvas.current!, src);
+        living = await createLivingWorld(canvas.current!, src, patch);
         if (cancelled) return living.dispose();
         world.current = living;
         const lookX = gsap.quickTo(living.params, "lookX", { duration: 1.6, ease: "power3.out" });
@@ -48,7 +49,7 @@ export function WorldScene({ src, onReady }: Props) {
         canvas.current!.style.opacity = "1";
         // the view drifts slowly closer, toward the lodge and the fire
         gsap.to(living.params, { push: 1, duration: 24, ease: "sine.inOut" });
-        ready.current();
+        ready.current(living);
       } catch {
         /* no WebGL after all: the painted still stays */
       }
@@ -60,7 +61,7 @@ export function WorldScene({ src, onReady }: Props) {
       if (living) gsap.killTweensOf(living.params);
       living?.dispose();
     };
-  }, [src]);
+  }, [src, patch]);
 
   return <canvas ref={canvas} className={s.worldCanvas} aria-hidden="true" data-intro-world />;
 }
