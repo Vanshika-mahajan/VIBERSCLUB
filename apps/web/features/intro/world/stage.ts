@@ -9,7 +9,6 @@ import {
   PACK,
   PLATE,
   SKATEBOARD,
-  VINES,
   type Framing,
   type IntroParams,
 } from "./params";
@@ -21,7 +20,6 @@ export const ART = {
   pack: "/intro/scene1-pack.webp",
   skateboard: "/intro/scene1-skateboard.webp",
   leaf: "/intro/door-leaf.webp",
-  vines: "/intro/vines-arch.webp",
   world: "/intro/scene2-world.webp",
 };
 
@@ -42,8 +40,11 @@ const PLATE_FRAG = /* glsl */ `
   uniform sampler2D uMap;
   uniform float uTime;
   uniform float uWind;
-  uniform float uFadeTop;
-  uniform vec3 uSky;
+  // which part of the painting this plane shows (x, y, width, height in the painting's 0..1), how
+  // strongly, and how softly its edges fade (the painted-door overlay uses all three)
+  uniform vec4 uRect;
+  uniform float uOpacity;
+  uniform float uFeather;
   varying vec2 vUv;
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float noise(vec2 p) {
@@ -51,57 +52,35 @@ const PLATE_FRAG = /* glsl */ `
     vec2 u = f * f * (3.0 - 2.0 * f);
     return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
   }
+  float box(vec2 p, vec4 b, float soft) {
+    return smoothstep(b.x - soft, b.x + soft, p.x) * smoothstep(b.z + soft, b.z - soft, p.x)
+         * smoothstep(b.y - soft, b.y + soft, p.y) * smoothstep(b.w + soft, b.w - soft, p.y);
+  }
   void main() {
-    vec2 uv = vUv;
-    float y = 1.0 - uv.y; // 0 at the top of the picture
-    // where things move: the branch hanging in at the top left (more toward its tip), the pines on
-    // the right, and the flowers and grass along the bottom
-    float branch = smoothstep(0.32, 0.0, y) * smoothstep(0.62, 0.12, uv.x) * smoothstep(0.0, 0.18, uv.x);
-    float pines = smoothstep(0.7, 0.86, uv.x) * smoothstep(0.15, 0.3, y) * smoothstep(0.75, 0.6, y);
-    float grass = smoothstep(0.8, 0.95, y);
+    vec2 uv = uRect.xy + vUv * uRect.zw;
+    vec2 q = vec2(uv.x, 1.0 - uv.y); // 0 at the top of the picture
+    // where things move: the branch hanging in at the top left, the vines around the door (not the
+    // door itself), the pines on the right, and the flowers and grass along the bottom
+    float branch = smoothstep(0.32, 0.0, q.y) * smoothstep(0.62, 0.12, q.x) * smoothstep(0.0, 0.18, q.x);
+    float vines = box(q, vec4(0.44, 0.06, 0.73, 0.86), 0.02) * (1.0 - box(q, vec4(0.505, 0.21, 0.665, 0.83), 0.01));
+    float pines = smoothstep(0.76, 0.88, q.x) * smoothstep(0.15, 0.3, q.y) * smoothstep(0.75, 0.6, q.y);
+    float grass = smoothstep(0.8, 0.95, q.y);
     float t = uTime * uWind;
     vec2 w = vec2(
       noise(uv * vec2(9.0, 6.0) + vec2(t * 0.35, 0.0)) - 0.5,
       noise(uv * vec2(7.0, 9.0) + vec2(0.0, t * 0.3) + 17.0) - 0.5
     );
+    vec2 flutter = vec2(noise(uv * 40.0 + vec2(t * 0.9, 0.0)), noise(uv * 40.0 + vec2(0.0, t * 0.8) + 5.0)) - 0.5;
     float gust = 0.6 + 0.4 * sin(t * 0.45);
     uv += w * (branch * 0.0045 * gust + pines * 0.0012 + grass * 0.0028 * gust) * uWind;
+    uv += flutter * vines * 0.0016 * uWind;
     vec3 c = texture2D(uMap, uv).rgb;
     // the low sun behind the haze on the left breathes very slightly
-    float sun = exp(-pow(length((vUv - vec2(0.22, 0.62)) * vec2(1.0, 1.5)) / 0.35, 2.0));
+    float sun = exp(-pow(length((vec2(q.x, 1.0 - q.y) - vec2(0.22, 0.62)) * vec2(1.0, 1.5)) / 0.35, 2.0));
     c += vec3(1.0, 0.72, 0.45) * sun * 0.035 * (0.5 + 0.5 * sin(uTime * 0.4)) * uWind;
-    // tall phones: the top edge melts into the sky the page paints above the picture
-    if (uFadeTop > 0.0) c = mix(c, uSky, smoothstep(1.0 - uFadeTop, 1.0, vUv.y));
-    gl_FragColor = vec4(c, 1.0);
-    #include <colorspace_fragment>
-  }
-`;
-
-// The vine arch: leaves flutter (a small ripple of the picture, more toward the outer edges), the
-// low sun warms them, and the doorway's light catches the inner edge as the door opens.
-const VINES_FRAG = /* glsl */ `
-  uniform sampler2D uMap;
-  uniform float uTime;
-  uniform float uWind;
-  uniform float uGlow;
-  varying vec2 vUv;
-  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-  float noise(vec2 p) {
-    vec2 i = floor(p), f = fract(p);
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
-  }
-  void main() {
-    float t = uTime * uWind;
-    vec2 w = vec2(noise(vUv * 14.0 + vec2(t * 0.6, 0.0)), noise(vUv * 14.0 + vec2(0.0, t * 0.5) + 9.0)) - 0.5;
-    float edge = smoothstep(0.25, 0.0, vUv.x) + smoothstep(0.75, 1.0, vUv.x) + smoothstep(0.82, 1.0, vUv.y);
-    vec2 uv = vUv + w * (0.004 + 0.006 * clamp(edge, 0.0, 1.0)) * uWind;
-    vec4 c = texture2D(uMap, uv);
-    // match the painting: warmer and a little darker than the cut-out as drawn
-    c.rgb *= vec3(0.76, 0.68, 0.5);
-    float inner = smoothstep(0.42, 0.25, abs(vUv.x - 0.495)) * step(0.1, vUv.y) * step(vUv.y, 0.85);
-    c.rgb += vec3(1.0, 0.6, 0.28) * inner * uGlow * 0.35 * c.a;
-    gl_FragColor = c;
+    float a = uOpacity;
+    if (uFeather > 0.0) a *= box(vUv, vec4(0.0, 0.0, 1.0, 1.0) + vec4(uFeather, uFeather, -uFeather, -uFeather), uFeather);
+    gl_FragColor = vec4(c, a);
     #include <colorspace_fragment>
   }
 `;
@@ -159,13 +138,12 @@ export async function createDoorStage(
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.setClearColor(0x000000, 0);
   const loader = new THREE.TextureLoader();
-  const [plateTex, packTex, skateTex, worldTex, leafTex, vinesTex] = await Promise.all([
+  const [plateTex, packTex, skateTex, worldTex, leafTex] = await Promise.all([
     loadTex(loader, ART.plate),
     loadTex(loader, ART.pack),
     loadTex(loader, ART.skateboard),
     loadTex(loader, ART.world),
     loadTex(loader, ART.leaf),
-    loadTex(loader, ART.vines),
   ]);
 
   const scene = new THREE.Scene();
@@ -176,9 +154,9 @@ export async function createDoorStage(
     uMap: { value: plateTex },
     uTime: { value: 0 },
     uWind: { value: 1 },
-    uFadeTop: { value: 0 },
-    // the page's sky colour where the picture ends (see .intro in intro.module.css)
-    uSky: { value: new THREE.Color("#f1ceb0") },
+    uRect: { value: new THREE.Vector4(0, 0, 1, 1) },
+    uOpacity: { value: 1 },
+    uFeather: { value: 0 },
   };
   const plate = new THREE.Mesh(
     new THREE.PlaneGeometry(PLATE.width, PLATE.height),
@@ -206,26 +184,42 @@ export async function createDoorStage(
   door.group.position.set(DOOR.x, DOOR.y, 0.01);
   scene.add(door.group);
 
-  // the vine arch over the door, its leaves trembling in the wind
-  const vinesUniforms = {
-    uMap: { value: vinesTex },
+  // Scene 1 shows the door exactly as painted: the painting's door, over the 3D one, dissolves as the
+  // camera starts to move (the 3D leaf stands at the same angle underneath, so the change is quiet)
+  const OVER = { l: 740, t: 60, r: 1240, b: 840 };
+  const overUniforms = {
+    uMap: plateUniforms.uMap,
     uTime: plateUniforms.uTime,
     uWind: plateUniforms.uWind,
-    uGlow: door.uniforms.glow,
+    uRect: {
+      value: new THREE.Vector4(
+        OVER.l / 1672,
+        1 - OVER.b / 941,
+        (OVER.r - OVER.l) / 1672,
+        (OVER.b - OVER.t) / 941,
+      ),
+    },
+    uOpacity: { value: 1 },
+    uFeather: { value: 0.05 },
   };
-  const vines = new THREE.Mesh(
-    new THREE.PlaneGeometry(VINES.width, VINES.height),
+  const painted = new THREE.Mesh(
+    new THREE.PlaneGeometry((OVER.r - OVER.l) / PLATE.px, (OVER.b - OVER.t) / PLATE.px),
     new THREE.ShaderMaterial({
       vertexShader: PLATE_VERT,
-      fragmentShader: VINES_FRAG,
-      uniforms: vinesUniforms,
+      fragmentShader: PLATE_FRAG,
+      uniforms: overUniforms,
       transparent: true,
       depthWrite: false,
+      depthTest: false,
     }),
   );
-  vines.position.set(VINES.x, VINES.y, DOOR.thickness + 0.03);
-  vines.renderOrder = 4;
-  scene.add(vines);
+  painted.position.set(
+    ((OVER.l + OVER.r) / 2 - 836) / PLATE.px,
+    (470.5 - (OVER.t + OVER.b) / 2) / PLATE.px,
+    DOOR.thickness + 0.04,
+  );
+  painted.renderOrder = 4;
+  scene.add(painted);
 
   // the backpack, the camera and the skateboard stay in front of the door and the vines, as painted
   for (const [tex, at] of [
@@ -289,7 +283,6 @@ export async function createDoorStage(
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     framing = framingFor(w / h);
-    plateUniforms.uFadeTop.value = framing.plateShare < 1 ? 0.12 : 0;
     door.uniforms.res.value.set(Math.round(w * ratio), Math.round(h * ratio));
     dustUniforms.uPixel.value = ratio;
   };
@@ -325,6 +318,8 @@ export async function createDoorStage(
     door.update();
     plateUniforms.uTime.value = time;
     plateUniforms.uWind.value = life;
+    overUniforms.uOpacity.value = p.painted;
+    painted.visible = p.painted > 0.001;
     dustUniforms.uTime.value = time;
     dustUniforms.uLife.value = life * (1 - p.travel);
     renderer.render(scene, camera);
@@ -339,7 +334,7 @@ export async function createDoorStage(
       gsap.ticker.remove(frame);
       observer.disconnect();
       door.dispose();
-      [plateTex, packTex, skateTex, worldTex, leafTex, vinesTex, dotTex].forEach((t) => t.dispose());
+      [plateTex, packTex, skateTex, worldTex, leafTex, dotTex].forEach((t) => t.dispose());
       scene.traverse((o) => {
         const mesh = o as THREE.Mesh;
         if (mesh.geometry) mesh.geometry.dispose();

@@ -6,7 +6,6 @@
   inset: 0;
   z-index: 60;
   overflow: hidden;
-  /* the sky continues above the painting on tall phones */
   background: linear-gradient(180deg, #efc9a8 0%, #f3d3b8 40%, #e3c5a9 100%);
   color: #2a1b13;
   font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
@@ -192,30 +191,58 @@
   color: #f7f2e8;
 }
 
-/* ---------- phones: the headline in the sky above the door, the button down on the grass ---------- */
+/* ---------- phones: the painting fills the screen around the door; the words sit in the light sky
+   above it, the button on the grass below it, each over a soft wash so they read ---------- */
 
 @media (max-aspect-ratio: 4/5) {
   .plate {
-    top: auto;
-    height: 86%;
     object-position: 58.7% 50%;
   }
+  .copy::before,
+  .copy::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+  }
+  .copy::before {
+    top: 0;
+    height: 24%;
+    background: linear-gradient(180deg, rgba(247, 230, 210, 0.85) 0%, rgba(247, 230, 210, 0.55) 60%, rgba(247, 230, 210, 0) 100%);
+  }
+  .copy::after {
+    bottom: 0;
+    height: 16%;
+    background: linear-gradient(0deg, rgba(42, 27, 19, 0.55) 0%, rgba(42, 27, 19, 0) 100%);
+  }
+  .wordmark,
+  .headline,
+  .swash,
+  .unveil {
+    z-index: 1;
+  }
+  .wordmark {
+    position: relative;
+  }
   .headline {
-    top: calc(env(safe-area-inset-top) + 64px);
-    font-size: clamp(40px, 12vw, 64px);
+    top: calc(env(safe-area-inset-top) + 52px);
+    left: 20px;
+    font-size: clamp(34px, 10.5vw, 48px);
     max-width: none;
+    white-space: nowrap;
   }
   .headline span {
     display: inline;
   }
   .swash {
-    top: calc(env(safe-area-inset-top) + 64px + clamp(40px, 12vw, 64px) * 1.05);
-    left: calc(clamp(20px, 5.6vw, 96px) + clamp(40px, 12vw, 64px) * 2.6);
-    width: 34vw;
+    top: calc(env(safe-area-inset-top) + 52px + clamp(34px, 10.5vw, 48px) * 1.08);
+    left: calc(20px + clamp(34px, 10.5vw, 48px) * 3.2);
+    width: 30vw;
   }
   .unveil {
     top: auto;
-    bottom: calc(env(safe-area-inset-bottom) + 40px);
+    bottom: calc(env(safe-area-inset-bottom) + 28px);
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;

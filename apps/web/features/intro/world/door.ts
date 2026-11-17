@@ -65,9 +65,9 @@ const ROOM_FRAG = /* glsl */ `
     // closed: dark, with only the glow at the seam showing
     vec3 c = mix(vec3(0.05, 0.025, 0.01), world, uGlow);
     // the blaze adds to the world rather than hiding it, strongest low in the middle
-    c += warm * uFlare * 0.32 * (1.0 - 0.7 * clamp(r, 0.0, 1.0));
-    c = mix(c, warm, uFlare * 0.08);
-    c += vec3(1.0, 0.62, 0.3) * uSeam * (1.0 - uGlow) * 0.9;
+    // a warm glow low in the opening, like lamplight; it adds to the world, never washes it out
+    c += warm * uFlare * 0.18 * (1.0 - clamp(r, 0.0, 1.0));
+    c += vec3(1.0, 0.62, 0.3) * uSeam * (1.0 - uGlow) * 0.35;
     gl_FragColor = vec4(c, 1.0);
     #include <colorspace_fragment>
   }
@@ -120,17 +120,11 @@ export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
   // the front is ARPIT's painted door panel; the back is built from planks
   const backWood = plankTextures(5, { seed: 11 });
   [backWood.map, backWood.bump].forEach(keep);
-  const face = keep(
-    new THREE.MeshStandardMaterial({
-      map: faceTex,
-      roughness: 0.75,
-      // the panel is painted in full light; the scene's low sun and sky light it again
-      color: new THREE.Color(0.7, 0.6, 0.52),
-    }),
-  );
-  const edge = keep(
-    new THREE.MeshStandardMaterial({ color: "#4a2d18", roughness: 0.9 }),
-  );
+  // the panel is graded to the painting (dark, warm, shaded at the hinge, lit at the latch), so it
+  // is drawn as it is when it faces us, and darkened by hand as it turns away from the light
+  const face = keep(new THREE.MeshBasicMaterial({ map: faceTex }));
+  const EDGE = new THREE.Color("#3a2010");
+  const edge = keep(new THREE.MeshBasicMaterial({ color: EDGE.clone() }));
   const back = keep(
     new THREE.MeshStandardMaterial({
       map: backWood.map,
@@ -210,6 +204,10 @@ export function makeWoodenDoor(faceTex: THREE.Texture): WoodenDoor {
     uniforms,
     update: () => {
       const g = uniforms.glow.value;
+      // turning away, the face falls into shade; its edge catches the warm light from the doorway
+      const turn = Math.sin(Math.abs(hinge.rotation.y));
+      face.color.setScalar(1 - 0.5 * turn);
+      edge.color.copy(EDGE).lerp(new THREE.Color(0.62, 0.3, 0.1), 0.5 * turn * (0.3 + g));
       poolMat.opacity = Math.min(g * 1.4, 1) * 0.6;
       spill.intensity = 2 * uniforms.seam.value + g * 30;
     },

@@ -9,7 +9,8 @@ import type { IntroParams } from "../world/params";
  *   0.00  the headline and button step back
  *   0.15  the camera turns to the door and takes a few steps toward it      (focus)
  *   0.30  the light at the gaps brightens                                    (seam)
- *   0.75  the latch gives a little, then the leaf swings open on its hinge   (leaf)
+ *   0.10  the painted door hands over to the 3D door at the same angle       (painted)
+ *   0.75  the leaf swings the rest of the way open on its hinge             (leaf)
  *   0.95  warm light blazes in the opening; the world beyond appears in it   (flare, glow)
  *   1.90  the camera walks through the doorway, the lens widening a touch    (travel, warp)
  *   2.60  the light clears, leaving the Vibers World                         (flare falls)
@@ -30,9 +31,9 @@ export function buildDoorOpening(
   tl.to(p, { focus: 1, duration: 1.7, ease: "power2.inOut" }, 0.15)
     .to(p, { seam: 1, duration: 0.5, ease: "power1.out" }, 0.3)
     .to(p, { life: 0.5, duration: 1.2, ease: "none" }, 0.3)
-    // the latch: a small give before the swing
-    .to(p, { leaf: 0.025, duration: 0.18, ease: "power2.out" }, 0.75)
-    .to(p, { leaf: 1, duration: 1.75, ease: "power3.inOut" }, 0.95)
+    // the painted door hands over to the 3D one, standing at the same angle, as the camera moves
+    .to(p, { painted: 0, duration: 0.35, ease: "power1.inOut" }, 0.1)
+    .to(p, { leaf: 1, duration: 1.75, ease: "power3.inOut" }, 0.75)
     .to(p, { flare: 1, duration: 0.8, ease: "power2.out" }, 0.95)
     .to(p, { glow: 1, duration: 1.1, ease: "power1.inOut" }, 1.0)
     .call(on.entering, [], 1.9)

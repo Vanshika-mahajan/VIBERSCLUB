@@ -22,19 +22,26 @@ export type IntroParams = {
   lookY: number;
   /** idle life: wind in the leaves and grass, drifting pollen, the camera breathing. 0 stops it */
   life: number;
+  /** the painted door from the picture, over the 3D one: 1 in Scene 1, dissolving as the door moves */
+  painted: number;
 };
+
+/** the painted door stands ajar: the 3D leaf starts at the same angle (as a share of fully open) */
+export const AJAR = 0.42;
 
 export const initialIntroParams = (): IntroParams => ({
   focus: 0,
   travel: 0,
-  leaf: 0,
+  leaf: AJAR,
   seam: 0.4,
-  glow: 0,
-  flare: 0,
+  // as painted: warm light and the world beyond showing through the gap
+  glow: 0.35,
+  flare: 0.6,
   warp: 0,
   lookX: 0,
   lookY: 0,
   life: 1,
+  painted: 1,
 });
 
 /**
@@ -61,21 +68,9 @@ const cutout = (l: number, t: number, r: number, b: number) => ({
   width: (r - l) / PLATE.px,
   height: (b - t) / PLATE.px,
 });
-/** the backpack and camera, and the skateboard: they stay in front of the door and the vines */
+/** the backpack and camera, and the skateboard: they stay in front of the door */
 export const PACK = cutout(720, 610, 920, 880);
 export const SKATEBOARD = cutout(1140, 535, 1300, 835);
-
-/**
- * The vine arch (1024 x 1536 cut-out) drawn at 0.56 of its size in painting pixels, its opening
- * (inner top at 244 in the cut-out) lined up with the doorway: centred at 986 across, top 35 down.
- */
-const VINE_SCALE = 0.56;
-export const VINES = {
-  x: px(986),
-  y: py(35 + (1536 * VINE_SCALE) / 2),
-  width: (1024 * VINE_SCALE) / PLATE.px,
-  height: (1536 * VINE_SCALE) / PLATE.px,
-};
 
 export const FOV = 40;
 const TAN = Math.tan(((FOV / 2) * Math.PI) / 180);
@@ -99,12 +94,13 @@ const clamp = (v: number, lo: number, hi: number) =>
 /**
  * The camera always looks straight at the painting, so the 3D door stays locked to it.
  * Wide screens see the whole painting (door right of centre, headline on the left, as drawn).
- * Narrower screens crop the sides, keeping the door in view. Tall phones show the painting on the
+ * Narrower screens and phones crop the sides, keeping the door in view (phones centre it). On phones
  * lower part of the screen, centred on the door, with the sky continuing above it for the headline.
  */
 export function framingFor(aspect: number): Framing {
   const phone = aspect < 0.8;
-  const plateShare = phone ? 0.86 : 1;
+  // phones: the painting fills the screen's height, centred on the door, words over it
+  const plateShare = 1;
   // the height of the view at the painting
   let viewH: number;
   if (phone) viewH = PLATE.height / plateShare;
