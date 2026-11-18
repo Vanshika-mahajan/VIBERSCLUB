@@ -74,6 +74,8 @@ export function Camp() {
         if (host.style.transform) host.style.transform = "";
         return;
       }
+      // once the camp fills the screen the camera walks straight on into it, with no pause
+      if (r.push >= 0.85) scene?.walkOn();
       const t = Math.min(1, Math.max(0, (r.push - 0.5) / 0.35));
       const b = t * t * (3 - 2 * t);
       const s0 = Math.min(1, Math.max(0.35, r.h * 1.12));
@@ -93,6 +95,7 @@ export function Camp() {
       place();
       if (!entry) {
         scene?.wake();
+        if (sawDoor) scene?.walkOn();
         scene?.render(dt);
         clear = clear < 0 ? 0 : clear + dt;
         if (phase === "waiting" && sawDoor && clear >= BEFORE_FLIGHT) void fly();

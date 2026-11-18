@@ -51,6 +51,8 @@ const END_EARLY = 0.03; // in seconds: the last frame, where the canopy covers t
 // it picks up speed and comes at us
 const CRUISE = 0.3; // playback rate while the door opens (gentler than the clip's real speed)
 const DRIFT = { x: -150, time: 3.4 }; // picture px it glides in from, and over how long
+// after the doorway the camera keeps walking forward into the camp (ARPIT): how far, and over how long
+const WALK = { far: 0.42, time: 2.6 };
 
 const vertex = /* glsl */ `
 attribute vec3 position;
@@ -77,7 +79,7 @@ precision highp float;
 varying vec2 v, sc;
 uniform sampler2D P, B, R, D, GL;
 uniform sampler2D ${PEOPLE.map((_, i) => `V${i}`).join(", ")};
-uniform float t, S, off, vOn, glOn, glX, zoom;
+uniform float t, S, off, vOn, glOn, glX, fwd;
 const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
 
 // the tree turns a touch around its trunk; branches further out follow a moment later
@@ -108,8 +110,10 @@ vec3 grade(vec3 c, float a, vec3 bg, float haze) {
 float blob(vec2 p, vec2 c, vec2 r) { vec2 d = (p - c) / r; return exp(-2.5 * dot(d, d)); }
 
 void main() {
-  // a slow drift in toward the camp, as if we were still walking forward
-  vec2 uv = vec2(0.5, 0.62) + (v - vec2(0.5, 0.62)) / zoom;
+  // the camera walking on into the camp after the door (ARPIT): the near ground, the people and the
+  // seats swell and slide past faster than the far valley and the sky, so it moves with depth
+  float near = smoothstep(0.45, 1.0, v.y);
+  vec2 uv = vec2(0.5, 0.56) + (v - vec2(0.5, 0.56)) / (1.0 + fwd * (0.3 + 1.0 * near));
   vec2 p = uv * SZ;
   vec3 col = texture2D(B, uv).rgb;
 
@@ -297,7 +301,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     vOn: { value: 0 },
     glOn: { value: 0 },
     glX: { value: DRIFT.x },
-    zoom: { value: 1 },
+    fwd: { value: 0 },
     t: { value: 0 },
     S: { value: STRENGTH },
     off: { value: 0 },
@@ -339,6 +343,11 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
 
   /** the door has begun to open: the people start moving and the camera starts its slow drift in */
   let since = -1;
+  /** seconds since the camera walked on through the doorway (-1: not yet) */
+  let walk = -1;
+  const walkOn = () => {
+    if (walk < 0) walk = 0;
+  };
   const wake = () => {
     if (started) return;
     started = true;
@@ -353,7 +362,10 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     const step = Math.min(dt, 0.1);
     u.t.value += step;
     if (since >= 0) since += step;
-    u.zoom.value = 1.0 + 0.04 * (1 - Math.exp(-Math.max(since, 0) / 3));
+    if (walk >= 0) walk += step;
+    const x = Math.min(Math.max(walk, 0) / WALK.time, 1);
+    // under way from the first moment (it carries on from the push through the doorway), easing out
+    u.fwd.value = WALK.far * (1 - (1 - x) * (1 - x));
     u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
     u.vOn.value = people.every((v) => v.readyState >= 2) ? 1 : 0;
     const ready = glider.readyState >= 2;
@@ -388,6 +400,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
   return {
     render,
     wake,
+    walkOn,
     takeOff,
     snapshot,
     /** back to the paraglider waiting in the sky */
@@ -398,6 +411,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
       rushing = false;
       landed = null;
       since = 0;
+      walk = -1;
     },
     dispose: () => {
       window.removeEventListener("pointerdown", play);
