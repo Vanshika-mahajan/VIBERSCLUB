@@ -5,6 +5,9 @@
   z-index: 55;
   overflow: hidden;
   background: #2a1b13;
+  /* placed behind the doorway while the door opens (Camp.tsx, portal.ts) */
+  transform-origin: 50% 50%;
+  will-change: transform;
 }
 
 .picture {

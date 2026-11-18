@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { addMeadowLife, layerPicture, loadMeadowLayers, MEADOW_STRENGTH, type MeadowLife } from "./scenery";
+import { portal as doorway } from "./portal";
 
 /**
  * The entry's 3D scene, after ARPIT's reference, made with ARPIT's own pictures: their doorframe on a
@@ -606,6 +607,17 @@ export async function createEntryScene(
     // always looking straight ahead, so the doorframe stands upright and the push runs dead straight
     camera.lookAt(camera.position.x, camera.position.y, dz - 10);
     renderer.render(scene, camera);
+    if (meadow) {
+      // the open doorway on screen, for the camp behind it (portal.ts)
+      camera.updateMatrixWorld();
+      painted.updateMatrixWorld(true);
+      const P = PAINTED;
+      const top = new THREE.Vector3((P.l + P.r) / 2 - MEADOW_PX.w / 2, MEADOW_PX.h / 2 - P.t, 0);
+      const bot = new THREE.Vector3((P.l + P.r) / 2 - MEADOW_PX.w / 2, MEADOW_PX.h / 2 - P.b, 0);
+      painted.localToWorld(top).project(camera);
+      painted.localToWorld(bot).project(camera);
+      doorway.rect = { cx: 0.5 + top.x / 2, cy: 0.5 - (top.y + bot.y) / 4, h: (top.y - bot.y) / 2, push: p.push };
+    }
   };
 
   /** Where a spot on the meadow picture (u, v from its top left, 0 to 1) shows at rest, as fractions of the canvas. */
@@ -624,6 +636,7 @@ export async function createEntryScene(
     anchor,
     setPointer: (x: number, y: number, on: boolean) => life?.setPointer(x, y, on),
     dispose: () => {
+      doorway.rect = null;
       trash.forEach((d) => d.dispose());
       renderer.dispose();
     },
