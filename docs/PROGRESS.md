@@ -14,6 +14,12 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: the meadow door is the entry
+
+ARPIT: "swap". `/` now opens on the meadow door with the brown "Unveil What Awaits" button (`EntryOnHome` passes `backdrop="meadow"`), the same as `/entry-demo`. The clouds version stays in the code as the default backdrop. Home is unchanged.
+
+Tests: lint and typecheck clean; e2e entry (now also the Unveil button), sweep and intro: 38 passed, 6 skipped (the old intro's).
+
 ## 2026-11-18: demo, the door in ARPIT's mountain meadow (review page only)
 
 ARPIT sent their "A World Awaits" meadow picture: "this needs to be the background of the door". Shown at `/entry-demo` only; `/` (checkpoint 5) keeps the clouds until ARPIT approves.

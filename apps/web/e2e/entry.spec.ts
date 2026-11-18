@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 /**
- * The first page: the door in the clouds lies over Home (features/entry). The motion is reviewed
+ * The first page: the door in ARPIT's meadow lies over Home (features/entry). The motion is reviewed
  * frame by frame; these check that it opens onto the real Home at /home (unchanged, with its contents
  * and top bar), by keyboard and by tap, and goes straight there when the entry cannot run.
  */
@@ -46,6 +46,18 @@ test("a tap on the door opens it too", async ({ page }) => {
   await page.getByRole("button", { name: "Open the door to Vibers Club" }).click();
   await page.waitForURL("**/home", { timeout: 60_000 });
   await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+});
+
+test("the Unveil What Awaits button opens it", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto("/", { waitUntil: "load" });
+  await expect(page.locator('[data-entry][data-state="ready"]')).toBeAttached({ timeout: 60_000 });
+  const unveil = page.getByRole("button", { name: "Unveil What Awaits" });
+  await expect(unveil).toBeInViewport();
+  await unveil.click();
+  await page.waitForURL("**/home", { timeout: 60_000 });
+  await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+  await expect(page.locator("[data-entry]")).toBeHidden();
 });
 
 test.describe("reduced motion", () => {
