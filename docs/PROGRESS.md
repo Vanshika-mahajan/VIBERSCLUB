@@ -21,6 +21,7 @@ ARPIT sent their "A World Awaits" meadow picture: "this needs to be the backgrou
 - The door stands on the stone path between the backpack and the skateboard, placed so its foot lines up with the path from the camera, at any screen shape. On phones the picture slides to keep the door in the middle (the headline is off to the left there).
 - The "Tap the door" hint is hidden; the picture carries its own invitation. A tap anywhere still opens the door.
 - `createEntryScene(canvas, params, backdrop)`, `<EntryDoor backdrop="meadow">`.
+- ARPIT: no "VIBERS / CLUB · MANALI" sign over the door in the meadow (removed there; the clouds version keeps it).
 
 Tests: lint and typecheck clean; e2e entry (clouds at `/`) and the `/entry-demo` check passed on phone and desktop.
 

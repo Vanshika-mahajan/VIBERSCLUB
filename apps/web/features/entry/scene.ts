@@ -319,6 +319,8 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   const signLight = new THREE.PointLight(0xffb060, 0, 6, 1.6);
   signLight.position.set(0, sign.position.y - 0.2, sign.position.z + 0.8);
   doorGroup.add(signLight);
+  // ARPIT: no sign over the door in the meadow
+  sign.visible = glow.visible = signLight.visible = !meadow;
 
   // ---- ARPIT's door, hinged on the left (where its hinges are drawn), swinging outward toward us
   const leafMat = keep(new THREE.MeshBasicMaterial({ map: leafTex, toneMapped: false }));
