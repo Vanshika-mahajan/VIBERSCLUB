@@ -23,6 +23,7 @@ ARPIT sent their "A World Awaits" meadow picture: "this needs to be the backgrou
 - `createEntryScene(canvas, params, backdrop)`, `<EntryDoor backdrop="meadow">`.
 - ARPIT: no "VIBERS / CLUB · MANALI" sign over the door in the meadow (removed there; the clouds version keeps it).
 - Set up like ARPIT's picture of it: the camera stands closer so the door is tall (the frame alone, without its grass island), with the backpack and camera at its left foot and the skateboard leaning on the right. These are ARPIT's cut-outs (`public/entry/prop-*.webp`), laid over the same things in the meadow and set just in front of the door. The meadow's own skateboard is painted out of `meadow.webp`, since the cut-out leans at a slightly different angle.
+- ARPIT's panelled wooden door replaces the earlier door in the meadow: their picture split into the casing (`public/entry/doorframe-wood.webp`, opening transparent) and the door itself (`door-leaf-wood.webp`), which fills the opening exactly and still swings outward on its left hinges.
 
 Tests: lint and typecheck clean; e2e entry (clouds at `/`) and the `/entry-demo` check passed on phone and desktop.
 

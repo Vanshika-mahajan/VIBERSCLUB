@@ -163,6 +163,10 @@ const MEADOW_PROPS = [
   { url: "/entry/prop-camera.webp", l: 783, t: 762, r: 974, b: 842 },
 ];
 const MEADOW_Z = -14; // the picture stands this far behind the door
+// ARPIT's panelled wooden door for the meadow, split from their picture into the casing (its opening
+// transparent, 772 x 1357) and the door itself (571 x 1226, the opening exactly)
+const WOOD_PX = { w: 772, h: 1357, open: { l: 100, r: 671, t: 113, b: 1339 } };
+const WOOD_UNIT = DOOR_H / (WOOD_PX.open.b - WOOD_PX.open.t);
 
 export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryParams, backdrop: EntryBackdrop = "clouds") {
   await document.fonts?.ready;
@@ -183,8 +187,8 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     return t;
   };
   const [frameTex, leafTex, meadowTex] = await Promise.all([
-    picture("/entry/doorframe.webp"),
-    picture("/intro/door-leaf.webp"),
+    picture(backdrop === "meadow" ? "/entry/doorframe-wood.webp" : "/entry/doorframe.webp"),
+    picture(backdrop === "meadow" ? "/entry/door-leaf-wood.webp" : "/intro/door-leaf.webp"),
     backdrop === "meadow" ? picture("/entry/meadow.webp") : Promise.resolve(null),
   ]);
   const propTex = backdrop === "meadow" ? await Promise.all(MEADOW_PROPS.map((m) => picture(m.url))) : [];
@@ -266,22 +270,20 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   frame.position.set((FRAME_PX.w / 2) * PX - OPEN_X, (FRAME_PX.open.b - FRAME_PX.h / 2) * PX, 0);
   frame.renderOrder = 5;
   if (meadow) {
-    // the frame alone, without its island of grass: the door stands straight on the meadow path
-    const crop = { l: 683, r: 1112, t: 66, b: FRAME_PX.open.b + 6 };
-    const t = keep(frameTex.clone());
-    t.repeat.set((crop.r - crop.l) / FRAME_PX.w, (crop.b - crop.t) / FRAME_PX.h);
-    t.offset.set(crop.l / FRAME_PX.w, 1 - crop.b / FRAME_PX.h);
-    t.needsUpdate = true;
-    (frame.material as THREE.MeshBasicMaterial).map = t;
-    frame.geometry = keep(new THREE.PlaneGeometry((crop.r - crop.l) * PX, (crop.b - crop.t) * PX));
-    frame.position.set(((crop.l + crop.r) / 2) * PX - OPEN_X, (FRAME_PX.open.b - (crop.t + crop.b) / 2) * PX, 0);
+    // ARPIT's wooden casing: its opening's foot on the ground, over the doorway
+    const u = WOOD_UNIT;
+    frame.geometry = keep(new THREE.PlaneGeometry(WOOD_PX.w * u, WOOD_PX.h * u));
+    frame.position.set((WOOD_PX.w / 2 - (WOOD_PX.open.l + WOOD_PX.open.r) / 2) * u, (WOOD_PX.open.b - WOOD_PX.h / 2) * u, 0);
   }
+  // the opening, and the door that fills it: lapping over the jambs (clouds), or fitting it exactly (meadow)
+  const openW = meadow ? (WOOD_PX.open.r - WOOD_PX.open.l) * WOOD_UNIT : OPEN_W;
+  const leaf = meadow ? { w: openW, h: DOOR_H, lap: 0 } : { w: DOOR.w, h: DOOR.h, lap: DOOR.lap };
   doorGroup.add(frame);
 
   // ---- the doorway itself: where the canvas turns transparent, showing the site underneath
   const doorwayZ = -0.01;
   const portal = new THREE.Mesh(
-    keep(new THREE.PlaneGeometry(OPEN_W, DOOR_H)),
+    keep(new THREE.PlaneGeometry(openW, DOOR_H)),
     keep(
       new THREE.MeshBasicMaterial({
         color: 0x000000,
@@ -347,9 +349,9 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   const leafMat = keep(new THREE.MeshBasicMaterial({ map: leafTex, toneMapped: false }));
   const edgeMat = keep(new THREE.MeshBasicMaterial({ color: COL.edge, toneMapped: false }));
   const hinge = new THREE.Group();
-  hinge.position.set(-OPEN_W / 2 - DOOR.lap, DOOR_Y, 0.02 + DOOR.t / 2);
-  const slab = new THREE.Mesh(keep(new THREE.BoxGeometry(DOOR.w, DOOR.h, DOOR.t)), [edgeMat, edgeMat, edgeMat, edgeMat, leafMat, leafMat]);
-  slab.position.set(DOOR.w / 2, DOOR.h / 2, 0);
+  hinge.position.set(-openW / 2 - leaf.lap, DOOR_Y, 0.02 + DOOR.t / 2);
+  const slab = new THREE.Mesh(keep(new THREE.BoxGeometry(leaf.w, leaf.h, DOOR.t)), [edgeMat, edgeMat, edgeMat, edgeMat, leafMat, leafMat]);
+  slab.position.set(leaf.w / 2, leaf.h / 2, 0);
   slab.renderOrder = 15;
   hinge.add(slab);
   doorGroup.add(hinge);
