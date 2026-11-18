@@ -8,7 +8,7 @@ import s from "./camp.module.css";
 /**
  * Where the door opens to (ARPIT, 2026-11-18): their sunset hilltop camp over the valley, with the
  * Vibers Club sign, the tent, the lanterns and the seats. ARPIT adds the pieces on it one step at a
- * time. Step 2: the scenery moves like ThreeUI's Temple Night (campScene.ts). The still picture shows
+ * time. Step 2: the trees sway gently in the breeze (campScene.ts); nothing jittery, at ARPIT's ask. The still picture shows
  * first, and stays when 3D is off or motion is reduced.
  */
 export function Camp() {
@@ -39,20 +39,9 @@ export function Camp() {
         setLive(true);
       })
       .catch(() => setLive(false));
-    const move = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      scene?.setPointer(((e.clientX - r.left) / Math.max(1, r.width)) * 2 - 1, 1 - ((e.clientY - r.top) / Math.max(1, r.height)) * 2, true);
-    };
-    const leave = () => scene?.setPointer(0, 0, false);
-    host.addEventListener("pointermove", move, { passive: true });
-    host.addEventListener("pointerleave", leave);
-    window.addEventListener("blur", leave);
     return () => {
       gone = true;
       cancelAnimationFrame(frame);
-      host.removeEventListener("pointermove", move);
-      host.removeEventListener("pointerleave", leave);
-      window.removeEventListener("blur", leave);
       scene?.dispose();
     };
   }, []);
