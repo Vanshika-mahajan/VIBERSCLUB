@@ -1,90 +1,152 @@
 import * as THREE from "three";
 
 /**
- * ARPIT's sunset camp, with the trees moving gently in the breeze. ARPIT asked for no jittery effects
- * (2026-11-18), so of Temple Night's movements only a slow, smooth sway stays: the big tree and the young
- * pines on the slope bend in broad waves, and the prayer flags lift and fall softly, as a motion mask
- * says (public/camp/sunset-motion.png: red = the trees, green = the flags). Everything else in the picture stays still.
+ * ARPIT's sunset camp, alive at "Strong" (approved demo, 2026-11-18). The picture is cut into layers
+ * (SAM masks, the holes behind them inpainted) so things move as whole objects instead of as a wobble:
+ * - the big tree bends around its trunk, the far branches lagging a little, with a slow sway in the leaves;
+ * - the prayer flag strings bob and the flags swing below them, more the further they hang;
+ * - only the fine detail of the clouds drifts sideways; the sun, its glow and the horizon stay put.
+ * Files in public/camp: sunset.webp (the picture), sunset-bg.webp (tree and flags removed),
+ * sunset-rig.png (R = place along the string, G = tree, B = flags, A = how far below the string),
+ * sunset-sky.webp (RGB = cloud detail + 128, A = where clouds may move).
  */
+const STRENGTH = 1.6; // Soft 0.6, Medium 1, Strong 1.6
 const PICTURE = { w: 1670, h: 941 };
-const CAM = { z: 6, fov: 38 };
-const PLANE_Z = -14;
+const TALL_FOCUS = 0.08; // on tall screens keep the sign in view, like the still (object-position 8%)
+
+const vertex = /* glsl */ `
+attribute vec3 position;
+uniform vec2 uScale, uOffset;
+varying vec2 v;
+void main() {
+  vec2 s = position.xy * 0.5 + 0.5;
+  s.y = 1.0 - s.y; // the picture's rows run downwards
+  v = uOffset + s * uScale;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
+}`;
+
+const fragment = /* glsl */ `
+precision highp float;
+varying vec2 v;
+uniform sampler2D P, B, R, D;
+uniform float t, S, off;
+const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
+
+// the tree turns a touch around its trunk; branches further out follow a moment later
+vec2 canopyD(vec2 p) {
+  vec2 r = p - vec2(0.0, 560.0);
+  float dist = length(r);
+  float lag = dist / 700.0;
+  float th = (sin(0.7 * (t - lag)) + 0.4 * sin(1.9 * (t - lag) + 1.3) + 0.25 * sin(0.31 * t)) * 0.0055;
+  vec2 rot = vec2(-r.y, r.x) * th;
+  vec2 cl = vec2(sin(p.x / 170.0 + t * 1.1) * cos(p.y / 140.0 - t * 0.8),
+                 cos(p.x / 150.0 - t * 0.9) * sin(p.y / 160.0 + t * 1.2) * 0.6) * 3.0 * clamp(dist / 700.0, 0.0, 1.2);
+  return (rot + cl) * S;
+}
+
+// the string bobs most in the middle; each flag swings by how far it hangs below it
+vec2 flagD(float s, float hg) {
+  float bob = 4.0 * sin(3.14159 * s) * sin(1.3 * t - 4.0 * s);
+  return vec2(6.0 * hg * sin(1.7 * t - 5.0 * s + 0.5), bob + 1.5 * hg * sin(2.1 * t - 6.0 * s)) * S;
+}
+
+void main() {
+  vec2 uv = v;
+  vec2 p = uv * SZ;
+  vec3 col = texture2D(B, uv).rgb;
+
+  // clouds: swap the fine detail here for detail drifted in from the side (mirrored so it never runs out)
+  float k = mod(uv.x + off, 2.0);
+  vec2 us = vec2(k < 1.0 ? k : 2.0 - k, uv.y);
+  vec4 here = texture2D(D, uv);
+  col += here.a * (texture2D(D, us).rgb - here.rgb);
+
+  vec2 uc = (p - canopyD(p)) / SZ;
+  col = mix(col, texture2D(P, uc).rgb, texture2D(R, uc).g);
+
+  vec4 rg = texture2D(R, uv);
+  vec2 uf = (p - flagD(rg.r, rg.a)) / SZ;
+  col = mix(col, texture2D(P, uf).rgb, texture2D(R, uf).b);
+
+  gl_FragColor = vec4(col, 1.0);
+}`;
 
 export async function createCampScene(canvas: HTMLCanvasElement) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(CAM.fov, 1, 0.05, 100);
-  camera.position.set(0, 0, CAM.z);
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
   const trash: { dispose(): void }[] = [];
   const keep = <T extends { dispose(): void }>(d: T) => (trash.push(d), d);
+
   const loader = new THREE.TextureLoader();
-  const [picture, motion] = await Promise.all([loader.loadAsync("/camp/sunset.webp"), loader.loadAsync("/camp/sunset-motion.png")]);
-  keep(picture);
-  keep(motion);
-  picture.colorSpace = THREE.SRGBColorSpace;
-  picture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-
-  const uT = { value: 0 };
-  const material = keep(new THREE.MeshBasicMaterial({ map: picture, toneMapped: false, depthWrite: false }));
-  material.onBeforeCompile = (shader) => {
-    shader.uniforms.uT = uT;
-    shader.uniforms.uMotion = { value: motion };
-    shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nuniform float uT;\nuniform sampler2D uMotion;")
-      .replace(
-        "#include <map_fragment>",
-        /* glsl */ `
-        vec2 uv = vMapUv;
-        vec4 mm = texture2D(uMotion, uv);
-        float sway = mm.r, flag = mm.g;
-        // the trees bend slowly in the breeze: broad, smooth waves (Temple Night's sin/cos pair, slowed
-        // right down), with gusts that come and go, so nothing flickers or shimmers
-        float gust = 0.6 + 0.4 * sin(uT * 0.35 - uv.x * 3.0);
-        float ph = uv.x * 4.0 + uv.y * 2.0;
-        vec2 d = vec2(sin(uT * 0.6 + ph), cos(uT * 0.45 + ph * 1.3) * 0.3) * 0.0024 * sway * gust;
-        // the prayer flags lift and fall in the same breeze, a soft wave running along each string
-        d += vec2(sin(uT * 1.1 - uv.x * 22.0) * 0.4, sin(uT * 1.4 - uv.x * 26.0 + 0.8)) * 0.0014 * flag * gust;
-        d.y *= 1.775; // the picture is wider than tall: the same distance both ways
-        vec4 sampledDiffuseColor = texture2D(map, uv + d);
-        diffuseColor *= sampledDiffuseColor;`,
-      );
+  const load = async (url: string, data: boolean) => {
+    const tex = keep(await loader.loadAsync(url));
+    tex.flipY = false;
+    tex.colorSpace = THREE.NoColorSpace; // passed straight through, exactly as in the demo
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+    if (data) {
+      // masks and cloud detail must not be blurred by mipmaps
+      tex.generateMipmaps = false;
+      tex.minFilter = THREE.LinearFilter;
+    }
+    tex.needsUpdate = true;
+    return tex;
   };
-  const plane = new THREE.Mesh(keep(new THREE.PlaneGeometry(1, 1)), material);
-  plane.position.z = PLANE_Z;
-  plane.renderOrder = -10;
-  scene.add(plane);
+  const [P, B, R, D] = await Promise.all([
+    load("/camp/sunset.webp", false),
+    load("/camp/sunset-bg.webp", false),
+    load("/camp/sunset-rig.png", true),
+    load("/camp/sunset-sky.webp", true),
+  ]);
 
-  const halfAt = (z: number) => (CAM.z - z) * Math.tan(THREE.MathUtils.degToRad(CAM.fov / 2));
-  let t = 0;
+  const u = {
+    P: { value: P },
+    B: { value: B },
+    R: { value: R },
+    D: { value: D },
+    t: { value: 0 },
+    S: { value: STRENGTH },
+    off: { value: 0 },
+    uScale: { value: new THREE.Vector2(1, 1) },
+    uOffset: { value: new THREE.Vector2(0, 0) },
+  };
+  const material = keep(
+    new THREE.RawShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms: u, depthTest: false, depthWrite: false }),
+  );
+  const quad = new THREE.Mesh(keep(new THREE.PlaneGeometry(2, 2)), material);
+  quad.frustumCulled = false;
+  scene.add(quad);
 
-  let w = 1,
-    h = 1;
+  let w = 0,
+    h = 0;
   const resize = () => {
     const r = canvas.getBoundingClientRect();
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    if (Math.round(r.width * ratio) === w && Math.round(r.height * ratio) === h) return;
-    w = Math.max(1, Math.round(r.width * ratio));
-    h = Math.max(1, Math.round(r.height * ratio));
+    const nw = Math.max(1, Math.round(r.width * ratio));
+    const nh = Math.max(1, Math.round(r.height * ratio));
+    if (nw === w && nh === h) return;
+    w = nw;
+    h = nh;
     renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    camera.userData.bufferHeight = h;
-    // cover the view exactly as the still picture does; on tall screens keep the sign and the sun in view
-    const vh = 2 * halfAt(PLANE_Z);
-    const vw = vh * camera.aspect;
-    const img = PICTURE.w / PICTURE.h;
-    const W = Math.max(vw, vh * img);
-    const H = W / img;
-    plane.scale.set(W, H, 1);
-    const spare = (W - vw) / 2;
-    plane.position.x = camera.aspect < 1 ? spare * (1 - 2 * 0.08) : 0;
+    // cover the screen exactly as the still picture does
+    const a = w / h;
+    const A = PICTURE.w / PICTURE.h;
+    if (a >= A) {
+      const f = A / a;
+      u.uScale.value.set(1, f);
+      u.uOffset.value.set(0, 0.5 - f / 2);
+    } else {
+      const f = a / A;
+      u.uScale.value.set(f, 1);
+      u.uOffset.value.set(TALL_FOCUS * (1 - f), 0);
+    }
   };
 
   const render = (dt: number) => {
     resize();
-    t += dt;
-    uT.value = t;
+    const step = Math.min(dt, 0.1);
+    u.t.value += step;
+    u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
     renderer.render(scene, camera);
   };
 

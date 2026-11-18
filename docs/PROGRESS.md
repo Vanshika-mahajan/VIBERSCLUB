@@ -14,6 +14,14 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: the camp in layers, tree, flags and clouds at Strong
+
+ARPIT found the pixel sway jittery and approved a demo where the picture is cut into layers instead (SAM masks, holes behind them inpainted), then asked for "strong" movement on the tree, flags and clouds. `features/camp/campScene.ts` is now one full-screen shader at Strong (1.6): the big tree bends around its trunk with the far branches lagging, the prayer flag strings bob while each flag swings by how far it hangs, and only the fine cloud detail drifts sideways (the sun, its glow and the horizon stay put). New files in `public/camp`: `sunset-bg.webp` (tree and flags removed), `sunset-rig.png` (string position, tree, flags, hang) and `sunset-sky.webp` (cloud detail); `sunset-motion.png` is gone. Approved demo: the camp movements Artifact page.
+
+Tests: lint and typecheck clean; e2e entry, sweep and the camp check: 36 passed.
+
+Known issues: a faint smudge can show behind the flags near the lamp at the widest swing, and the clouds ghost slightly where the drifting detail overlaps.
+
 ## 2026-11-18: the camp without jitter: only the trees and the flags move
 
 ARPIT: "i dont want any jittery effect ... just make the trees movement naturally", and "even flag should have natural movement". On the camp (`features/camp/campScene.ts`) only a slow, smooth sway stays: the big tree and the young pines bend in broad waves with gusts that come and go, and the prayer flags lift and fall in a soft wave along each string. Gone: the grass shimmer, the fast flag flutter, the river glints, the lamp and lantern flicker, the sun's glow, the cloud and mist drift, and the embers, leaves, pointer wisps and pointer lean in front. The motion mask (`public/camp/sunset-motion.png`) now holds only the trees (red) and the flags (green). The meadow at the door is unchanged.
