@@ -1,0 +1,29 @@
+/* The camp: ARPIT's sunset picture filling the screen, over the site's own top bar for now. */
+.camp {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  overflow: hidden;
+  background: #2a1b13;
+}
+
+.picture {
+  object-fit: cover;
+  /* on tall screens keep the sign and the sun in view */
+  object-position: 12% 50%;
+}
+
+@media (min-aspect-ratio: 1/1) {
+  .picture {
+    object-position: 50% 50%;
+  }
+}
+
+.title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

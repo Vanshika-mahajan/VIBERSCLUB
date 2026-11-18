@@ -14,6 +14,14 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: step 1 of what the door opens to, the sunset camp (review page only)
+
+ARPIT: the door now opens onto their sunset camp picture (the Vibers Club sign, tent, lanterns and seats over the river valley), and pieces get added to it one step at a time. Step 1 is the picture alone, filling the screen, at the new review page `/camp-demo` (`features/camp/Camp.tsx`, `public/camp/sunset.webp`), with the meadow door over it. On tall phone screens the picture is framed to keep the sign and the sun in view. `/` (checkpoint 6) still opens onto Home.
+
+Tests: lint and typecheck clean; e2e entry passed, and a `/camp-demo` check (the door opens onto the camp, no overflow, no serious axe issues, no console errors) passed on phone and desktop.
+
+Known issue (entry, not new): Enter pressed in the instant the door turns ready can be missed, because the key listener updates just after; once on desktop in the check above, fine on a re-run.
+
 ## 2026-11-18: the moving meadow is the entry
 
 ARPIT: "swap". `/` now runs the meadow with its Temple Night movements (`EntryOnHome` passes `alive`), the same as `/entry-demo`. Home is unchanged.
