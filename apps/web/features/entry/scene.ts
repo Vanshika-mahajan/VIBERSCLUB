@@ -152,7 +152,16 @@ const SKY_FRAG = /* glsl */ `
 export type EntryBackdrop = "clouds" | "meadow";
 // the meadow picture is 1671 x 941; the door's foot stands here on the path, as fractions of it
 const MEADOW_PX = { w: 1671, h: 941 };
-const MEADOW_SPOT = { u: 1010 / 1671, v: 800 / 941 };
+const MEADOW_SPOT = { u: 990 / 1671, v: 808 / 941 };
+// in the meadow the camera stands closer, so the door is tall, as in ARPIT's picture of it
+const MEADOW_CAM_Z = 6.2;
+// ARPIT's backpack, camera and skateboard (cut-outs), laid over the same things in the meadow picture
+// and set just in front of the door, so the door stands behind them; boxes in meadow pixels
+const MEADOW_PROPS = [
+  { url: "/entry/prop-pack.webp", l: 650, t: 582, r: 882, b: 826 },
+  { url: "/entry/prop-board.webp", l: 1114, t: 528, r: 1422, b: 846 },
+  { url: "/entry/prop-camera.webp", l: 783, t: 762, r: 974, b: 842 },
+];
 const MEADOW_Z = -14; // the picture stands this far behind the door
 
 export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryParams, backdrop: EntryBackdrop = "clouds") {
@@ -178,6 +187,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     picture("/intro/door-leaf.webp"),
     backdrop === "meadow" ? picture("/entry/meadow.webp") : Promise.resolve(null),
   ]);
+  const propTex = backdrop === "meadow" ? await Promise.all(MEADOW_PROPS.map((m) => picture(m.url))) : [];
   const meadow = backdrop === "meadow";
   // everything that makes the door: moved as one onto its spot in the picture (meadow), else at the origin
   const doorGroup = new THREE.Group();
@@ -255,6 +265,17 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   );
   frame.position.set((FRAME_PX.w / 2) * PX - OPEN_X, (FRAME_PX.open.b - FRAME_PX.h / 2) * PX, 0);
   frame.renderOrder = 5;
+  if (meadow) {
+    // the frame alone, without its island of grass: the door stands straight on the meadow path
+    const crop = { l: 683, r: 1112, t: 66, b: FRAME_PX.open.b + 6 };
+    const t = keep(frameTex.clone());
+    t.repeat.set((crop.r - crop.l) / FRAME_PX.w, (crop.b - crop.t) / FRAME_PX.h);
+    t.offset.set(crop.l / FRAME_PX.w, 1 - crop.b / FRAME_PX.h);
+    t.needsUpdate = true;
+    (frame.material as THREE.MeshBasicMaterial).map = t;
+    frame.geometry = keep(new THREE.PlaneGeometry((crop.r - crop.l) * PX, (crop.b - crop.t) * PX));
+    frame.position.set(((crop.l + crop.r) / 2) * PX - OPEN_X, (FRAME_PX.open.b - (crop.t + crop.b) / 2) * PX, 0);
+  }
   doorGroup.add(frame);
 
   // ---- the doorway itself: where the canvas turns transparent, showing the site underneath
@@ -343,7 +364,18 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     scene.add(meadowPlane);
   }
   // the camera stands back further on narrow screens, so the doorframe still fits
-  const startZFor = (aspect: number) => (aspect < 1 ? CAM.z * (1.25 / Math.max(0.45, aspect)) * 0.62 : CAM.z);
+  const camZ = meadow ? MEADOW_CAM_Z : CAM.z;
+  const startZFor = (aspect: number) => (aspect < 1 ? camZ * (1.25 / Math.max(0.45, aspect)) * 0.62 : camZ);
+  const PROP_Z = 0.5; // the props stand this far in front of the door
+  const props = propTex.map((t) => {
+    const m = new THREE.Mesh(
+      keep(new THREE.PlaneGeometry(1, 1)),
+      keep(new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false })),
+    );
+    m.renderOrder = 18;
+    scene.add(m);
+    return m;
+  });
   const layoutMeadow = () => {
     if (!meadowPlane) return;
     const d0 = startZFor(camera.aspect); // camera to the door
@@ -362,6 +394,16 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     const sx = px + (MEADOW_SPOT.u - 0.5) * W;
     const sy = CAM.y + (0.5 - MEADOW_SPOT.v) * H;
     doorGroup.position.set((sx * d0) / D, CAM.y + ((sy - CAM.y) * d0) / D, 0);
+    // each prop: its box on the picture, brought forward to PROP_Z along the lines of sight
+    const f = (d0 - PROP_Z) / D;
+    MEADOW_PROPS.forEach((b, i) => {
+      const x0 = px + (b.l / MEADOW_PX.w - 0.5) * W;
+      const x1 = px + (b.r / MEADOW_PX.w - 0.5) * W;
+      const y0 = CAM.y + (0.5 - b.b / MEADOW_PX.h) * H;
+      const y1 = CAM.y + (0.5 - b.t / MEADOW_PX.h) * H;
+      props[i].scale.set((x1 - x0) * f, (y1 - y0) * f, 1);
+      props[i].position.set(((x0 + x1) / 2) * f, CAM.y + ((y0 + y1) / 2 - CAM.y) * f, PROP_Z);
+    });
   };
 
   // ---- sizing
