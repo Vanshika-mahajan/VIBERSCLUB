@@ -20,8 +20,8 @@ import * as THREE from "three";
  * own path in the first seconds); takeOff() plays it at 2.4x until its canopy covers the screen.
  * ARPIT (2026-11-18): no Take off button; it flies by itself as soon as the door has opened.
  *
- * Life (ARPIT: "lively and real"): from the moment the door opens the camera drifts slowly in, birds
- * cross the sky, the sun's rays turn through the haze, the lanterns flicker and dust glints in the light.
+ * Life (ARPIT: "lively and real", then "tacky" for the drawn birds, rays and dust, now gone): from the
+ * moment the door opens the people move, the camera drifts slowly in and the lanterns flicker.
  *
  * One light over everything (ARPIT chose "B, crisp golden hour", made premium): soft shadows where
  * people sit, their edges taking on what is behind them, light haze on the far ones, cool distant
@@ -46,7 +46,7 @@ const GLIDER = { src: "/camp/paraglider.mp4", colour: 720 / 1448, mask: 728 / 14
 const GLIDE_RATE = 2.4; // ARPIT: "reduce more" (about 2.5 s)
 const LIFT = 100; // ARPIT chose start height C: 100 picture px higher at first
 const LIFT_TIME = 3; // in clip seconds, the time it takes to settle into the clip's own path
-const END_EARLY = 0.3; // in clip seconds: the page starts to fade this long before the clip ends
+const END_EARLY = 0.04; // in clip seconds: the last frame, where the canopy covers the whole screen
 
 const vertex = /* glsl */ `
 attribute vec3 position;
@@ -102,30 +102,6 @@ vec3 grade(vec3 c, float a, vec3 bg, float haze) {
   return mix(c, bg * 0.9 + vec3(0.04), haze * 0.18);
 }
 float blob(vec2 p, vec2 c, vec2 r) { vec2 d = (p - c) / r; return exp(-2.5 * dot(d, d)); }
-float hash(vec2 q) { return fract(sin(dot(q, vec2(127.1, 311.7))) * 43758.5453); }
-
-// a bird far off over the valley: two thin wings beating, a dark shape against the sunset
-float bird(vec2 p, vec2 b, float s, float ph) {
-  vec2 d = (p - b) / s;
-  if (abs(d.x) > 1.2 || abs(d.y) > 1.0) return 0.0;
-  float f = sin(t * 7.0 + ph);
-  float y = abs(d.x) * (0.15 + 0.55 * f) - 0.35 * d.x * d.x * f;
-  float w = 0.13 * (1.0 - 0.6 * abs(d.x));
-  return smoothstep(w + 0.07, w, abs(d.y + y)) * step(abs(d.x), 1.0);
-}
-// a little flock crossing the sky slowly, wrapping round
-float birds(vec2 p) {
-  float a = 0.0;
-  for (int i = 0; i < 6; i++) {
-    float fi = float(i);
-    float sp = 16.0 + 4.0 * hash(vec2(fi, 3.0));
-    vec2 o = vec2(mod(t * sp + fi * 23.0 + (fi > 2.5 ? 900.0 : 0.0), 2000.0) - 200.0,
-                  (fi > 2.5 ? 300.0 : 230.0) + 14.0 * fi + 6.0 * sin(t * 0.5 + fi * 1.7));
-    o.x += (fi > 2.5 ? fi - 3.0 : fi) * -18.0;
-    a = max(a, bird(p, o, fi > 2.5 ? 5.0 : 7.0 + fi, fi * 1.9));
-  }
-  return a;
-}
 
 void main() {
   // a slow drift in toward the camp, as if we were still walking forward
@@ -141,9 +117,6 @@ void main() {
 
   vec2 uc = (p - canopyD(p)) / SZ;
   col = mix(col, texture2D(P, uc).rgb, texture2D(R, uc).g);
-
-  // birds over the valley, behind the tree and the flags
-  col = mix(col, vec3(0.12, 0.07, 0.07), birds(p) * 0.85 * smoothstep(520.0, 380.0, p.y));
 
   vec4 rg = texture2D(R, uv);
   vec2 uf = (p - flagD(rg.r, rg.a)) / SZ;
@@ -162,8 +135,12 @@ ${PEOPLE.map(person).join("\n")}
   { vec2 q = vec2(v.x, (v.y * SZ.y - glY) / SZ.y);
     if (glOn > 0.5 && q.y > 0.0 && q.y < 1.0) {
       vec3 c = texture2D(GL, vec2(q.x, q.y * ${GLIDER.colour.toFixed(6)})).rgb;
-      float a = texture2D(GL, vec2(q.x, ${GLIDER.mask.toFixed(6)} + q.y * ${GLIDER.colour.toFixed(6)})).r;
-      a = smoothstep(0.12, 0.9, a); // a tighter edge, so no dark rim shows round the canopy
+      vec2 mq = vec2(q.x, ${GLIDER.mask.toFixed(6)} + q.y * ${GLIDER.colour.toFixed(6)});
+      // the edge pulled in by a couple of pixels, so no dark keyed rim shows round the canopy
+      vec2 e = vec2(2.0 / 1280.0, 2.0 / 1456.0);
+      float a = min(min(texture2D(GL, mq + vec2(e.x, 0.0)).r, texture2D(GL, mq - vec2(e.x, 0.0)).r),
+                    min(texture2D(GL, mq + vec2(0.0, e.y)).r, texture2D(GL, mq - vec2(0.0, e.y)).r));
+      a = smoothstep(0.1, 0.95, a);
       col = mix(col, grade(c, a, col, 0.12), a);
     } }
 
@@ -177,23 +154,10 @@ ${PEOPLE.map(person).join("\n")}
   col = clamp((col - 0.5) * 1.12 + 0.5, 0.0, 1.0);
   col = mix(col, col * col * (3.0 - 2.0 * col), 0.03);
   col += vec3(1.0, 0.72, 0.42) * 0.07 * exp(-length((p - vec2(490.0, 430.0)) / vec2(260.0, 170.0)) * 2.0);
-  // the sun's rays turning slowly through the haze
-  vec2 sr = p - vec2(490.0, 430.0);
-  float ang = atan(sr.y, sr.x);
-  float ray = pow(max(0.0, 0.5 + 0.5 * sin(ang * 13.0 + t * 0.12) * sin(ang * 21.0 - t * 0.09 + 1.3)), 3.0);
-  col += vec3(1.0, 0.7, 0.4) * 0.05 * ray * exp(-length(sr / vec2(700.0, 420.0)) * 1.6) * smoothstep(20.0, 120.0, length(sr));
   // the lanterns flicker like real flames
   float fl = 0.8 + 0.12 * sin(t * 9.0) + 0.08 * sin(t * 23.0 + 1.7) + 0.06 * sin(t * 3.1);
   col += vec3(1.0, 0.66, 0.3) * 0.075 * (exp(-length((p - vec2(88.0, 865.0)) / 75.0) * 2.5)
     + exp(-length((p - vec2(1460.0, 750.0)) / 48.0) * 2.5)) * fl;
-  // dust and pollen glinting in the low sun, drifting up
-  { vec2 g = p / 46.0 + vec2(0.0, t * 0.35);
-    vec2 cell = floor(g);
-    float hh = hash(cell);
-    vec2 mo = vec2(hash(cell + 7.1), hash(cell + 3.3)) * 0.8 + 0.1 + 0.15 * vec2(sin(t * 0.7 + hh * 9.0), 0.0);
-    float tw = 0.5 + 0.5 * sin(t * (1.5 + 2.0 * hh) + hh * 20.0);
-    float m = smoothstep(0.09, 0.0, length(fract(g) - mo)) * step(0.82, hh) * tw;
-    col += vec3(1.0, 0.82, 0.55) * 0.22 * m * smoothstep(380.0, 620.0, p.y) * smoothstep(941.0, 760.0, p.y); }
   vec3 kn = max(col - 0.78, 0.0);
   col = col - kn + kn / (1.0 + kn * 2.5);
   float l2 = dot(col, vec3(0.299, 0.587, 0.114));
@@ -357,12 +321,14 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     const step = Math.min(dt, 0.1);
     u.t.value += step;
     if (since >= 0) since += step;
-    u.zoom.value = 1.0 + 0.07 * (1 - Math.exp(-Math.max(since, 0) / 3));
+    u.zoom.value = 1.0 + 0.04 * (1 - Math.exp(-Math.max(since, 0) / 3));
     u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
     u.vOn.value = people.every((v) => v.readyState >= 2) ? 1 : 0;
     const ready = glider.readyState >= 2;
     u.glOn.value = ready ? 1 : 0;
-    if (ready && glider.paused) GL.needsUpdate = true; // a paused video sends no new frames by itself
+    // upload the glider's current frame every time: three's video-frame callback does not reliably fire
+    // for this video once it starts playing from a pause, and then the flight froze on its first frame
+    if (ready) GL.needsUpdate = true;
     const settle = Math.min(glider.currentTime / LIFT_TIME, 1);
     u.glY.value = -LIFT * (1 - settle * settle * (3 - 2 * settle));
     if (landed && glider.duration && glider.currentTime >= glider.duration - END_EARLY) {

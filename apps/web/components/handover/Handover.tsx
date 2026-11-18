@@ -5,7 +5,7 @@ import { handover } from "@/features/camp/handover";
 
 /**
  * Lays the camp's last frame (the canopy covering the screen) over every page while Home gets ready,
- * then opens it out and fades it away (features/camp/handover.ts).
+ * then sweeps it up and away like the canopy passing overhead (features/camp/handover.ts).
  */
 export function Handover() {
   const host = useRef<HTMLDivElement>(null);
@@ -34,17 +34,21 @@ export function Handover() {
       // two frames so Home has painted underneath
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       if (!alive) return;
+      // the canopy sweeps on up over our heads and away, uncovering Home underneath, its shadow
+      // trailing at the lower edge; no cross-fade, so the two pictures never show through each other
+      el.style.boxShadow = "0 40px 80px rgba(20, 10, 4, 0.45)";
       const anim = el.animate(
         [
-          { opacity: 1, transform: "scale(1)" },
-          { opacity: 0, transform: "scale(1.15)" },
+          { transform: "translateY(0) scale(1)" },
+          { transform: "translateY(-112%) scale(1.06)" },
         ],
-        { duration: 900, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" },
+        { duration: 1000, easing: "cubic-bezier(0.6, 0, 0.25, 1)", fill: "forwards" },
       );
       await anim.finished.catch(() => {});
       if (!alive) return;
       anim.cancel();
       el.style.opacity = "0";
+      el.style.boxShadow = "";
       el.replaceChildren();
     };
     const off = handover.subscribe(() => void run());
