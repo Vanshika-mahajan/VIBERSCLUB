@@ -152,8 +152,8 @@ const SKY_FRAG = /* glsl */ `
 export type EntryBackdrop = "clouds" | "meadow";
 // the meadow picture is 1671 x 941; the door's foot stands here on the path, as fractions of it
 const MEADOW_PX = { w: 1671, h: 941 };
-// on the path, tall, as in ARPIT's picture of it; the backpack, camera and skateboard stand well
-// off to the sides in the meadow picture (moved there at ARPIT's ask), clear of the door
+// on the path, tall, as in ARPIT's picture of it (the backpack, camera and skateboard are painted out
+// of the meadow picture at ARPIT's ask, so nothing stands near the door)
 const MEADOW_SPOT = { u: 1000 / 1671, v: 808 / 941 };
 const MEADOW_CAM_Z = 6.4;
 const MEADOW_Z = -14; // the picture stands this far behind the door

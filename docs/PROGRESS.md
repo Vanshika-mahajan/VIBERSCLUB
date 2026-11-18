@@ -26,6 +26,7 @@ ARPIT sent their "A World Awaits" meadow picture: "this needs to be the backgrou
 - ARPIT's panelled wooden door replaces the earlier door in the meadow: their picture split into the casing (`public/entry/doorframe-wood.webp`, opening transparent) and the door itself (`door-leaf-wood.webp`), which fills the opening exactly and still swings outward on its left hinges.
 - ARPIT: remove the backpack, camera and skateboard cut-outs if they hinder the transition. They did (a doubled backpack outline and the board crossing the frame during the push), so they are gone from the scene; `meadow.webp` is ARPIT's picture as sent again, with its own backpack, camera and skateboard, and the door stands between them (camera a little further back) so it hides none of them. The cut-out files `public/entry/prop-*.webp` are now unused, kept until ARPIT OKs deleting them.
 - ARPIT: place the backpack, camera and skateboard away from the door. `meadow.webp` now has them moved: painted out of the middle (filled from nearby meadow), then the cut-outs set back in on the grass with soft shadows, the backpack and camera at the left, the skateboard at the right. The door is tall again on the path (camera closer), clear of all three, so nothing crosses the doorway during the push.
+- ARPIT: remove the backpack, camera and skateboard. `meadow.webp` is now the meadow with all three painted out; the door stands alone on the path.
 
 Tests: lint and typecheck clean; e2e entry (clouds at `/`) and the `/entry-demo` check passed on phone and desktop.
 
