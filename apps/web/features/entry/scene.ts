@@ -152,16 +152,9 @@ const SKY_FRAG = /* glsl */ `
 export type EntryBackdrop = "clouds" | "meadow";
 // the meadow picture is 1671 x 941; the door's foot stands here on the path, as fractions of it
 const MEADOW_PX = { w: 1671, h: 941 };
-const MEADOW_SPOT = { u: 990 / 1671, v: 808 / 941 };
-// in the meadow the camera stands closer, so the door is tall, as in ARPIT's picture of it
-const MEADOW_CAM_Z = 6.2;
-// ARPIT's backpack, camera and skateboard (cut-outs), laid over the same things in the meadow picture
-// and set just in front of the door, so the door stands behind them; boxes in meadow pixels
-const MEADOW_PROPS = [
-  { url: "/entry/prop-pack.webp", l: 650, t: 582, r: 882, b: 826 },
-  { url: "/entry/prop-board.webp", l: 1114, t: 528, r: 1422, b: 846 },
-  { url: "/entry/prop-camera.webp", l: 783, t: 762, r: 974, b: 842 },
-];
+// between the meadow's own backpack and skateboard, so the door hides neither of them
+const MEADOW_SPOT = { u: 1018 / 1671, v: 806 / 941 };
+const MEADOW_CAM_Z = 9.5;
 const MEADOW_Z = -14; // the picture stands this far behind the door
 // ARPIT's panelled wooden door for the meadow, split from their picture into the casing (its opening
 // transparent, 772 x 1357) and the door itself (571 x 1226, the opening exactly)
@@ -191,7 +184,6 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     picture(backdrop === "meadow" ? "/entry/door-leaf-wood.webp" : "/intro/door-leaf.webp"),
     backdrop === "meadow" ? picture("/entry/meadow.webp") : Promise.resolve(null),
   ]);
-  const propTex = backdrop === "meadow" ? await Promise.all(MEADOW_PROPS.map((m) => picture(m.url))) : [];
   const meadow = backdrop === "meadow";
   // everything that makes the door: moved as one onto its spot in the picture (meadow), else at the origin
   const doorGroup = new THREE.Group();
@@ -368,16 +360,6 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   // the camera stands back further on narrow screens, so the doorframe still fits
   const camZ = meadow ? MEADOW_CAM_Z : CAM.z;
   const startZFor = (aspect: number) => (aspect < 1 ? camZ * (1.25 / Math.max(0.45, aspect)) * 0.62 : camZ);
-  const PROP_Z = 0.5; // the props stand this far in front of the door
-  const props = propTex.map((t) => {
-    const m = new THREE.Mesh(
-      keep(new THREE.PlaneGeometry(1, 1)),
-      keep(new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false })),
-    );
-    m.renderOrder = 18;
-    scene.add(m);
-    return m;
-  });
   const layoutMeadow = () => {
     if (!meadowPlane) return;
     const d0 = startZFor(camera.aspect); // camera to the door
@@ -396,16 +378,6 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     const sx = px + (MEADOW_SPOT.u - 0.5) * W;
     const sy = CAM.y + (0.5 - MEADOW_SPOT.v) * H;
     doorGroup.position.set((sx * d0) / D, CAM.y + ((sy - CAM.y) * d0) / D, 0);
-    // each prop: its box on the picture, brought forward to PROP_Z along the lines of sight
-    const f = (d0 - PROP_Z) / D;
-    MEADOW_PROPS.forEach((b, i) => {
-      const x0 = px + (b.l / MEADOW_PX.w - 0.5) * W;
-      const x1 = px + (b.r / MEADOW_PX.w - 0.5) * W;
-      const y0 = CAM.y + (0.5 - b.b / MEADOW_PX.h) * H;
-      const y1 = CAM.y + (0.5 - b.t / MEADOW_PX.h) * H;
-      props[i].scale.set((x1 - x0) * f, (y1 - y0) * f, 1);
-      props[i].position.set(((x0 + x1) / 2) * f, CAM.y + ((y0 + y1) / 2 - CAM.y) * f, PROP_Z);
-    });
   };
 
   // ---- sizing
