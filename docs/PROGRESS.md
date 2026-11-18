@@ -14,6 +14,16 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: the door belongs in the meadow
+
+ARPIT: "cant we add depth into the door as it looks like it doesnt belong there". Before and after photos (the "Door in the meadow, with depth" Artifact page) were approved with "yes". The new `features/entry/grounding.ts` is used by `scene.ts` in the meadow only:
+- **Depth:** the door and the doorway sit 0.3 back inside the frame (`RECESS`). The jamb's inner sides show: the sunny side is lit, the other in shade. The frame shades the shut door's left edge and head, and this fades as the door swings out.
+- **Light:** the wood is graded to the picture's warm evening light: a little darker and less saturated, a warm rim on the sunny left, a touch of haze, and darker toward the grass.
+- **Ground:** a dark contact line under the frame's foot, and a long soft shadow toward the viewer and to the right.
+- **Grass:** the foot is cut in blade shapes, so the picture's own grass shows in front of it.
+
+Tests: lint and typecheck clean. e2e entry, sweep and the camp check with one worker: 34 passed and 2 timed out. Both timeouts were the camp check's Enter key at the end of the long run (the known key-listener timing). That check passed 2 of 2 when re-run on its own.
+
 ## 2026-11-18: the door meadow in layers too
 
 ARPIT: "also do the same thing for the door scenery part". After two demo rounds (bigger movements; then "the flower movement looks jittery ... divide it into layers", so each daisy became its own cut-out) ARPIT said "yes". The meadow behind the door (`features/entry/scenery.ts`, `layerPicture` and `loadMeadowLayers`, used by `scene.ts`) now moves in layers at Strong (1.6), and replaces the old per-pixel sway:

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { groundDoor, RECESS } from "./grounding";
 import { addMeadowLife, layerPicture, loadMeadowLayers, MEADOW_STRENGTH, type MeadowLife } from "./scenery";
 
 /**
@@ -197,6 +198,7 @@ export async function createEntryScene(
   const meadow = backdrop === "meadow";
   // everything that makes the door: moved as one onto its spot in the picture (meadow), else at the origin
   const doorGroup = new THREE.Group();
+  const uT = { value: 0 }; // the scenery clock (scenery.ts), shared with the grass at the door
   scene.add(doorGroup);
 
   // ---- light: a low warm sun from the left, a soft sky fill
@@ -283,7 +285,8 @@ export async function createEntryScene(
   doorGroup.add(frame);
 
   // ---- the doorway itself: where the canvas turns transparent, showing the site underneath
-  const doorwayZ = -0.01;
+  // in the meadow the door and the doorway sit back inside the frame (grounding.ts)
+  const doorwayZ = -0.01 - (meadow ? RECESS : 0);
   const portal = new THREE.Mesh(
     keep(new THREE.PlaneGeometry(openW, DOOR_H)),
     keep(
@@ -351,18 +354,29 @@ export async function createEntryScene(
   const leafMat = keep(new THREE.MeshBasicMaterial({ map: leafTex, toneMapped: false }));
   const edgeMat = keep(new THREE.MeshBasicMaterial({ color: COL.edge, toneMapped: false }));
   const hinge = new THREE.Group();
-  hinge.position.set(-openW / 2 - leaf.lap, DOOR_Y, 0.02 + DOOR.t / 2);
+  hinge.position.set(-openW / 2 - leaf.lap, DOOR_Y, 0.02 + DOOR.t / 2 - (meadow ? RECESS : 0));
   const slab = new THREE.Mesh(keep(new THREE.BoxGeometry(leaf.w, leaf.h, DOOR.t)), [edgeMat, edgeMat, edgeMat, edgeMat, leafMat, leafMat]);
   slab.position.set(leaf.w / 2, leaf.h / 2, 0);
   slab.renderOrder = 15;
   hinge.add(slab);
   doorGroup.add(hinge);
+  // ARPIT: the door should belong in the meadow: depth, its light, its shadow, grass at its foot
+  const grounded = meadow
+    ? groundDoor({
+        doorGroup,
+        frameMat: frame.material as THREE.MeshBasicMaterial,
+        leafMat,
+        openW,
+        doorH: DOOR_H,
+        casing: { side: WOOD_PX.open.l * WOOD_UNIT, head: WOOD_PX.open.t * WOOD_UNIT, below: (WOOD_PX.h - WOOD_PX.open.b) * WOOD_UNIT },
+        keep,
+      })
+    : null;
 
   // ---- the meadow picture: a plane far behind, covering the view like a photograph (laid out in resize)
   const meadowPlane = meadowTex
     ? new THREE.Mesh(keep(new THREE.PlaneGeometry(1, 1)), keep(new THREE.MeshBasicMaterial({ map: meadowTex, depthWrite: false, toneMapped: false })))
     : null;
-  const uT = { value: 0 };
   const uOff = { value: 0 };
   if (meadowPlane && layers) layerPicture(meadowPlane.material as THREE.MeshBasicMaterial, layers, uT, uOff);
   if (meadowPlane) {
@@ -431,6 +445,7 @@ export async function createEntryScene(
     // the door swings outward on its left-hand hinge, a touch darker as it turns from the light
     hinge.rotation.y = -(Math.PI / 2) * 1.05 * p.door;
     leafMat.color.setScalar(1 - 0.35 * Math.sin(Math.PI * 0.5 * p.door));
+    grounded?.update(p.door);
     // the camera: a slow breath while waiting, then straight in through the doorway; it sits on narrow
     // screens further back so the doorframe still fits
     const startZ = startZFor(camera.aspect);
