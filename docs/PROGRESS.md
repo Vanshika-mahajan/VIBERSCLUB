@@ -14,6 +14,16 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: camp step 2, the scenery moves like Temple Night (review page only)
+
+ARPIT: first the movements that make the camp realistic, after ThreeUI's Temple Night. Its source is read from the installed `@designcodeio/threeui` package (threeui.com is blocked here; the package itself needs three below 0.152). `features/camp/campScene.ts` draws the camp picture in three.js with Temple Night's motions, at `/camp-demo`; the still picture shows first and stays without 3D.
+- A motion map of the picture (`public/camp/sunset-motion.png`): grass, pink flowers and young pines sway blade by blade; the tree sways in whole sprigs; the prayer flags flutter in quick ripples; the clouds and the valley mist drift slowly; the river glints. The sign, tent, table, seats, mat, rocks and lanterns never move.
+- The lamp over the sign and the lantern flicker like Temple Night's lanterns; the sun's glow breathes.
+- In front: warm haze drifting over the valley, embers rising, leaves falling, wisps trailing the pointer, and the view leaning after the pointer (`addMeadowLife` from the entry, which gained optional haze height and mote colour; the meadow at `/` is unchanged).
+- Left out: rain and the bloom pass, which belong to Temple Night's night.
+
+Tests: lint and typecheck clean; e2e entry, sweep and the `/camp-demo` check: 36 passed.
+
 ## 2026-11-18: step 1 of what the door opens to, the sunset camp (review page only)
 
 ARPIT: the door now opens onto their sunset camp picture (the Vibers Club sign, tent, lanterns and seats over the river valley), and pieces get added to it one step at a time. Step 1 is the picture alone, filling the screen, at the new review page `/camp-demo` (`features/camp/Camp.tsx`, `public/camp/sunset.webp`), with the meadow door over it. On tall phone screens the picture is framed to keep the sign and the sun in view. `/` (checkpoint 6) still opens onto Home.

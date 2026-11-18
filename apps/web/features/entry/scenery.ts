@@ -105,7 +105,14 @@ export function addMeadowLife(
   camera: THREE.PerspectiveCamera,
   uT: { value: number },
   keep: <T extends { dispose(): void }>(d: T) => T,
-  opts: { ground: () => number; small: boolean },
+  opts: {
+    ground: () => number;
+    small: boolean;
+    /** the haze veils' height: lowest, and how far above that they may sit */
+    hazeY?: [number, number];
+    /** the motes' colour, at the heart and further out */
+    mote?: [string, string];
+  },
 ): MeadowLife {
   const { small } = opts;
   let seed = 11;
@@ -131,7 +138,7 @@ export function addMeadowLife(
       ),
     );
     const x0 = (rnd() - 0.5) * 16;
-    mesh.position.set(x0, 0.4 + rnd() * 2.2, -11 + rnd() * 7);
+    mesh.position.set(x0, (opts.hazeY?.[0] ?? 0.4) + rnd() * (opts.hazeY?.[1] ?? 2.2), -11 + rnd() * 7);
     mesh.renderOrder = -5;
     scene.add(mesh);
     haze.push({ mesh, x0, sp: 0.06 + rnd() * 0.12, ph: rnd() * Math.PI * 2 });
@@ -156,7 +163,7 @@ export function addMeadowLife(
         uT,
         uGround: { value: 0 },
         uSize: { value: 1 },
-        uTex: { value: keep(soft("rgba(255,236,170,1)", "rgba(255,200,110,0.45)")) },
+        uTex: { value: keep(soft(...(opts.mote ?? ["rgba(255,236,170,1)", "rgba(255,200,110,0.45)"]))) },
       },
       transparent: true,
       depthWrite: false,
