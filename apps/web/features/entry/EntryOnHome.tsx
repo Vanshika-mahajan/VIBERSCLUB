@@ -7,5 +7,5 @@ import { entryHandoff, useEntryHandoff } from "./handoff";
 export function EntryOnHome() {
   const pending = useEntryHandoff();
   if (!pending) return null;
-  return <EntryDoor backdrop="meadow" onDone={entryHandoff.finish} />;
+  return <EntryDoor backdrop="meadow" alive onDone={entryHandoff.finish} />;
 }

@@ -14,6 +14,12 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: the moving meadow is the entry
+
+ARPIT: "swap". `/` now runs the meadow with its Temple Night movements (`EntryOnHome` passes `alive`), the same as `/entry-demo`. Home is unchanged.
+
+Tests: lint and typecheck clean; e2e entry and sweep: 34 passed.
+
 ## 2026-11-18: demo, the meadow moving like Temple Night (review page only)
 
 ARPIT: take ThreeUI's "Temple Night" as the reference for how the scenery moves. Its source was read from the `@designcodeio/threeui` package already installed here (threeui.com itself is blocked from this workspace). The package can't be used as it is (it needs three below 0.152), so its motions are rebuilt for the meadow in `features/entry/scenery.ts`, on `/entry-demo` only (`<EntryDoor alive>`); `/` is unchanged.
