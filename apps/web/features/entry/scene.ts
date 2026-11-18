@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { groundDoor, RECESS } from "./grounding";
 import { addMeadowLife, layerPicture, loadMeadowLayers, MEADOW_STRENGTH, type MeadowLife } from "./scenery";
 
 /**
@@ -163,6 +162,11 @@ const MEADOW_Z = -14; // the picture stands this far behind the door
 // transparent, 772 x 1357) and the door itself (571 x 1226, the opening exactly)
 const WOOD_PX = { w: 772, h: 1357, open: { l: 100, r: 671, t: 113, b: 1339 } };
 const WOOD_UNIT = DOOR_H / (WOOD_PX.open.b - WOOD_PX.open.t);
+// ARPIT's door painted into the meadow picture, wrapped in vines (2026-11-18): the frame, vines, shadow and
+// grass are part of the picture; only the door is cut out (door-leaf-painted.webp), to swing open on its
+// left edge, and what stands in front of the doorway (door-front.png: grass, daisies, overhanging vines)
+// stays in front of it. Pixels of the meadow picture.
+const PAINTED = { l: 862, r: 1128, t: 247, b: 801, front: { l: 854, t: 239, r: 1136, b: 807 }, thick: 10 };
 
 export async function createEntryScene(
   canvas: HTMLCanvasElement,
@@ -191,7 +195,7 @@ export async function createEntryScene(
   const [frameTex, leafTex, meadowTex] = await Promise.all([
     picture(backdrop === "meadow" ? "/entry/doorframe-wood.webp" : "/entry/doorframe.webp"),
     picture(backdrop === "meadow" ? "/entry/door-leaf-wood.webp" : "/intro/door-leaf.webp"),
-    backdrop === "meadow" ? picture("/entry/meadow.webp") : Promise.resolve(null),
+    backdrop === "meadow" ? picture("/entry/meadow-door.webp") : Promise.resolve(null),
   ]);
   const alive = backdrop === "meadow" && !!opts.alive;
   const layers = alive ? await loadMeadowLayers(loader, keep) : null;
@@ -285,8 +289,7 @@ export async function createEntryScene(
   doorGroup.add(frame);
 
   // ---- the doorway itself: where the canvas turns transparent, showing the site underneath
-  // in the meadow the door and the doorway sit back inside the frame (grounding.ts)
-  const doorwayZ = -0.01 - (meadow ? RECESS : 0);
+  const doorwayZ = -0.01;
   const portal = new THREE.Mesh(
     keep(new THREE.PlaneGeometry(openW, DOOR_H)),
     keep(
@@ -354,24 +357,46 @@ export async function createEntryScene(
   const leafMat = keep(new THREE.MeshBasicMaterial({ map: leafTex, toneMapped: false }));
   const edgeMat = keep(new THREE.MeshBasicMaterial({ color: COL.edge, toneMapped: false }));
   const hinge = new THREE.Group();
-  hinge.position.set(-openW / 2 - leaf.lap, DOOR_Y, 0.02 + DOOR.t / 2 - (meadow ? RECESS : 0));
+  hinge.position.set(-openW / 2 - leaf.lap, DOOR_Y, 0.02 + DOOR.t / 2);
   const slab = new THREE.Mesh(keep(new THREE.BoxGeometry(leaf.w, leaf.h, DOOR.t)), [edgeMat, edgeMat, edgeMat, edgeMat, leafMat, leafMat]);
   slab.position.set(leaf.w / 2, leaf.h / 2, 0);
   slab.renderOrder = 15;
   hinge.add(slab);
   doorGroup.add(hinge);
-  // ARPIT: the door should belong in the meadow: depth, its light, its shadow, grass at its foot
-  const grounded = meadow
-    ? groundDoor({
-        doorGroup,
-        frameMat: frame.material as THREE.MeshBasicMaterial,
-        leafMat,
-        openW,
-        doorH: DOOR_H,
-        casing: { side: WOOD_PX.open.l * WOOD_UNIT, head: WOOD_PX.open.t * WOOD_UNIT, below: (WOOD_PX.h - WOOD_PX.open.b) * WOOD_UNIT },
-        keep,
-      })
-    : null;
+  // in the meadow the door is the one painted into the picture: the 3D frame and door step aside
+  if (meadow) frame.visible = hinge.visible = portal.visible = false;
+  const painted = new THREE.Group();
+  const paintedLeafMat = meadow ? keep(new THREE.MeshBasicMaterial({ map: await picture("/entry/door-leaf-painted.webp"), toneMapped: false })) : null;
+  if (meadow && paintedLeafMat) {
+    const P = PAINTED;
+    const w = P.r - P.l,
+      h = P.b - P.t;
+    // in pixels of the picture, y up, about the picture's middle (laid onto the picture in layoutMeadow)
+    const at = (x: number, y: number) => new THREE.Vector3(x - MEADOW_PX.w / 2, MEADOW_PX.h / 2 - y, 0);
+    const hole = new THREE.Mesh(
+      keep(new THREE.PlaneGeometry(w, h)),
+      keep(new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0, blending: THREE.NoBlending, depthWrite: true })),
+    );
+    hole.position.copy(at((P.l + P.r) / 2, (P.t + P.b) / 2)).setZ(-P.thick - 1);
+    hole.renderOrder = 10;
+    const swing = new THREE.Group();
+    swing.position.copy(at(P.l, P.b));
+    const edge = keep(new THREE.MeshBasicMaterial({ color: COL.edge, toneMapped: false }));
+    const slabP = new THREE.Mesh(keep(new THREE.BoxGeometry(w, h, P.thick)), [edge, edge, edge, edge, paintedLeafMat, paintedLeafMat]);
+    slabP.position.set(w / 2, h / 2, -P.thick / 2 + 1);
+    slabP.renderOrder = 15;
+    swing.add(slabP);
+    const F = P.front;
+    const front = new THREE.Mesh(
+      keep(new THREE.PlaneGeometry(F.r - F.l, F.b - F.t)),
+      keep(new THREE.MeshBasicMaterial({ map: await picture("/entry/door-front.png"), transparent: true, depthWrite: false, toneMapped: false })),
+    );
+    front.position.copy(at((F.l + F.r) / 2, (F.t + F.b) / 2)).setZ(2);
+    front.renderOrder = 20;
+    painted.add(hole, swing, front);
+    painted.userData = { swing, center: at((P.l + P.r) / 2, (P.t + P.b) / 2) };
+    scene.add(painted);
+  }
 
   // ---- the meadow picture: a plane far behind, covering the view like a photograph (laid out in resize)
   const meadowPlane = meadowTex
@@ -387,6 +412,7 @@ export async function createEntryScene(
   // the camera stands back further on narrow screens, so the doorframe still fits
   const camZ = meadow ? MEADOW_CAM_Z : CAM.z;
   const startZFor = (aspect: number) => (aspect < 1 ? camZ * (1.25 / Math.max(0.45, aspect)) * 0.62 : camZ);
+  const target = new THREE.Vector3(DOORWAY.x, DOORWAY.y, doorwayZ); // where the camera pushes through
   const layoutMeadow = () => {
     if (!meadowPlane) return;
     const d0 = startZFor(camera.aspect); // camera to the door
@@ -405,6 +431,11 @@ export async function createEntryScene(
     const sx = px + (MEADOW_SPOT.u - 0.5) * W;
     const sy = CAM.y + (0.5 - MEADOW_SPOT.v) * H;
     doorGroup.position.set((sx * d0) / D, CAM.y + ((sy - CAM.y) * d0) / D, 0);
+    // the painted door lies on the picture itself, and the camera pushes through its doorway there
+    painted.position.set(px, CAM.y, MEADOW_Z + 0.001);
+    painted.scale.setScalar(W / MEADOW_PX.w);
+    painted.updateMatrixWorld(true);
+    if (painted.userData.center) target.copy(painted.localToWorld((painted.userData.center as THREE.Vector3).clone()));
   };
 
   const life: MeadowLife | null = alive
@@ -445,20 +476,24 @@ export async function createEntryScene(
     // the door swings outward on its left-hand hinge, a touch darker as it turns from the light
     hinge.rotation.y = -(Math.PI / 2) * 1.05 * p.door;
     leafMat.color.setScalar(1 - 0.35 * Math.sin(Math.PI * 0.5 * p.door));
-    grounded?.update(p.door);
+    if (paintedLeafMat) {
+      (painted.userData.swing as THREE.Group).rotation.y = -(Math.PI / 2) * 1.05 * p.door;
+      paintedLeafMat.color.setScalar(1 - 0.35 * Math.sin(Math.PI * 0.5 * p.door));
+    }
     // the camera: a slow breath while waiting, then straight in through the doorway; it sits on narrow
     // screens further back so the doorframe still fits
     const startZ = startZFor(camera.aspect);
-    const dx = doorGroup.position.x + DOORWAY.x;
-    const dy = doorGroup.position.y + DOORWAY.y;
+    const dx = meadow ? target.x : doorGroup.position.x + DOORWAY.x;
+    const dy = meadow ? target.y : doorGroup.position.y + DOORWAY.y;
+    const dz = meadow ? target.z : doorwayZ;
     const breathe = (1 - p.push) * p.life;
     life?.update(dt, p.push);
     uOff.value = (uOff.value + Math.min(dt, 0.1) * 0.012 * MEADOW_STRENGTH) % 2;
     const look = life?.offset ?? { x: 0, y: 0 };
     // ending just short of the doorway, where the opening overfills the screen (all transparent)
-    const endZ = doorwayZ + 0.12;
+    const endZ = dz + 0.12;
     const z = startZ + (endZ - startZ) * p.push;
-    const k = (z - doorwayZ) / (startZ - doorwayZ);
+    const k = (z - dz) / (startZ - dz);
     camera.position.set(
       dx + (CAM.x - dx) * k + Math.sin(time * 0.23) * 0.12 * breathe + look.x,
       dy + (CAM.y - dy) * k + Math.sin(time * 0.31) * 0.06 * breathe + look.y,
@@ -467,7 +502,7 @@ export async function createEntryScene(
     camera.fov = CAM.fov + 8 * p.push * p.push;
     camera.updateProjectionMatrix();
     // always looking straight ahead, so the doorframe stands upright and the push runs dead straight
-    camera.lookAt(camera.position.x, camera.position.y, doorwayZ - 10);
+    camera.lookAt(camera.position.x, camera.position.y, dz - 10);
     renderer.render(scene, camera);
   };
 

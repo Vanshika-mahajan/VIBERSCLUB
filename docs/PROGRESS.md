@@ -14,6 +14,18 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: ARPIT's door painted into the meadow, wrapped in vines
+
+ARPIT: "the door still looks out of the place and cheap". They chose to paint the door into the picture, with vines ("we can decorate the door with vines"), and sent the painting. Photos were approved with "yes".
+- `public/entry/meadow-door.webp`: ARPIT's painting, lined up with the old meadow picture so every layer, the title and the button keep their place. Only the area around the door comes from the painting; the button and falling leaves baked into their screenshot are left out.
+- `features/entry/scene.ts` (`PAINTED`): the frame, vines, shadow and grass are part of the picture. Only the door is cut out (`door-leaf-painted.webp`) and swings open on its left edge. What stands in front of the doorway (`door-front.png`: grass, daisies, overhanging vines) stays in front of it. The camera pushes through the painted doorway. The 3D frame and door are hidden in the meadow, and `grounding.ts` is no longer used.
+- The moving layers were rebuilt on the painting. The door, frame and vines stay still.
+- `EntryDoor.tsx`: Enter now works the moment the door is ready (a ref, not a re-registered listener), which fixes the e2e Enter timing flake.
+
+Unused now, kept until ARPIT OKs deleting them: `features/entry/grounding.ts`, `public/entry/meadow.webp`, `meadow-motion.png`, `doorframe-wood.webp`, `door-leaf-wood.webp`.
+
+Tests: lint and typecheck clean. e2e entry, sweep and the camp check (one worker) gave 35 passed and 1 Enter timeout. After the Enter fix, entry and the camp check gave 10 of 10 passed.
+
 ## 2026-11-18: the door belongs in the meadow
 
 ARPIT: "cant we add depth into the door as it looks like it doesnt belong there". Before and after photos (the "Door in the meadow, with depth" Artifact page) were approved with "yes". The new `features/entry/grounding.ts` is used by `scene.ts` in the meadow only:

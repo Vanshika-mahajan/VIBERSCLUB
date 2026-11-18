@@ -41,6 +41,8 @@ export function EntryDoor({
   const hint = useRef<HTMLDivElement>(null);
   const unveil = useRef<HTMLDivElement>(null);
   const started = useRef(false);
+  // ready at once for the keyboard too, without waiting for React to re-register the key listener
+  const ready = useRef(false);
   // where the meadow's button stands: over its spot on the picture, or along the bottom when that is off screen
   const [spot, setSpot] = useState<{ x: number; y: number } | null>(null);
   const params = useRef(initialEntryParams());
@@ -75,6 +77,7 @@ export function EntryDoor({
       scene = sc;
       gsap.ticker.add(tick);
       place();
+      ready.current = true;
       setState("ready");
     });
     window.addEventListener("resize", place);
@@ -113,7 +116,7 @@ export function EntryDoor({
   }, [state]);
 
   const enter = useCallback(() => {
-    if (state !== "ready" || started.current) return;
+    if (!ready.current || started.current) return;
     started.current = true;
     setState("going");
     const p = params.current;
@@ -134,7 +137,7 @@ export function EntryDoor({
       .to(root.current, { autoAlpha: 0, duration: 0.22, ease: "power1.in" }, 2.45);
     running.current = tl;
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __entryTimeline: tl });
-  }, [state]);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
