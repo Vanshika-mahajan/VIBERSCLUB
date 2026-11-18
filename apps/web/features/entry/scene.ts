@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { addMeadowLife, swayPicture, type MeadowLife } from "./scenery";
 
 /**
  * The entry's 3D scene, after ARPIT's reference, made with ARPIT's own pictures: their doorframe on a
@@ -162,7 +163,13 @@ const MEADOW_Z = -14; // the picture stands this far behind the door
 const WOOD_PX = { w: 772, h: 1357, open: { l: 100, r: 671, t: 113, b: 1339 } };
 const WOOD_UNIT = DOOR_H / (WOOD_PX.open.b - WOOD_PX.open.t);
 
-export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryParams, backdrop: EntryBackdrop = "clouds") {
+export async function createEntryScene(
+  canvas: HTMLCanvasElement,
+  params: EntryParams,
+  backdrop: EntryBackdrop = "clouds",
+  /** the meadow's scenery moving, after Temple Night (scenery.ts) */
+  opts: { alive?: boolean } = {},
+) {
   await document.fonts?.ready;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: true });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -185,6 +192,8 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     picture(backdrop === "meadow" ? "/entry/door-leaf-wood.webp" : "/intro/door-leaf.webp"),
     backdrop === "meadow" ? picture("/entry/meadow.webp") : Promise.resolve(null),
   ]);
+  const alive = backdrop === "meadow" && !!opts.alive;
+  const motionTex = alive ? keep(await loader.loadAsync("/entry/meadow-motion.png")) : null;
   const meadow = backdrop === "meadow";
   // everything that makes the door: moved as one onto its spot in the picture (meadow), else at the origin
   const doorGroup = new THREE.Group();
@@ -353,6 +362,8 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   const meadowPlane = meadowTex
     ? new THREE.Mesh(keep(new THREE.PlaneGeometry(1, 1)), keep(new THREE.MeshBasicMaterial({ map: meadowTex, depthWrite: false, toneMapped: false })))
     : null;
+  const uT = { value: 0 };
+  if (meadowPlane && motionTex) swayPicture(meadowPlane.material as THREE.MeshBasicMaterial, motionTex, uT);
   if (meadowPlane) {
     meadowPlane.position.z = MEADOW_Z;
     meadowPlane.renderOrder = -10;
@@ -381,6 +392,10 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     doorGroup.position.set((sx * d0) / D, CAM.y + ((sy - CAM.y) * d0) / D, 0);
   };
 
+  const life: MeadowLife | null = alive
+    ? addMeadowLife(scene, camera, uT, keep, { ground: () => doorGroup.position.y, small: Math.min(innerWidth, innerHeight) < 700 })
+    : null;
+
   // ---- sizing
   let w = 1,
     h = 1;
@@ -393,6 +408,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+    camera.userData.bufferHeight = h;
     layoutMeadow();
   };
 
@@ -420,13 +436,15 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     const dx = doorGroup.position.x + DOORWAY.x;
     const dy = doorGroup.position.y + DOORWAY.y;
     const breathe = (1 - p.push) * p.life;
+    life?.update(dt, p.push);
+    const look = life?.offset ?? { x: 0, y: 0 };
     // ending just short of the doorway, where the opening overfills the screen (all transparent)
     const endZ = doorwayZ + 0.12;
     const z = startZ + (endZ - startZ) * p.push;
     const k = (z - doorwayZ) / (startZ - doorwayZ);
     camera.position.set(
-      dx + (CAM.x - dx) * k + Math.sin(time * 0.23) * 0.12 * breathe,
-      dy + (CAM.y - dy) * k + Math.sin(time * 0.31) * 0.06 * breathe,
+      dx + (CAM.x - dx) * k + Math.sin(time * 0.23) * 0.12 * breathe + look.x,
+      dy + (CAM.y - dy) * k + Math.sin(time * 0.31) * 0.06 * breathe + look.y,
       z,
     );
     camera.fov = CAM.fov + 8 * p.push * p.push;
@@ -450,6 +468,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   return {
     render,
     anchor,
+    setPointer: (x: number, y: number, on: boolean) => life?.setPointer(x, y, on),
     dispose: () => {
       trash.forEach((d) => d.dispose());
       renderer.dispose();

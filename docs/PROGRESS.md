@@ -14,6 +14,18 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: demo, the meadow moving like Temple Night (review page only)
+
+ARPIT: take ThreeUI's "Temple Night" as the reference for how the scenery moves. Its source was read from the `@designcodeio/threeui` package already installed here (threeui.com itself is blocked from this workspace). The package can't be used as it is (it needs three below 0.152), so its motions are rebuilt for the meadow in `features/entry/scenery.ts`, on `/entry-demo` only (`<EntryDoor alive>`); `/` is unchanged.
+- The grass, flowers and branch in ARPIT's picture sway in the wind, with Temple Night's sway (sin 0.85, cos 0.62) and gusts rolling across. A motion mask (`public/entry/meadow-motion.png`) says what moves: red sways, green drifts, blue is the branch, which sways in whole sprigs. The lettering never moves.
+- The clouds and the valley mist drift slowly from side to side, and soft warm haze veils drift behind the door.
+- Golden pollen rises and wavers (Temple Night's embers, by day).
+- Leaves fall in front of the door, turning and swaying (Temple Night's leaves, in greens and golds).
+- Wisps of light trail the pointer, and the camera eases after it (rate 2.6, as in Temple Night), settling as the push begins.
+- Left out: rain, lanterns and the bloom pass, which belong to Temple Night's night.
+
+Tests: lint and typecheck clean; e2e entry, the `/entry-demo` checks and sweep: 38 passed.
+
 ## 2026-11-18: the meadow door is the entry
 
 ARPIT: "swap". `/` now opens on the meadow door with the brown "Unveil What Awaits" button (`EntryOnHome` passes `backdrop="meadow"`), the same as `/entry-demo`. The clouds version stays in the code as the default backdrop. Home is unchanged.

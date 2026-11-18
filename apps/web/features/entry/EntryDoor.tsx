@@ -26,7 +26,16 @@ const MEADOW_BUTTON = { u: 381 / 1671, v: 600 / 941 };
  *
  * Without WebGL, or with reduced motion, there is no entry: Home shows straight away.
  */
-export function EntryDoor({ onDone, backdrop = "clouds" }: { onDone: () => void; backdrop?: EntryBackdrop }) {
+export function EntryDoor({
+  onDone,
+  backdrop = "clouds",
+  alive = false,
+}: {
+  onDone: () => void;
+  backdrop?: EntryBackdrop;
+  /** the meadow's scenery moving, after Temple Night (scenery.ts) */
+  alive?: boolean;
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const root = useRef<HTMLDivElement>(null);
   const hint = useRef<HTMLDivElement>(null);
@@ -61,7 +70,7 @@ export function EntryDoor({ onDone, backdrop = "clouds" }: { onDone: () => void;
       const x = Math.min(Math.max(a.x * box.width, 24 + half), box.width - 24 - half);
       setSpot({ x, y: a.y * box.height });
     };
-    createEntryScene(canvas.current, params.current, backdrop).then((sc) => {
+    createEntryScene(canvas.current, params.current, backdrop, { alive }).then((sc) => {
       if (cancelled) return sc.dispose();
       scene = sc;
       gsap.ticker.add(tick);
@@ -69,15 +78,29 @@ export function EntryDoor({ onDone, backdrop = "clouds" }: { onDone: () => void;
       setState("ready");
     });
     window.addEventListener("resize", place);
+    // the pointer, for the camera to ease after and the wisps to trail
+    const host = root.current;
+    const move = (e: PointerEvent) => {
+      const r = canvas.current?.getBoundingClientRect();
+      if (!r) return;
+      scene?.setPointer(((e.clientX - r.left) / Math.max(1, r.width)) * 2 - 1, 1 - ((e.clientY - r.top) / Math.max(1, r.height)) * 2, true);
+    };
+    const leave = () => scene?.setPointer(0, 0, false);
+    host?.addEventListener("pointermove", move, { passive: true });
+    host?.addEventListener("pointerleave", leave);
+    window.addEventListener("blur", leave);
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __gsap: gsap });
     return () => {
       cancelled = true;
       window.removeEventListener("resize", place);
+      host?.removeEventListener("pointermove", move);
+      host?.removeEventListener("pointerleave", leave);
+      window.removeEventListener("blur", leave);
       gsap.ticker.remove(tick);
       running.current?.kill();
       scene?.dispose();
     };
-  }, [backdrop]);
+  }, [backdrop, alive]);
 
   // while the entry is up, the page under it does not scroll
   useEffect(() => {
