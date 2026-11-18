@@ -14,6 +14,19 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: the whole camp scene, the paraglider take-off and one light
+
+ARPIT approved ("perfect") the full camp from their reference picture, after reviewing it on the "Camp characters" Artifact page.
+- **People:** four more of ARPIT's green-screen videos sit where the reference puts them, back to front: hikers, laptop group, man with headphones, yoga woman on the mat, then the guitar group (`PEOPLE` in `campScene.ts`; `public/camp/hikers.mp4`, `laptop-group.mp4`, `headphones-man.mp4`, `yoga.mp4`). Same pipeline as the guitar group: keyed, blink-filled, looped forward then back, colour above and mask below.
+- **Paraglider:** ARPIT's own clip (`public/camp/paraglider.mp4`, made from `camp-reference/paraglider/paraglider-green-start.png`), full screen and untouched apart from the cut-out and removing the video tool's logo. Before take-off it rests on its first frame, 100 px higher (ARPIT chose start height C); it settles into the clip's own path over the first 3 clip seconds. The new **Take off** button plays it at 2.4x (about 2.5 s, ARPIT: "reduce more"); as the canopy covers the screen an ivory veil fades in over 0.7 s and `/home` opens. Without 3D, Take off goes straight to Home.
+- **One light** (ARPIT chose "B, crisp golden hour", made premium): soft contact shadows where people sit, their edges taking on what is behind them, light haze on the far ones, cool pale distant ridges, restrained crisp colour, highlights that roll off softly, a glow on the sun and the lanterns, a dark frame and fine grain.
+- **While the door is on top** the camp is not drawn (the door is still shut) or drawn at half resolution (while it opens), and the people videos only start once the camp is fully in view, so the door keeps its frames.
+- Earlier take-off attempts (zoom-in clips, a canopy sweep, a crash, a camera tilt) were rejected; ARPIT picked "play the clip as is".
+
+Tests: lint and typecheck clean; unit 101 of 101; e2e sweep all pages passed (phone and desktop). e2e entry: 3 of 8 passed. The 5 door-opening tests timed out waiting for the door to finish (software WebGL on this machine). The same 5 also timed out with the previous commit's camp code checked out, so this is the machine, not this change. Checked the real `/camp-demo` build by hand: the door opens onto the camp with all five groups and the paraglider; Take off flies it, the canopy covers the screen and `/home` opens, with no console errors.
+Known issues: the still picture (no 3D, reduced motion) has no people or paraglider. The door-opening e2e tests need a re-run on a faster machine.
+Next: ARPIT's review of the real page.
+
 ## 2026-11-18: camp character 1, the guitar group
 
 ARPIT approved ("yes") the guitar group from their own green-screen video. It sits in the camp where the reference picture shows it: the guitarist, the friend in the beanie, the friend with his back to us, the friend in the cap, the dog, the blanket and the bag.

@@ -9,32 +9,67 @@ import * as THREE from "three";
  * Files in public/camp: sunset.webp (the picture), sunset-bg.webp (tree and flags removed),
  * sunset-rig.png (R = place along the string, G = tree, B = flags, A = how far below the string),
  * sunset-sky.webp (RGB = cloud detail + 128, A = where clouds may move).
- * Character 1, the guitar group (approved 2026-11-18): guitar-group.mp4 is ARPIT's green-screen video,
- * cut out and looped forward then back; the top half is colour and the bottom half its cut-out mask.
+ *
+ * The people (approved 2026-11-18) are ARPIT's green-screen videos, cut out and looped forward then
+ * back; in each file the top part is colour and the bottom part its cut-out mask. They sit where
+ * ARPIT's reference picture puts them, back to front: hikers, laptop group, man with headphones,
+ * yoga woman, guitar group.
+ *
+ * The paraglider (approved 2026-11-18) is ARPIT's own clip, full screen and untouched apart from the
+ * cut-out: before take-off it rests on its first frame, a little higher (it settles into the clip's
+ * own path in the first seconds); takeOff() plays it at 2.4x until its canopy covers the screen.
+ *
+ * One light over everything (ARPIT chose "B, crisp golden hour", made premium): soft shadows where
+ * people sit, their edges taking on what is behind them, light haze on the far ones, cool distant
+ * ridges, soft highlights, a glow on the sun and the lanterns, a dark frame and fine grain.
  */
 const STRENGTH = 1.6; // Soft 0.6, Medium 1, Strong 1.6
 const PICTURE = { w: 1670, h: 941 };
 const TALL_FOCUS = 0.08; // on tall screens keep the sign in view, like the still (object-position 8%)
-// where the guitar group video sits, in picture px, and how its frame is split (colour above, mask below)
-const GROUP = { x: 60, y: 600, w: 710, h: 341, colour: 682 / 1376, mask: 688 / 1376 };
+
+/** A cut-out video: its box in picture px, the share of the frame that is colour, and where the mask starts. */
+type Clip = { src: string; x: number; y: number; w: number; h: number; colour: number; mask: number; haze: number };
+// back to front
+const PEOPLE: Clip[] = [
+  { src: "/camp/hikers.mp4", x: 1029, y: 651, w: 113, h: 137, colour: 0.489286, mask: 0.5, haze: 0.55 },
+  { src: "/camp/laptop-group.mp4", x: 1247, y: 668, w: 225, h: 138, colour: 0.489362, mask: 0.5, haze: 0.35 },
+  { src: "/camp/headphones-man.mp4", x: 1353, y: 650, w: 293, h: 222, colour: 0.493333, mask: 0.5, haze: 0.2 },
+  { src: "/camp/yoga.mp4", x: 910, y: 716, w: 237, h: 169, colour: 0.491279, mask: 0.5, haze: 0.2 },
+  { src: "/camp/guitar-group.mp4", x: 60, y: 600, w: 710, h: 341, colour: 682 / 1376, mask: 688 / 1376, haze: 0 },
+];
+// the paraglider clip covers the whole picture
+const GLIDER = { src: "/camp/paraglider.mp4", colour: 720 / 1448, mask: 728 / 1448 };
+const GLIDE_RATE = 2.4; // ARPIT: "reduce more" (about 2.5 s)
+const LIFT = 100; // ARPIT chose start height C: 100 picture px higher at first
+const LIFT_TIME = 3; // in clip seconds, the time it takes to settle into the clip's own path
+const END_EARLY = 0.3; // in clip seconds: the page starts to fade this long before the clip ends
 
 const vertex = /* glsl */ `
 attribute vec3 position;
 uniform vec2 uScale, uOffset;
-varying vec2 v;
+varying vec2 v, sc;
 void main() {
   vec2 s = position.xy * 0.5 + 0.5;
   s.y = 1.0 - s.y; // the picture's rows run downwards
+  sc = s;
   v = uOffset + s * uScale;
   gl_Position = vec4(position.xy, 0.0, 1.0);
 }`;
 
+const person = (c: Clip, i: number) => /* glsl */ `
+  { vec2 q = (p - vec2(${c.x}.0, ${c.y}.0)) / vec2(${c.w}.0, ${c.h}.0);
+    if (vOn > 0.5 && q.x > 0.0 && q.y > 0.0 && q.x < 1.0 && q.y < 1.0) {
+      vec3 c = texture2D(V${i}, vec2(q.x, q.y * ${c.colour.toFixed(6)})).rgb;
+      float a = texture2D(V${i}, vec2(q.x, ${c.mask.toFixed(6)} + q.y * ${c.colour.toFixed(6)})).r;
+      col = mix(col, grade(c, a, col, ${c.haze.toFixed(2)}), a);
+    } }`;
+
 const fragment = /* glsl */ `
 precision highp float;
-varying vec2 v;
-uniform sampler2D P, B, R, D, GV;
-uniform float t, S, off, gvOn;
-const vec4 GBOX = vec4(${GROUP.x}.0, ${GROUP.y}.0, ${GROUP.w}.0, ${GROUP.h}.0);
+varying vec2 v, sc;
+uniform sampler2D P, B, R, D, GL;
+uniform sampler2D ${PEOPLE.map((_, i) => `V${i}`).join(", ")};
+uniform float t, S, off, vOn, glOn, glY;
 const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
 
 // the tree turns a touch around its trunk; branches further out follow a moment later
@@ -55,6 +90,15 @@ vec2 flagD(float s, float hg) {
   return vec2(6.0 * hg * sin(1.7 * t - 5.0 * s + 0.5), bob + 1.5 * hg * sin(2.1 * t - 6.0 * s)) * S;
 }
 
+// a person in the camp light: a hint of evening warmth, soft edges that take on what is behind them,
+// and light haze on the far ones
+vec3 grade(vec3 c, float a, vec3 bg, float haze) {
+  c *= vec3(1.03, 0.99, 0.95);
+  c = mix(c, bg, smoothstep(0.95, 0.3, a) * 0.3);
+  return mix(c, bg * 0.9 + vec3(0.04), haze * 0.18);
+}
+float blob(vec2 p, vec2 c, vec2 r) { vec2 d = (p - c) / r; return exp(-2.5 * dot(d, d)); }
+
 void main() {
   vec2 uv = v;
   vec2 p = uv * SZ;
@@ -73,16 +117,67 @@ void main() {
   vec2 uf = (p - flagD(rg.r, rg.a)) / SZ;
   col = mix(col, texture2D(P, uf).rgb, texture2D(R, uf).b);
 
-  // the guitar group, in front of everything
-  vec2 gq = (p - GBOX.xy) / GBOX.zw;
-  if (gvOn > 0.5 && gq.x > 0.0 && gq.y > 0.0 && gq.x < 1.0 && gq.y < 1.0) {
-    vec3 gc = texture2D(GV, vec2(gq.x, gq.y * ${GROUP.colour})).rgb;
-    float ga = texture2D(GV, vec2(gq.x, ${GROUP.mask} + gq.y * ${GROUP.colour})).r;
-    col = mix(col, gc, ga);
+  // soft contact shadows where people sit, falling toward us, away from the sun
+  if (vOn > 0.5) {
+    float sh = blob(p, vec2(400.0, 925.0), vec2(330.0, 34.0)) + blob(p, vec2(1035.0, 876.0), vec2(95.0, 16.0))
+      + blob(p, vec2(1365.0, 802.0), vec2(110.0, 14.0)) + blob(p, vec2(1520.0, 858.0), vec2(120.0, 18.0))
+      + 0.6 * blob(p, vec2(1086.0, 787.0), vec2(45.0, 7.0));
+    col *= 1.0 - 0.25 * clamp(sh, 0.0, 1.0);
   }
+${PEOPLE.map(person).join("\n")}
+
+  // the paraglider, in front of everything
+  { vec2 q = vec2(uv.x, (p.y - glY) / SZ.y);
+    if (glOn > 0.5 && q.y > 0.0 && q.y < 1.0) {
+      vec3 c = texture2D(GL, vec2(q.x, q.y * ${GLIDER.colour.toFixed(6)})).rgb;
+      float a = texture2D(GL, vec2(q.x, ${GLIDER.mask.toFixed(6)} + q.y * ${GLIDER.colour.toFixed(6)})).r;
+      col = mix(col, grade(c, a, col, 0.12), a);
+    } }
+
+  // finish: cool, pale distant ridges, restrained crisp colour (cool shade, warm light), soft highlights,
+  // a glow on the sun and the lanterns, deep shadows that keep their detail, a dark frame and fine grain
+  float l = dot(col, vec3(0.299, 0.587, 0.114));
+  float far = smoothstep(800.0, 470.0, p.y) * smoothstep(300.0, 460.0, p.y);
+  col = mix(col, mix(col, vec3(0.62, 0.66, 0.74) * (0.75 + 0.5 * l), 0.55), far * 0.25);
+  col = mix(vec3(l), col, 0.9);
+  col *= mix(vec3(0.951, 0.9825, 1.035), vec3(1.021, 1.0, 0.965), smoothstep(0.15, 0.75, l));
+  col = clamp((col - 0.5) * 1.12 + 0.5, 0.0, 1.0);
+  col = mix(col, col * col * (3.0 - 2.0 * col), 0.03);
+  col += vec3(1.0, 0.72, 0.42) * 0.07 * exp(-length((p - vec2(490.0, 430.0)) / vec2(260.0, 170.0)) * 2.0);
+  col += vec3(1.0, 0.66, 0.3) * 0.05 * (exp(-length((p - vec2(88.0, 865.0)) / 70.0) * 2.5)
+    + exp(-length((p - vec2(1460.0, 750.0)) / 45.0) * 2.5)) * (0.9 + 0.1 * sin(t * 9.0));
+  vec3 kn = max(col - 0.78, 0.0);
+  col = col - kn + kn / (1.0 + kn * 2.5);
+  float l2 = dot(col, vec3(0.299, 0.587, 0.114));
+  col = mix(col, col * vec3(0.96, 0.97, 1.02), smoothstep(0.35, 0.05, l2) * 0.6);
+  col = mix(col, col * smoothstep(0.0, 0.9, col) * 1.08, 0.18);
+  vec2 vq = sc - 0.5;
+  col *= 1.0 - 0.34 * dot(vq, vq);
+  float gn = fract(sin(dot(floor(p / 1.5) + floor(t * 24.0) * 13.7, vec2(12.9898, 78.233))) * 43758.5453);
+  col += (gn - 0.5) * 0.028;
 
   gl_FragColor = vec4(col, 1.0);
 }`;
+
+function videoTexture(video: HTMLVideoElement) {
+  const tex = new THREE.VideoTexture(video);
+  tex.flipY = false;
+  tex.colorSpace = THREE.NoColorSpace;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+}
+
+function makeVideo(src: string, loop: boolean) {
+  const video = document.createElement("video");
+  video.src = src;
+  video.muted = true;
+  video.loop = loop;
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  video.preload = "auto";
+  return video;
+}
 
 export async function createCampScene(canvas: HTMLCanvasElement) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
@@ -112,37 +207,48 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     load("/camp/sunset-sky.webp", true),
   ]);
 
-  // the guitar group plays as a muted looping video
-  const video = document.createElement("video");
-  video.src = "/camp/guitar-group.mp4";
-  video.muted = true;
-  video.loop = true;
-  video.playsInline = true;
-  video.setAttribute("playsinline", "");
-  video.preload = "auto";
-  const GV = keep(new THREE.VideoTexture(video));
-  GV.flipY = false;
-  GV.colorSpace = THREE.NoColorSpace;
-  GV.generateMipmaps = false;
-  GV.minFilter = THREE.LinearFilter;
-  const play = () => void video.play().catch(() => {});
-  play();
-  // some phones refuse to start a video until the page is touched
+  // the people play as muted looping videos
+  const people = PEOPLE.map((c) => makeVideo(c.src, true));
+  const play = () => people.forEach((v) => void v.play().catch(() => {}));
+  // they start once the camp is fully in view (not while the door is still on top), and again on the
+  // first touch: some phones refuse to start a video until the page is touched
+  let started = false;
   window.addEventListener("pointerdown", play, { once: true });
 
-  const u = {
+  // the paraglider waits on its first frame until take-off
+  const glider = makeVideo(GLIDER.src, false);
+  const GL = keep(videoTexture(glider));
+  let flying = false;
+  let landed: (() => void) | null = null;
+  const takeOff = () =>
+    new Promise<void>((resolve) => {
+      if (flying || glider.readyState < 2) return resolve();
+      flying = true;
+      landed = resolve;
+      glider.currentTime = 0;
+      glider.playbackRate = GLIDE_RATE;
+      void glider.play().catch(() => {
+        landed = null;
+        resolve();
+      });
+    });
+
+  const u: Record<string, THREE.IUniform> = {
     P: { value: P },
     B: { value: B },
     R: { value: R },
     D: { value: D },
-    GV: { value: GV },
-    gvOn: { value: 0 },
+    GL: { value: GL },
+    vOn: { value: 0 },
+    glOn: { value: 0 },
+    glY: { value: -LIFT },
     t: { value: 0 },
     S: { value: STRENGTH },
     off: { value: 0 },
     uScale: { value: new THREE.Vector2(1, 1) },
     uOffset: { value: new THREE.Vector2(0, 0) },
   };
+  people.forEach((v, i) => (u[`V${i}`] = { value: keep(videoTexture(v)) }));
   const material = keep(
     new THREE.RawShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms: u, depthTest: false, depthWrite: false }),
   );
@@ -152,9 +258,9 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
 
   let w = 0,
     h = 0;
-  const resize = () => {
+  const resize = (quality: number) => {
     const r = canvas.getBoundingClientRect();
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const ratio = Math.min(window.devicePixelRatio || 1, 2) * quality;
     const nw = Math.max(1, Math.round(r.width * ratio));
     const nh = Math.max(1, Math.round(r.height * ratio));
     if (nw === w && nh === h) return;
@@ -166,31 +272,55 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     const A = PICTURE.w / PICTURE.h;
     if (a >= A) {
       const f = A / a;
-      u.uScale.value.set(1, f);
-      u.uOffset.value.set(0, 0.5 - f / 2);
+      (u.uScale.value as THREE.Vector2).set(1, f);
+      (u.uOffset.value as THREE.Vector2).set(0, 0.5 - f / 2);
     } else {
       const f = a / A;
-      u.uScale.value.set(f, 1);
-      u.uOffset.value.set(TALL_FOCUS * (1 - f), 0);
+      (u.uScale.value as THREE.Vector2).set(f, 1);
+      (u.uOffset.value as THREE.Vector2).set(TALL_FOCUS * (1 - f), 0);
     }
   };
 
-  const render = (dt: number) => {
-    resize();
+  /** quality below 1 draws fewer pixels, for while the entry is still playing on top */
+  const render = (dt: number, quality = 1) => {
+    resize(quality);
+    if (!started && quality === 1) {
+      started = true;
+      play();
+    }
     const step = Math.min(dt, 0.1);
     u.t.value += step;
     u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
-    u.gvOn.value = video.readyState >= 2 ? 1 : 0;
+    u.vOn.value = people.every((v) => v.readyState >= 2) ? 1 : 0;
+    const ready = glider.readyState >= 2;
+    u.glOn.value = ready ? 1 : 0;
+    if (ready && glider.paused) GL.needsUpdate = true; // a paused video sends no new frames by itself
+    const settle = Math.min(glider.currentTime / LIFT_TIME, 1);
+    u.glY.value = -LIFT * (1 - settle * settle * (3 - 2 * settle));
+    if (landed && glider.duration && glider.currentTime >= glider.duration - END_EARLY) {
+      landed();
+      landed = null;
+    }
     renderer.render(scene, camera);
   };
 
   return {
     render,
+    takeOff,
+    /** back to the paraglider waiting in the sky */
+    reset: () => {
+      glider.pause();
+      glider.currentTime = 0;
+      flying = false;
+      landed = null;
+    },
     dispose: () => {
       window.removeEventListener("pointerdown", play);
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
+      for (const v of [...people, glider]) {
+        v.pause();
+        v.removeAttribute("src");
+        v.load();
+      }
       trash.forEach((d) => d.dispose());
       renderer.dispose();
     },
