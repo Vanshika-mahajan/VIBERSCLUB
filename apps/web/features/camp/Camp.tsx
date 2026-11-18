@@ -10,8 +10,8 @@ import s from "./camp.module.css";
 
 type Scene = Awaited<ReturnType<typeof import("./campScene").createCampScene>>;
 
-/** After the door has gone, the camp is alive for this long before the paraglider's surprise launch. */
-const BEFORE_FLIGHT = 0.9;
+/** After the door has gone, the paraglider glides on this long before it comes at us. */
+const BEFORE_FLIGHT = 0.3;
 /** Without 3D the still camp shows this long, then Home. */
 const STILL_FOR = 2500;
 
@@ -20,9 +20,9 @@ const STILL_FOR = 2500;
  * Vibers Club sign, the tent, the lanterns and the seats. The trees and flags move, the Vibers in
  * ARPIT's reference picture sit in the camp as cut-out videos, and a paraglider waits in the sky
  * (campScene.ts). As the door begins to open the camp comes alive, seen through the doorway as the
- * world on the other side (portal.ts); a moment after the door has gone the paraglider launches by
- * surprise (ARPIT: no Take off button, and not in view before) until its canopy covers the screen,
- * and Home appears from behind it (handover.ts). Without 3D, or with reduced motion, the still picture
+ * world on the other side (portal.ts), the paraglider already gliding in it; just after the door has
+ * gone it comes at us (no Take off button) until its canopy covers the screen, and Home appears from
+ * behind it (handover.ts). Without 3D, or with reduced motion, the still picture
  * shows for a moment and then Home.
  */
 export function Camp() {

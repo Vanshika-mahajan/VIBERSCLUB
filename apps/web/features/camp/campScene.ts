@@ -16,9 +16,9 @@ import * as THREE from "three";
  * yoga woman, guitar group.
  *
  * The paraglider (approved 2026-11-18) is ARPIT's own clip, full screen and untouched apart from the
- * cut-out (sped up 2.4x into the file). It is out of sight until takeOff(), which sails it in from
- * beyond the right edge into the clip's own path and plays it until its canopy covers the screen.
- * ARPIT (2026-11-18): no Take off button, and the launch is a surprise, a moment after the door.
+ * cut-out (sped up 2.4x into the file). It is already gliding when the door opens (ARPIT: "the world
+ * doesn't wait"), drifting gently into its path at the clip's own speed; takeOff() then speeds it up
+ * until its canopy covers the screen. No Take off button: the camp starts it right after the door.
  *
  * Life (ARPIT: "lively and real", then "tacky" for the drawn birds, rays and dust, now gone): from the
  * moment the door opens the people move, the camera drifts slowly in and the lanterns flicker.
@@ -42,13 +42,15 @@ const PEOPLE: Clip[] = [
   { src: "/camp/guitar-group.mp4", x: 60, y: 600, w: 710, h: 341, colour: 682 / 1376, mask: 688 / 1376, haze: 0 },
 ];
 // the paraglider clip covers the whole picture
-// (ARPIT's clip, already sped up 2.4x into the file itself and made 960 wide, so it plays at its normal
-// rate and decodes easily: at 2.4x playback the frames could not keep up and the flight froze)
+// (ARPIT's clip with every frame kept, sped up 2.4x into the file itself and made 960 wide, so it decodes
+// easily: playing the big file at 2.4x, the frames could not keep up and the flight froze)
 const GLIDER = { src: "/camp/paraglider.mp4", colour: 720 / 1448, mask: 728 / 1448 };
 const END_EARLY = 0.03; // in seconds: the last frame, where the canopy covers the whole screen
-// ARPIT: the launch must come as a surprise, so the glider is out of sight until take-off, then sails
-// in from beyond the right edge, a little high, and settles into the clip's own path
-const ENTER = { x: 950, y: -140, time: 0.9 };
+// ARPIT: "the world doesn't wait". The glider is already flying when the door opens: it glides gently
+// (the clip at its own, unhurried speed) while drifting across into its path, then once we are through
+// it picks up speed and comes at us
+const CRUISE = 0.3; // playback rate while the door opens (gentler than the clip's real speed)
+const DRIFT = { x: -150, time: 3.4 }; // picture px it glides in from, and over how long
 
 const vertex = /* glsl */ `
 attribute vec3 position;
@@ -75,7 +77,7 @@ precision highp float;
 varying vec2 v, sc;
 uniform sampler2D P, B, R, D, GL;
 uniform sampler2D ${PEOPLE.map((_, i) => `V${i}`).join(", ")};
-uniform float t, S, off, vOn, glOn, glX, glY, zoom;
+uniform float t, S, off, vOn, glOn, glX, zoom;
 const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
 
 // the tree turns a touch around its trunk; branches further out follow a moment later
@@ -134,7 +136,7 @@ void main() {
 ${PEOPLE.map(person).join("\n")}
 
   // the paraglider, in front of everything
-  { vec2 q = vec2((v.x * SZ.x - glX) / SZ.x, (v.y * SZ.y - glY) / SZ.y);
+  { vec2 q = vec2((v.x * SZ.x - glX) / SZ.x, v.y);
     if (glOn > 0.5 && q.x > 0.0 && q.x < 1.0 && q.y > 0.0 && q.y < 1.0) {
       vec3 c = texture2D(GL, vec2(q.x, q.y * ${GLIDER.colour.toFixed(6)})).rgb;
       vec2 mq = vec2(q.x, ${GLIDER.mask.toFixed(6)} + q.y * ${GLIDER.colour.toFixed(6)});
@@ -237,8 +239,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
   document.body.appendChild(shelf);
   people.forEach((v) => shelf.appendChild(v));
 
-  // the paraglider is out of sight until take-off; its clip is fetched whole first, so the flight
-  // never waits on the network halfway
+  // the paraglider's clip is fetched whole first, so the flight never waits on the network halfway
   const glider = makeVideo("", false);
   shelf.appendChild(glider);
   let gliderUrl = "";
@@ -253,7 +254,8 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
       glider.src = GLIDER.src;
     });
   const GL = keep(videoTexture(glider));
-  let flying = false;
+  let flying = false; // in the air (from the moment the door opens)
+  let rushing = false; // coming at us
   let landed: (() => void) | null = null;
   // the clip may still be loading on a slow connection: wait for it (a few seconds at most)
   const loaded = () =>
@@ -264,18 +266,25 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
           glider.addEventListener("canplay", done);
           window.setTimeout(done, 8000);
         });
-  const takeOff = async () => {
+  const cruise = () => {
     if (flying) return;
     flying = true;
+    void loaded().then(() => {
+      if (!flying) return;
+      if (!rushing) glider.playbackRate = CRUISE;
+      void glider.play().catch(() => {});
+    });
+  };
+  /** it picks up speed and comes at us; resolves when its canopy covers the screen */
+  const takeOff = async () => {
+    if (rushing) return;
     await loaded();
     if (glider.readyState < 2) return;
+    cruise();
+    rushing = true;
     await new Promise<void>((resolve) => {
       landed = resolve;
-      glider.currentTime = 0;
-      void glider.play().catch(() => {
-        landed = null;
-        resolve();
-      });
+      if (glider.paused) void glider.play().catch(() => (landed = null, resolve()));
     });
   };
 
@@ -287,8 +296,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     GL: { value: GL },
     vOn: { value: 0 },
     glOn: { value: 0 },
-    glX: { value: ENTER.x },
-    glY: { value: ENTER.y },
+    glX: { value: DRIFT.x },
     zoom: { value: 1 },
     t: { value: 0 },
     S: { value: STRENGTH },
@@ -336,6 +344,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     started = true;
     since = 0;
     play();
+    cruise();
   };
 
   /** quality below 1 draws fewer pixels */
@@ -352,10 +361,13 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     // upload the glider's current frame every time: three's video-frame callback does not reliably fire
     // for this video once it starts playing from a pause, and then the flight froze on its first frame
     if (ready) GL.needsUpdate = true;
-    const k = 1 - Math.min(glider.currentTime / ENTER.time, 1);
-    const ease = k * k * k; // fast at first, settling softly into the clip's path
-    u.glX.value = ENTER.x * ease;
-    u.glY.value = ENTER.y * ease;
+    const g = Math.min(Math.max(since, 0) / DRIFT.time, 1);
+    u.glX.value = DRIFT.x * (1 - g * g * (3 - 2 * g));
+    // speeding up smoothly from the gentle glide to the rush at us
+    if (rushing && glider.playbackRate < 1) glider.playbackRate = Math.min(1, glider.playbackRate + step * 1.6);
+    // if the door takes longer than usual (a slow device), the glider slows almost to a hover rather
+    // than reaching us before we are through
+    if (!rushing && flying && glider.currentTime > 1.0 && glider.playbackRate > 0.12) glider.playbackRate = 0.12;
     if (landed && glider.duration && glider.currentTime >= glider.duration - END_EARLY) {
       landed();
       landed = null;
@@ -383,6 +395,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
       glider.pause();
       glider.currentTime = 0;
       flying = false;
+      rushing = false;
       landed = null;
       since = 0;
     },
