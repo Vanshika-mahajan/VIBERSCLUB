@@ -11,6 +11,8 @@ type Props = {
   className?: string;
   onClick: () => void;
   disabled: boolean;
+  /** "chrome" (the default) or "brown": bronze and walnut metal, the knob glowing amber when lit */
+  tone?: "chrome" | "brown";
 };
 
 /** A hairline of light left on the metal by the pointer; it fades over about a second. */
@@ -27,7 +29,7 @@ const SCRATCH_LIFE = 1400;
  * scratches the pointer draws across the face as it moves. The canvas only adds the glints and the
  * scratches; everything else is CSS, so the button looks right before any script runs.
  */
-export function UnveilButton({ ref, className, onClick, disabled }: Props) {
+export function UnveilButton({ ref, className, onClick, disabled, tone = "chrome" }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const hover = useRef(false);
   const scratches = useRef<Scratch[]>([]);
@@ -114,7 +116,7 @@ export function UnveilButton({ ref, className, onClick, disabled }: Props) {
     <button
       ref={ref}
       type="button"
-      className={`${s.unveil} ${className ?? ""}`}
+      className={`${s.unveil} ${tone === "brown" ? s.brown : ""} ${className ?? ""}`}
       onClick={onClick}
       disabled={disabled}
       onPointerEnter={() => void (hover.current = true)}

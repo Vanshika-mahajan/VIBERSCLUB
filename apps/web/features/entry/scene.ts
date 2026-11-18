@@ -436,8 +436,20 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     renderer.render(scene, camera);
   };
 
+  /** Where a spot on the meadow picture (u, v from its top left, 0 to 1) shows at rest, as fractions of the canvas. */
+  const anchor = (u: number, v: number) => {
+    if (!meadowPlane) return null;
+    resize();
+    const D = startZFor(camera.aspect) - MEADOW_Z;
+    const half = D * Math.tan(THREE.MathUtils.degToRad(CAM.fov / 2));
+    const x = meadowPlane.position.x + (u - 0.5) * meadowPlane.scale.x;
+    const y = (0.5 - v) * meadowPlane.scale.y;
+    return { x: 0.5 + x / (half * camera.aspect) / 2, y: 0.5 - y / half / 2 };
+  };
+
   return {
     render,
+    anchor,
     dispose: () => {
       trash.forEach((d) => d.dispose());
       renderer.dispose();

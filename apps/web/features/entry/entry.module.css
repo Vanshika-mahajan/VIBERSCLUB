@@ -62,3 +62,24 @@
 .entry[data-state="ready"] .hint {
   opacity: 1;
 }
+
+/* "Unveil What Awaits" on the meadow: centred on the spot where the picture had its button, else at the bottom */
+.unveil {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.6s ease 0.3s;
+}
+.unveil[data-spot="bottom"] {
+  left: 50%;
+  top: auto;
+  bottom: calc(env(safe-area-inset-bottom) + 32px);
+  transform: translateX(-50%);
+}
+.entry[data-state="ready"] .unveil {
+  opacity: 1;
+}
+.unveil > button {
+  position: relative;
+}
