@@ -14,6 +14,22 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: the door meadow in layers too
+
+ARPIT: "also do the same thing for the door scenery part". After two demo rounds (bigger movements; then "the flower movement looks jittery ... divide it into layers", so each daisy became its own cut-out) ARPIT said "yes". The meadow behind the door (`features/entry/scenery.ts`, `layerPicture` and `loadMeadowLayers`, used by `scene.ts`) now moves in layers at Strong (1.6), and replaces the old per-pixel sway:
+- the big branch bends from the trunk, the outer leaves lagging;
+- the pines lean from their roots;
+- each of eight daisies swings whole on its stem at its own pace, and the leafy plant bends from its root;
+- slow, broad gusts over the grass; the valley mist drifts to and fro; only the cloud detail slides across.
+
+The sun, mountains, path, rocks and the "A World Awaits" title stay still. The pollen, falling leaves, haze and pointer wisps are unchanged. New files in `public/entry`: `meadow-bg.webp`, `meadow-rig.png`, `meadow-sky.webp`, `meadow-flowers.png`. `meadow-motion.png` is no longer used, but is kept until ARPIT OKs deleting it. The demo is the "Door meadow movements" Artifact page.
+
+The camp's cloud detail file was also fixed: transparent sky pixels had lost their colour, which caused the faint cloud ghosting.
+
+Tests: lint and typecheck clean. e2e entry, sweep and the camp check gave 32 passed and 4 timed out with parallel workers: the door took over 60 s to open under software WebGL. With one worker, entry and the camp check gave 10 of 10 passed.
+
+Known issue: software-WebGL e2e runs of the door can time out when run in parallel. Run them with `--workers=1`.
+
 ## 2026-11-18: the camp in layers, tree, flags and clouds at Strong
 
 ARPIT found the pixel sway jittery and approved a demo where the picture is cut into layers instead (SAM masks, holes behind them inpainted), then asked for "strong" movement on the tree, flags and clouds. `features/camp/campScene.ts` is now one full-screen shader at Strong (1.6): the big tree bends around its trunk with the far branches lagging, the prayer flag strings bob while each flag swings by how far it hangs, and only the fine cloud detail drifts sideways (the sun, its glow and the horizon stay put). New files in `public/camp`: `sunset-bg.webp` (tree and flags removed), `sunset-rig.png` (string position, tree, flags, hang) and `sunset-sky.webp` (cloud detail); `sunset-motion.png` is gone. Approved demo: the camp movements Artifact page.

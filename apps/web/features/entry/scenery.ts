@@ -5,41 +5,120 @@ import * as THREE from "three";
  * its foreground grass sways (sin 0.85 / cos 0.62 per blade, stronger at the tips), haze drifts slowly
  * from side to side, embers rise and waver, leaves fall turning and swaying, wisps of light trail the
  * pointer, and the camera eases after the pointer. Here those same motions are tuned for a sunlit
- * meadow: the grass, flowers and branch in ARPIT's picture sway in the wind (a motion mask,
- * public/entry/meadow-motion.png: red = sways, green = drifts, blue = the branch, swaying in bigger
- * pieces), its clouds and valley mist drift, golden pollen rises instead of embers, and green and gold
+ * meadow: ARPIT's picture moves in cut-out layers (layerPicture below), golden pollen rises instead of embers, and green and gold
  * leaves fall in front of the door. Temple Night's rain, lanterns and bloom are left out: they belong to
  * its night, not to this morning.
  */
 
 const damp = (a: number, b: number, k: number, dt: number) => a + (b - a) * (1 - Math.exp(-k * dt));
 
-/** Wind in the picture itself: each pixel the motion mask marks is sampled a little to the side. */
-export function swayPicture(material: THREE.MeshBasicMaterial, motion: THREE.Texture, uT: { value: number }) {
+/**
+ * The meadow picture in cut-out layers (approved demo, 2026-11-18, at "Strong"), like the camp: the big
+ * branch bends from the trunk, the pines lean from their roots, each daisy in front swings whole on its
+ * stem, slow gusts roll over the grass, the valley mist drifts to and fro and only the fine detail of the
+ * clouds slides across; the sun, the mountains, the path, the rocks and the title stay still.
+ * Files in public/entry: meadow-bg.webp (the picture with the moving pieces filled in behind),
+ * meadow-rig.png (R = branch, B = pines, A = grass below / mist above), meadow-sky.webp (RGB = cloud
+ * detail + 128, A = where clouds may move) and meadow-flowers.png (R = which daisy, G = its outline).
+ */
+export type MeadowLayers = { bg: THREE.Texture; rig: THREE.Texture; sky: THREE.Texture; flowers: THREE.Texture };
+export const MEADOW_STRENGTH = 1.6; // Soft 0.6, Medium 1, Strong 1.6
+// each daisy (and the leafy plant first): the point below it that it swings around, how far, its phase
+const FLOWERS = [
+  510, 1000, 0.02917, 0.0, 100, 945, 0.0291, 1.7, 20, 945, 0.03589, 3.4, 200, 960, 0.05302, 5.1, 265, 960, 0.05343, 6.8, 35, 965,
+  0.05689, 8.5, 80, 990, 0.05826, 10.2, 355, 1000, 0.05385, 11.9, 250, 1010, 0.05932, 13.6,
+];
+
+export async function loadMeadowLayers(loader: THREE.TextureLoader, keep: <T extends { dispose(): void }>(d: T) => T): Promise<MeadowLayers> {
+  const load = async (url: string, kind: "picture" | "data" | "ids") => {
+    const t = keep(await loader.loadAsync(url));
+    t.flipY = false; // rows run downwards, as in the picture
+    t.colorSpace = kind === "picture" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    if (kind !== "picture") {
+      t.generateMipmaps = false;
+      t.minFilter = t.magFilter = kind === "ids" ? THREE.NearestFilter : THREE.LinearFilter;
+    }
+    t.needsUpdate = true;
+    return t;
+  };
+  const [bg, rig, sky, flowers] = await Promise.all([
+    load("/entry/meadow-bg.webp", "picture"),
+    load("/entry/meadow-rig.png", "data"),
+    load("/entry/meadow-sky.webp", "data"),
+    load("/entry/meadow-flowers.png", "ids"),
+  ]);
+  return { bg, rig, sky, flowers };
+}
+
+export function layerPicture(material: THREE.MeshBasicMaterial, layers: MeadowLayers, uT: { value: number }, uOff: { value: number }) {
   material.onBeforeCompile = (shader) => {
-    shader.uniforms.uT = uT;
-    shader.uniforms.uMotion = { value: motion };
+    Object.assign(shader.uniforms, {
+      uT,
+      uOff,
+      uS: { value: MEADOW_STRENGTH },
+      uB: { value: layers.bg },
+      uR: { value: layers.rig },
+      uD: { value: layers.sky },
+      uF: { value: layers.flowers },
+      uFL: { value: Array.from({ length: 9 }, (_, i) => new THREE.Vector4(...FLOWERS.slice(i * 4, i * 4 + 4))) },
+    });
     shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nuniform float uT;\nuniform sampler2D uMotion;")
+      .replace(
+        "#include <common>",
+        /* glsl */ `#include <common>
+uniform float uT, uOff, uS;
+uniform sampler2D uB, uR, uD, uF;
+uniform vec4 uFL[9];
+const vec2 SZ = vec2(1671.0, 941.0);
+// the picture itself is loaded the usual way up; the layers row by row downwards
+#define picAt(u) texture2D(map, vec2((u).x, 1.0 - (u).y))
+vec2 branchD(vec2 p) {
+  vec2 r = p - vec2(150.0, 105.0); float dist = length(r); float lag = dist / 650.0;
+  float th = (sin(0.75 * (uT - lag)) + 0.4 * sin(1.8 * (uT - lag) + 1.1) + 0.25 * sin(0.29 * uT)) * 0.014;
+  vec2 cl = vec2(sin(p.x / 150.0 + uT * 1.1) * cos(p.y / 120.0 - uT * 0.8), cos(p.x / 140.0 - uT * 0.9) * sin(p.y / 130.0 + uT * 1.2) * 0.6) * 6.0 * clamp(dist / 650.0, 0.0, 1.3);
+  return (vec2(-r.y, r.x) * th + cl) * uS;
+}
+vec2 pineD(vec2 p) {
+  float h = clamp((705.0 - p.y) / 450.0, 0.0, 1.0); h *= h;
+  return vec2(10.0 * h * (sin(0.6 * uT + p.x / 260.0) + 0.3 * sin(1.3 * uT + p.x / 90.0)), 0.0) * uS;
+}
+vec2 fieldD(vec2 p, float w) {
+  if (p.y >= 640.0) { float gust = 0.6 + 0.4 * sin(0.35 * uT - p.x / 600.0); return vec2(4.0 * w * gust * sin(1.1 * uT - p.x / 240.0 + p.y / 110.0), 0.0) * uS; }
+  return vec2(26.0 * w * sin(0.3 * uT + p.y / 70.0), 0.0) * uS;
+}`,
+      )
       .replace(
         "#include <map_fragment>",
         /* glsl */ `
-        vec4 mm = texture2D(uMotion, vMapUv);
-        float sway = mm.r, drift = mm.g, coarse = mm.b;
-        // gusts roll across the meadow from the left, so the grass does not all move at once
-        float gust = 0.55 + 0.45 * sin(uT * 0.55 - vMapUv.x * 5.0 + sin(uT * 0.23) * 1.5);
-        // blades sway on their own (fine phase); the branch sways in whole sprigs (coarse phase)
-        float ph = mix(vMapUv.x * 55.0 + vMapUv.y * 31.0, vMapUv.x * 9.0 + vMapUv.y * 4.0, coarse);
-        vec2 d = vec2(sin(uT * 0.85 + ph), cos(uT * 0.62 + ph * 1.7) * 0.35) * sway * gust;
-        d *= mix(0.0017, 0.0028, coarse);
-        d.y *= 1.776; // the picture is wider than tall: the same distance both ways
-        // clouds and the valley mist drift slowly from side to side, like Temple Night's haze
-        d.x += sin(uT * 0.11 + vMapUv.y * 3.0) * 0.006 * drift;
-        vec4 sampledDiffuseColor = texture2D(map, vMapUv + d);
-        diffuseColor *= sampledDiffuseColor;`,
+        vec2 uv = vec2(vMapUv.x, 1.0 - vMapUv.y);
+        vec2 p = uv * SZ;
+        vec4 rg = texture2D(uR, uv);
+        vec3 col = texture2D(uB, (p - fieldD(p, rg.a)) / SZ).rgb;
+        // clouds: swap the fine detail here for detail drifted in from the side (mirrored so it never runs out)
+        float k = mod(uv.x + uOff, 2.0);
+        vec2 us = vec2(k < 1.0 ? k : 2.0 - k, uv.y);
+        vec4 here = texture2D(uD, uv);
+        vec3 srgb = sRGBTransferOETF(vec4(col, 1.0)).rgb + here.a * (texture2D(uD, us).rgb - here.rgb);
+        col = sRGBTransferEOTF(vec4(srgb, 1.0)).rgb;
+        vec2 u1 = (p - pineD(p)) / SZ;
+        col = mix(col, picAt(u1).rgb, texture2D(uR, u1).b);
+        for (int i = 0; i < 9; i++) {
+          vec4 f = uFL[i];
+          float th = f.z * uS * (sin((0.85 + 0.07 * float(i)) * uT + f.w) + 0.3 * sin((1.9 + 0.11 * float(i)) * uT + 2.0 * f.w));
+          float c = cos(th), s = sin(th);
+          vec2 r = p - f.xy;
+          vec2 q = f.xy + vec2(c * r.x + s * r.y, -s * r.x + c * r.y);
+          if (i == 0) { float h = clamp((815.0 - p.y) / 140.0, 0.0, 1.0); q = p - vec2(th * 170.0 * h * h, 0.0); }
+          vec2 uq = q / SZ;
+          vec4 m = texture2D(uF, uq);
+          col = mix(col, picAt(uq).rgb, m.g * step(abs(m.r * 255.0 - 25.0 * float(i + 1)), 2.0));
+        }
+        vec2 u3 = (p - branchD(p)) / SZ;
+        col = mix(col, picAt(u3).rgb, texture2D(uR, u3).r);
+        diffuseColor *= vec4(col, 1.0);`,
       );
   };
-  material.customProgramCacheKey = () => "meadow-sway";
+  material.customProgramCacheKey = () => "meadow-layers";
   material.needsUpdate = true;
 }
 

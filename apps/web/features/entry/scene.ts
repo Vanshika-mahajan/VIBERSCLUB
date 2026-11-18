@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { addMeadowLife, swayPicture, type MeadowLife } from "./scenery";
+import { addMeadowLife, layerPicture, loadMeadowLayers, MEADOW_STRENGTH, type MeadowLife } from "./scenery";
 
 /**
  * The entry's 3D scene, after ARPIT's reference, made with ARPIT's own pictures: their doorframe on a
@@ -193,7 +193,7 @@ export async function createEntryScene(
     backdrop === "meadow" ? picture("/entry/meadow.webp") : Promise.resolve(null),
   ]);
   const alive = backdrop === "meadow" && !!opts.alive;
-  const motionTex = alive ? keep(await loader.loadAsync("/entry/meadow-motion.png")) : null;
+  const layers = alive ? await loadMeadowLayers(loader, keep) : null;
   const meadow = backdrop === "meadow";
   // everything that makes the door: moved as one onto its spot in the picture (meadow), else at the origin
   const doorGroup = new THREE.Group();
@@ -363,7 +363,8 @@ export async function createEntryScene(
     ? new THREE.Mesh(keep(new THREE.PlaneGeometry(1, 1)), keep(new THREE.MeshBasicMaterial({ map: meadowTex, depthWrite: false, toneMapped: false })))
     : null;
   const uT = { value: 0 };
-  if (meadowPlane && motionTex) swayPicture(meadowPlane.material as THREE.MeshBasicMaterial, motionTex, uT);
+  const uOff = { value: 0 };
+  if (meadowPlane && layers) layerPicture(meadowPlane.material as THREE.MeshBasicMaterial, layers, uT, uOff);
   if (meadowPlane) {
     meadowPlane.position.z = MEADOW_Z;
     meadowPlane.renderOrder = -10;
@@ -437,6 +438,7 @@ export async function createEntryScene(
     const dy = doorGroup.position.y + DOORWAY.y;
     const breathe = (1 - p.push) * p.life;
     life?.update(dt, p.push);
+    uOff.value = (uOff.value + Math.min(dt, 0.1) * 0.012 * MEADOW_STRENGTH) % 2;
     const look = life?.offset ?? { x: 0, y: 0 };
     // ending just short of the doorway, where the opening overfills the screen (all transparent)
     const endZ = doorwayZ + 0.12;
