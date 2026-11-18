@@ -45,7 +45,6 @@ const PEOPLE: Clip[] = [
 // (ARPIT's clip with every frame kept, sped up 2.4x into the file itself and made 960 wide, so it decodes
 // easily: playing the big file at 2.4x, the frames could not keep up and the flight froze)
 const GLIDER = { src: "/camp/paraglider.mp4", colour: 720 / 1448, mask: 728 / 1448 };
-const END_EARLY = 0.03; // in seconds: the last frame, where the canopy covers the whole screen
 // ARPIT: "the world doesn't wait". The glider is already flying when the door opens: it glides gently
 // (the clip at its own, unhurried speed) while drifting across into its path, then once we are through
 // it picks up speed and comes at us
@@ -79,7 +78,7 @@ precision highp float;
 varying vec2 v, sc;
 uniform sampler2D P, B, R, D, GL;
 uniform sampler2D ${PEOPLE.map((_, i) => `V${i}`).join(", ")};
-uniform float t, S, off, vOn, glOn, glX, fwd;
+uniform float t, S, off, vOn, glOn, glX, glS, fwd;
 const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
 
 // the tree turns a touch around its trunk; branches further out follow a moment later
@@ -141,6 +140,7 @@ ${PEOPLE.map(person).join("\n")}
 
   // the paraglider, in front of everything
   { vec2 q = vec2((v.x * SZ.x - glX) / SZ.x, v.y);
+    q = vec2(0.5, 0.2) + (q - vec2(0.5, 0.2)) / glS; // a touch bigger at the very end, so the canopy covers every edge
     if (glOn > 0.5 && q.x > 0.0 && q.x < 1.0 && q.y > 0.0 && q.y < 1.0) {
       vec3 c = texture2D(GL, vec2(q.x, q.y * ${GLIDER.colour.toFixed(6)})).rgb;
       vec2 mq = vec2(q.x, ${GLIDER.mask.toFixed(6)} + q.y * ${GLIDER.colour.toFixed(6)});
@@ -302,6 +302,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     glOn: { value: 0 },
     glX: { value: DRIFT.x },
     fwd: { value: 0 },
+    glS: { value: 1 },
     t: { value: 0 },
     S: { value: STRENGTH },
     off: { value: 0 },
@@ -345,6 +346,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
   let since = -1;
   /** seconds since the camera walked on through the doorway (-1: not yet) */
   let walk = -1;
+  let drift = 0; // 0 … 1 the glider's drift across into its path
   const walkOn = () => {
     if (walk < 0) walk = 0;
   };
@@ -373,28 +375,38 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     // upload the glider's current frame every time: three's video-frame callback does not reliably fire
     // for this video once it starts playing from a pause, and then the flight froze on its first frame
     if (ready) GL.needsUpdate = true;
-    const g = Math.min(Math.max(since, 0) / DRIFT.time, 1);
-    u.glX.value = DRIFT.x * (1 - g * g * (3 - 2 * g));
+    // the drift finishes early once it comes at us, so it arrives dead ahead
+    drift = Math.min(1, Math.max(drift, Math.max(since, 0) / DRIFT.time) + (rushing ? step * 2.2 : 0));
+    u.glX.value = DRIFT.x * (1 - drift * drift * (3 - 2 * drift));
+    const left = (glider.duration || 2.5) - glider.currentTime;
+    const end = Math.min(1, Math.max(0, (0.5 - left) / 0.5));
+    u.glS.value = 1 + 0.24 * end * end;
     // speeding up smoothly from the gentle glide to the rush at us
     if (rushing && glider.playbackRate < 1) glider.playbackRate = Math.min(1, glider.playbackRate + step * 1.6);
     // if the door takes longer than usual (a slow device), the glider slows almost to a hover rather
     // than reaching us before we are through
     if (!rushing && flying && glider.currentTime > 1.0 && glider.playbackRate > 0.12) glider.playbackRate = 0.12;
-    if (landed && glider.duration && glider.currentTime >= glider.duration - END_EARLY) {
+    renderer.render(scene, camera);
+    // only once the clip has really ended is its last frame (the canopy over everything) on screen:
+    // its clock reaches the end a little before the picture does
+    if (landed && glider.ended) {
       landed();
       landed = null;
     }
-    renderer.render(scene, camera);
   };
 
-  /** the frame on screen now, copied to a plain canvas (for laying over the next page while it loads) */
+  /** the frame on screen now, as a picture (for laying over the next page while it loads) */
   const snapshot = () => {
     renderer.render(scene, camera);
     const c = document.createElement("canvas");
     c.width = Math.max(1, Math.round(canvas.width / 2));
     c.height = Math.max(1, Math.round(canvas.height / 2));
     c.getContext("2d")?.drawImage(canvas, 0, 0, c.width, c.height);
-    return c;
+    // as a plain picture: a copied canvas laid over another page did not always show
+    const img = new Image();
+    img.alt = "";
+    img.src = c.toDataURL("image/jpeg", 0.9);
+    return img;
   };
 
   return {
@@ -412,6 +424,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
       landed = null;
       since = 0;
       walk = -1;
+      drift = 0;
     },
     dispose: () => {
       window.removeEventListener("pointerdown", play);

@@ -2,16 +2,16 @@
  * The hand-over from the camp to Home (ARPIT, 2026-11-18: "transitions to the home page cleanly"). When
  * the paraglider's canopy covers the screen, the camp copies that frame here and moves on to /home; the
  * frame stays laid over everything (components/handover/Handover.tsx) until Home's pictures are ready,
- * then the canopy sweeps up over our heads and away, uncovering Home with no blank or dark frame and
- * no cross-fade (ARPIT found the fade cheap).
+ * then the canopy lifts away over our heads, uncovering Home with no blank or dark frame and no
+ * cross-fade (ARPIT found the fade cheap).
  */
-type Shot = { frame: HTMLCanvasElement; ready: Promise<unknown> };
+type Shot = { frame: HTMLImageElement; ready: Promise<unknown> };
 
 let shot: Shot | null = null;
 const subs = new Set<() => void>();
 
 export const handover = {
-  show(frame: HTMLCanvasElement, ready: Promise<unknown>) {
+  show(frame: HTMLImageElement, ready: Promise<unknown>) {
     shot = { frame, ready };
     subs.forEach((f) => f());
   },
