@@ -9,10 +9,14 @@ import * as THREE from "three";
  * Files in public/camp: sunset.webp (the picture), sunset-bg.webp (tree and flags removed),
  * sunset-rig.png (R = place along the string, G = tree, B = flags, A = how far below the string),
  * sunset-sky.webp (RGB = cloud detail + 128, A = where clouds may move).
+ * Character 1, the guitar group (approved 2026-11-18): guitar-group.mp4 is ARPIT's green-screen video,
+ * cut out and looped forward then back; the top half is colour and the bottom half its cut-out mask.
  */
 const STRENGTH = 1.6; // Soft 0.6, Medium 1, Strong 1.6
 const PICTURE = { w: 1670, h: 941 };
 const TALL_FOCUS = 0.08; // on tall screens keep the sign in view, like the still (object-position 8%)
+// where the guitar group video sits, in picture px, and how its frame is split (colour above, mask below)
+const GROUP = { x: 60, y: 600, w: 710, h: 341, colour: 682 / 1376, mask: 688 / 1376 };
 
 const vertex = /* glsl */ `
 attribute vec3 position;
@@ -28,8 +32,9 @@ void main() {
 const fragment = /* glsl */ `
 precision highp float;
 varying vec2 v;
-uniform sampler2D P, B, R, D;
-uniform float t, S, off;
+uniform sampler2D P, B, R, D, GV;
+uniform float t, S, off, gvOn;
+const vec4 GBOX = vec4(${GROUP.x}.0, ${GROUP.y}.0, ${GROUP.w}.0, ${GROUP.h}.0);
 const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
 
 // the tree turns a touch around its trunk; branches further out follow a moment later
@@ -68,6 +73,14 @@ void main() {
   vec2 uf = (p - flagD(rg.r, rg.a)) / SZ;
   col = mix(col, texture2D(P, uf).rgb, texture2D(R, uf).b);
 
+  // the guitar group, in front of everything
+  vec2 gq = (p - GBOX.xy) / GBOX.zw;
+  if (gvOn > 0.5 && gq.x > 0.0 && gq.y > 0.0 && gq.x < 1.0 && gq.y < 1.0) {
+    vec3 gc = texture2D(GV, vec2(gq.x, gq.y * ${GROUP.colour})).rgb;
+    float ga = texture2D(GV, vec2(gq.x, ${GROUP.mask} + gq.y * ${GROUP.colour})).r;
+    col = mix(col, gc, ga);
+  }
+
   gl_FragColor = vec4(col, 1.0);
 }`;
 
@@ -99,11 +112,31 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     load("/camp/sunset-sky.webp", true),
   ]);
 
+  // the guitar group plays as a muted looping video
+  const video = document.createElement("video");
+  video.src = "/camp/guitar-group.mp4";
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  video.preload = "auto";
+  const GV = keep(new THREE.VideoTexture(video));
+  GV.flipY = false;
+  GV.colorSpace = THREE.NoColorSpace;
+  GV.generateMipmaps = false;
+  GV.minFilter = THREE.LinearFilter;
+  const play = () => void video.play().catch(() => {});
+  play();
+  // some phones refuse to start a video until the page is touched
+  window.addEventListener("pointerdown", play, { once: true });
+
   const u = {
     P: { value: P },
     B: { value: B },
     R: { value: R },
     D: { value: D },
+    GV: { value: GV },
+    gvOn: { value: 0 },
     t: { value: 0 },
     S: { value: STRENGTH },
     off: { value: 0 },
@@ -147,12 +180,17 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
     const step = Math.min(dt, 0.1);
     u.t.value += step;
     u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
+    u.gvOn.value = video.readyState >= 2 ? 1 : 0;
     renderer.render(scene, camera);
   };
 
   return {
     render,
     dispose: () => {
+      window.removeEventListener("pointerdown", play);
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
       trash.forEach((d) => d.dispose());
       renderer.dispose();
     },

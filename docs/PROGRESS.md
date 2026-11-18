@@ -14,6 +14,17 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: camp character 1, the guitar group
+
+ARPIT approved ("yes") the guitar group from their own green-screen video. It sits in the camp where the reference picture shows it: the guitarist, the friend in the beanie, the friend with his back to us, the friend in the cap, the dog, the blanket and the bag.
+- `public/camp/guitar-group.mp4` (1420x1376, 15.75 s, muted) holds the colour on top and the cut-out mask below; it plays forward then backward so the loop never jumps.
+- `campScene.ts` draws it in front of the camp from a `VideoTexture` (`GROUP` gives its box in picture px). The video's own lantern was removed, so the camp's lantern shows. Phones that refuse to start a video start it on the first touch.
+- How the clip was made: the first videos had the tent behind the guitarist, which made his outline flicker; the clean one was made from `G1-green-start.png` (project files `camp-reference/`), the group alone on flat green.
+
+Tests: lint and typecheck clean; unit 101 of 101; e2e entry, sweep and the camp check (one worker): 36 of 36 passed.
+Known issues: the still picture (no 3D, reduced motion) has no group yet.
+Next: character 2, the woman meditating on the yoga mat.
+
 ## 2026-11-18: unused entry files deleted
 
 ARPIT approved deleting them ("delete"): `features/entry/grounding.ts`, `public/entry/meadow.webp`, `meadow-motion.png`, `doorframe-wood.webp` and `door-leaf-wood.webp`. The meadow scene now loads the clouds frame and door, which stay hidden there. Nothing on the site changes.
