@@ -2,85 +2,100 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { canUse3D } from "@/features/journey/world/support";
+import { handover, preloadHome } from "./handover";
 import s from "./camp.module.css";
 
 type Scene = Awaited<ReturnType<typeof import("./campScene").createCampScene>>;
 
+/** After the door has gone, the camp is alive for this long before the paraglider starts its flight. */
+const BEFORE_FLIGHT = 0.35;
+/** Without 3D the still camp shows this long, then Home. */
+const STILL_FOR = 2500;
+
 /**
  * Where the door opens to (ARPIT, 2026-11-18): their sunset hilltop camp over the valley, with the
- * Vibers Club sign, the tent, the lanterns and the seats, built up one step at a time. The trees and
- * flags move, the Vibers in ARPIT's reference picture sit in the camp as cut-out videos, and a
- * paraglider waits in the sky (campScene.ts). Take off flies it at us until its canopy covers the
- * screen, then the club Home opens. The still picture shows first, and stays when 3D is off or motion
- * is reduced; then Take off goes straight to Home.
+ * Vibers Club sign, the tent, the lanterns and the seats. The trees and flags move, the Vibers in
+ * ARPIT's reference picture sit in the camp as cut-out videos, and a paraglider waits in the sky
+ * (campScene.ts). As the door begins to open the camp comes alive; once the door has gone the
+ * paraglider flies at us by itself (ARPIT: no Take off button) until its canopy covers the screen,
+ * and Home appears from behind it (handover.ts). Without 3D, or with reduced motion, the still picture
+ * shows for a moment and then Home.
  */
 export function Camp() {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const root = useRef<HTMLElement>(null);
-  const scene = useRef<Scene | null>(null);
   const router = useRouter();
-  const [live, setLive] = useState(false);
-  const [flying, setFlying] = useState(false);
-  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
+    router.prefetch("/home");
     const el = canvas.current;
-    const host = root.current;
-    if (!el || !host || !canUse3D()) return;
+    if (!el || !canUse3D()) {
+      const t = window.setTimeout(() => router.push("/home"), STILL_FOR);
+      return () => window.clearTimeout(t);
+    }
+    let scene: Scene | null = null;
     let frame = 0;
     let last = 0;
     let gone = false;
+    let clear = -1; // seconds since the door went
+    let phase: "waiting" | "flying" | "left" = "waiting";
+    let sawDoor = false; // the flight follows the door opening, never on its own
+    const homeReady = preloadHome();
+
+    const fly = async () => {
+      phase = "flying";
+      await scene?.takeOff();
+      if (gone || !scene) return;
+      // the canopy covers the screen: lay this frame over everything and move on to Home underneath
+      handover.show(scene.snapshot(), homeReady);
+      phase = "left";
+      router.push("/home");
+      // pages stay mounted after leaving them: put the camp back as it was for next time
+      window.setTimeout(() => {
+        scene?.reset();
+        phase = "waiting";
+        sawDoor = false;
+        clear = -1;
+      }, 1500);
+    };
+
     const loop = (now: number) => {
       const dt = last ? Math.min(now - last, 50) / 1000 : 0;
       last = now;
-      // while the door is still shut on top, the camp is hidden: skip it; while it opens, only the
-      // doorway shows the camp, so draw it at half resolution and leave the door its frames
       const entry = document.querySelector<HTMLElement>("[data-entry]");
-      if (!entry) scene.current?.render(dt);
-      else if (entry.dataset.state === "going") scene.current?.render(dt, 0.5);
+      if (!entry) {
+        scene?.wake();
+        scene?.render(dt);
+        clear = clear < 0 ? 0 : clear + dt;
+        if (phase === "waiting" && sawDoor && clear >= BEFORE_FLIGHT) void fly();
+      } else if (entry.dataset.state === "going") {
+        // the door is opening: the camp shows through the doorway, alive from the first moment
+        sawDoor = true;
+        scene?.wake();
+        scene?.render(dt);
+      }
       frame = requestAnimationFrame(loop);
     };
     import("./campScene")
       .then(({ createCampScene }) => createCampScene(el))
       .then((sc) => {
         if (gone) return sc.dispose();
-        scene.current = sc;
+        scene = sc;
+        el.dataset.live = "";
         frame = requestAnimationFrame(loop);
-        setLive(true);
       })
-      .catch(() => setLive(false));
+      .catch(() => {});
     return () => {
       gone = true;
       cancelAnimationFrame(frame);
-      scene.current?.dispose();
-      scene.current = null;
+      scene?.dispose();
+      scene = null;
     };
-  }, []);
-
-  // pages stay mounted after leaving them, so put the camp back as it was when it is shown again
-  useEffect(() => {
-    if (!leaving) return;
-    const t = window.setTimeout(() => {
-      scene.current?.reset();
-      setFlying(false);
-      setLeaving(false);
-    }, 1500);
-    return () => window.clearTimeout(t);
-  }, [leaving]);
-
-  const takeOff = async () => {
-    if (flying) return;
-    setFlying(true);
-    await scene.current?.takeOff();
-    setLeaving(true);
-    // the page fades in over the canopy, then Home opens
-    window.setTimeout(() => router.push("/home"), 700);
-  };
+  }, [router]);
 
   return (
-    <section ref={root} className={s.camp} aria-label="Vibers Club camp" data-live={live || undefined}>
+    <section className={s.camp} aria-label="Vibers Club camp">
       <h1 className={s.title}>Vibers Club</h1>
       <Image
         className={s.picture}
@@ -91,10 +106,6 @@ export function Camp() {
         sizes="100vw"
       />
       <canvas ref={canvas} className={s.canvas} aria-hidden="true" />
-      <button type="button" className={s.takeOff} onClick={takeOff} hidden={flying}>
-        Take off
-      </button>
-      <div className={s.veil} data-on={leaving || undefined} aria-hidden="true" />
     </section>
   );
 }

@@ -50,11 +50,19 @@ export async function loadMeadowLayers(loader: THREE.TextureLoader, keep: <T ext
   return { bg, rig, sky, flowers };
 }
 
-export function layerPicture(material: THREE.MeshBasicMaterial, layers: MeadowLayers, uT: { value: number }, uOff: { value: number }) {
+export function layerPicture(
+  material: THREE.MeshBasicMaterial,
+  layers: MeadowLayers,
+  uT: { value: number },
+  uOff: { value: number },
+  /** the push through the door: near things (the grass, the daisies, the branch) swell past faster than the far mountains */
+  uPush: { value: number } = { value: 0 },
+) {
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, {
       uT,
       uOff,
+      uPush,
       uS: { value: MEADOW_STRENGTH },
       uB: { value: layers.bg },
       uR: { value: layers.rig },
@@ -66,7 +74,13 @@ export function layerPicture(material: THREE.MeshBasicMaterial, layers: MeadowLa
       .replace(
         "#include <common>",
         /* glsl */ `#include <common>
-uniform float uT, uOff, uS;
+uniform float uT, uOff, uS, uPush;
+// depth for the push: the meadow in front and the branch overhead are near, the door's own patch stays put
+float nearness(vec2 p) {
+  float n = max(smoothstep(560.0, 941.0, p.y), 1.0 - smoothstep(0.0, 560.0, length((p - vec2(110.0, 40.0)) * vec2(0.75, 1.25))));
+  vec2 d = max(abs(p - vec2(995.0, 524.0)) - vec2(150.0, 300.0), 0.0);
+  return n * smoothstep(0.0, 110.0, length(d));
+}
 uniform sampler2D uB, uR, uD, uF;
 uniform vec4 uFL[9];
 const vec2 SZ = vec2(1671.0, 941.0);
@@ -92,6 +106,8 @@ vec2 fieldD(vec2 p, float w) {
         /* glsl */ `
         vec2 uv = vec2(vMapUv.x, 1.0 - vMapUv.y);
         vec2 p = uv * SZ;
+        p = vec2(995.0, 524.0) + (p - vec2(995.0, 524.0)) / (1.0 + uPush * uPush * 0.55 * nearness(p));
+        uv = p / SZ;
         vec4 rg = texture2D(uR, uv);
         vec3 col = texture2D(uB, (p - fieldD(p, rg.a)) / SZ).rgb;
         // clouds: swap the fine detail here for detail drifted in from the side (mirrored so it never runs out)

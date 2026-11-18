@@ -128,13 +128,17 @@ export function EntryDoor({
     });
     if (hint.current) tl.to(hint.current, { autoAlpha: 0, y: 8, duration: 0.4, ease: "power2.in" }, 0);
     if (unveil.current) tl.to(unveil.current, { autoAlpha: 0, duration: 0.35, ease: "power2.in" }, 0.05);
+    // the latch gives first (a small pop and a breath), then the heavy door swings out, light pouring
+    // through the widening gap, while the camera has already begun to drift in; it gathers speed and
+    // carries us through the doorway into the camp
     tl.to(p, { sign: 1, duration: 0.5, ease: "power2.out" }, 0.1)
-      .to(p, { door: 1, duration: 1.2, ease: "power2.inOut" }, 0.6)
+      .to(p, { door: 0.035, duration: 0.16, ease: "power2.out" }, 0.15)
+      .to(p, { door: 1, duration: 1.45, ease: "power3.inOut" }, 0.45)
+      .to(p, { light: 1, duration: 1.1, ease: "power2.out" }, 0.4)
       .to(p, { life: 0.4, duration: 1.0, ease: "none" }, 0.6)
-      // the push straight in, gathering speed smoothly as the door finishes opening
-      .to(p, { push: 1, duration: 1.15, ease: "power2.in" }, 1.5)
-      // over the last steps through the doorway the door and the clouds dissolve softly into Home
-      .to(root.current, { autoAlpha: 0, duration: 0.22, ease: "power1.in" }, 2.45);
+      .to(p, { push: 1, duration: 2.05, ease: "power3.in" }, 0.7)
+      // over the last steps through the doorway the door and the meadow dissolve softly into the camp
+      .to(root.current, { autoAlpha: 0, duration: 0.2, ease: "power1.in" }, 2.55);
     running.current = tl;
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __entryTimeline: tl });
   }, []);

@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EntryDoor } from "./EntryDoor";
 
-/** The review address: the door over Home every time, until it has opened. Trying the meadow backdrop. */
+/**
+ * The door over the camp, until it has opened. Pages stay mounted after leaving them, so coming back
+ * (the effect runs again when the page shows) puts the door back, closed.
+ */
 export function EntryDemo() {
   const [open, setOpen] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- back to the closed door each time the page shows again
+  useEffect(() => setOpen(false), []);
   return open ? null : <EntryDoor backdrop="meadow" alive onDone={() => setOpen(true)} />;
 }

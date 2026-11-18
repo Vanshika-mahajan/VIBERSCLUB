@@ -4,6 +4,7 @@ import "@fontsource-variable/syne";
 import "@fontsource-variable/fraunces";
 import "@fontsource-variable/manrope";
 import { AppNav } from "@/components/AppNav";
+import { Handover } from "@/components/handover/Handover";
 import { SoundEffects } from "@/components/SoundEffects";
 import { Toaster } from "@/components/ui";
 import "./globals.css";
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <Toaster />
+        <Handover />
       </body>
     </html>
   );
