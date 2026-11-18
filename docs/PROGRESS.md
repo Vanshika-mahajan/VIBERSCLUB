@@ -14,6 +14,12 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: `/` opens onto the camp
+
+ARPIT: "push the scenery after the door opens". `/` now shows the moving meadow door over the moving sunset camp (`app/page.tsx`: `Camp` + the door), so the door opens onto the camp instead of Home. Home is unchanged at `/home` (the handoff code in `features/entry` stays, unused by `/`). e2e/entry.spec now checks the door opens onto the camp.
+
+Tests: lint and typecheck clean; e2e entry, sweep and home: 48 passed, 2 failed ("API OK", needs the backend).
+
 ## 2026-11-18: camp step 2, the scenery moves like Temple Night (review page only)
 
 ARPIT: first the movements that make the camp realistic, after ThreeUI's Temple Night. Its source is read from the installed `@designcodeio/threeui` package (threeui.com is blocked here; the package itself needs three below 0.152). `features/camp/campScene.ts` draws the camp picture in three.js with Temple Night's motions, at `/camp-demo`; the still picture shows first and stays without 3D.

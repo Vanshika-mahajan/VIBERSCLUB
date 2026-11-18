@@ -1,6 +1,15 @@
-import { EntryStart } from "@/features/entry/EntryStart";
+import { Camp } from "@/features/camp/Camp";
+import { EntryDemo } from "@/features/entry/EntryDemo";
 
-/** The first page: on to Home, where the door in the clouds opens onto it (features/entry). */
+/**
+ * The first page: the door in ARPIT's meadow opens onto their sunset camp (features/camp), which is
+ * built up step by step. Home is at /home.
+ */
 export default function FirstPage() {
-  return <EntryStart />;
+  return (
+    <>
+      <Camp />
+      <EntryDemo />
+    </>
+  );
 }
