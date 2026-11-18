@@ -14,6 +14,12 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: unused entry files deleted
+
+ARPIT approved deleting them ("delete"): `features/entry/grounding.ts`, `public/entry/meadow.webp`, `meadow-motion.png`, `doorframe-wood.webp` and `door-leaf-wood.webp`. The meadow scene now loads the clouds frame and door, which stay hidden there. Nothing on the site changes.
+
+Tests: lint and typecheck clean; e2e entry, sweep and the camp check (one worker): 36 of 36 passed.
+
 ## 2026-11-18: ARPIT's door painted into the meadow, wrapped in vines
 
 ARPIT: "the door still looks out of the place and cheap". They chose to paint the door into the picture, with vines ("we can decorate the door with vines"), and sent the painting. Photos were approved with "yes".
@@ -22,7 +28,7 @@ ARPIT: "the door still looks out of the place and cheap". They chose to paint th
 - The moving layers were rebuilt on the painting. The door, frame and vines stay still.
 - `EntryDoor.tsx`: Enter now works the moment the door is ready (a ref, not a re-registered listener), which fixes the e2e Enter timing flake.
 
-Unused now, kept until ARPIT OKs deleting them: `features/entry/grounding.ts`, `public/entry/meadow.webp`, `meadow-motion.png`, `doorframe-wood.webp`, `door-leaf-wood.webp`.
+Those unused files were deleted later the same day, with ARPIT's OK.
 
 Tests: lint and typecheck clean. e2e entry, sweep and the camp check (one worker) gave 35 passed and 1 Enter timeout. After the Enter fix, entry and the camp check gave 10 of 10 passed.
 

@@ -193,8 +193,9 @@ export async function createEntryScene(
     return t;
   };
   const [frameTex, leafTex, meadowTex] = await Promise.all([
-    picture(backdrop === "meadow" ? "/entry/doorframe-wood.webp" : "/entry/doorframe.webp"),
-    picture(backdrop === "meadow" ? "/entry/door-leaf-wood.webp" : "/intro/door-leaf.webp"),
+    // (in the meadow these stay hidden: its door is painted into the picture)
+    picture("/entry/doorframe.webp"),
+    picture("/intro/door-leaf.webp"),
     backdrop === "meadow" ? picture("/entry/meadow-door.webp") : Promise.resolve(null),
   ]);
   const alive = backdrop === "meadow" && !!opts.alive;
