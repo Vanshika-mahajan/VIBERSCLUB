@@ -14,6 +14,16 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-18: demo, the door in ARPIT's mountain meadow (review page only)
+
+ARPIT sent their "A World Awaits" meadow picture: "this needs to be the background of the door". Shown at `/entry-demo` only; `/` (checkpoint 5) keeps the clouds until ARPIT approves.
+- `public/entry/meadow.webp` (their picture, headline and button included) fills the view behind the door like a photograph; no clouds.
+- The door stands on the stone path between the backpack and the skateboard, placed so its foot lines up with the path from the camera, at any screen shape. On phones the picture slides to keep the door in the middle (the headline is off to the left there).
+- The "Tap the door" hint is hidden; the picture carries its own invitation. A tap anywhere still opens the door.
+- `createEntryScene(canvas, params, backdrop)`, `<EntryDoor backdrop="meadow">`.
+
+Tests: lint and typecheck clean; e2e entry (clouds at `/`) and the `/entry-demo` check passed on phone and desktop.
+
 ## 2026-11-18: a smooth hand-over from the door to Home
 
 ARPIT: "the transition is not smooth". The jump from `/` to `/home` at the very end was the cause. Now `/` moves to `/home` on its first frame (showing the door's sky meanwhile) with an in-memory flag (`features/entry/handoff.ts`), and `EntryOnHome` lays the door over the real Home there, so there is no change of page at the end. A fresh visit or reload of `/home` never sees the door. The push now gathers speed more gently (power2.in, 1.15 s), and the door and clouds dissolve into Home over the last steps through the doorway.

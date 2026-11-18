@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/motion/gsap";
 import { canUse3D } from "@/features/journey/world/support";
-import { createEntryScene, initialEntryParams } from "./scene";
+import { createEntryScene, initialEntryParams, type EntryBackdrop } from "./scene";
 import s from "./entry.module.css";
 
 /**
@@ -22,7 +22,7 @@ import s from "./entry.module.css";
  *
  * Without WebGL, or with reduced motion, there is no entry: Home shows straight away.
  */
-export function EntryDoor({ onDone }: { onDone: () => void }) {
+export function EntryDoor({ onDone, backdrop = "clouds" }: { onDone: () => void; backdrop?: EntryBackdrop }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const root = useRef<HTMLDivElement>(null);
   const hint = useRef<HTMLDivElement>(null);
@@ -42,7 +42,7 @@ export function EntryDoor({ onDone }: { onDone: () => void }) {
     let scene: Awaited<ReturnType<typeof createEntryScene>> | null = null;
     let cancelled = false;
     const tick = (_t: number, delta: number) => scene?.render(Math.min(delta, 50) / 1000);
-    createEntryScene(canvas.current, params.current).then((sc) => {
+    createEntryScene(canvas.current, params.current, backdrop).then((sc) => {
       if (cancelled) return sc.dispose();
       scene = sc;
       gsap.ticker.add(tick);
@@ -55,7 +55,7 @@ export function EntryDoor({ onDone }: { onDone: () => void }) {
       running.current?.kill();
       scene?.dispose();
     };
-  }, []);
+  }, [backdrop]);
 
   // while the entry is up, the page under it does not scroll
   useEffect(() => {
@@ -102,7 +102,8 @@ export function EntryDoor({ onDone }: { onDone: () => void }) {
     <div ref={root} className={s.entry} data-state={state} data-entry>
       <canvas ref={canvas} className={s.canvas} aria-hidden="true" />
       <button type="button" className={s.door} onClick={enter} disabled={state !== "ready"} aria-label="Open the door to Vibers Club" />
-      <div ref={hint} className={s.hint} aria-hidden="true">
+      {/* the meadow picture carries its own invitation ("Unveil What Awaits"), so no hint over it */}
+      <div ref={hint} className={s.hint} aria-hidden="true" hidden={backdrop === "meadow"}>
         Tap the door to enter
       </div>
     </div>

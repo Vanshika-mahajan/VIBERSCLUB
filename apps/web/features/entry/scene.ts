@@ -145,7 +145,17 @@ const SKY_FRAG = /* glsl */ `
   }
 `;
 
-export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryParams) {
+/**
+ * Where the door stands. "clouds": floating in a golden sky. "meadow": ARPIT's mountain meadow picture
+ * behind it, the door standing on the stone path (MEADOW_SPOT).
+ */
+export type EntryBackdrop = "clouds" | "meadow";
+// the meadow picture is 1671 x 941; the door's foot stands here on the path, as fractions of it
+const MEADOW_PX = { w: 1671, h: 941 };
+const MEADOW_SPOT = { u: 1010 / 1671, v: 800 / 941 };
+const MEADOW_Z = -14; // the picture stands this far behind the door
+
+export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryParams, backdrop: EntryBackdrop = "clouds") {
   await document.fonts?.ready;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: true });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -163,7 +173,15 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     t.anisotropy = renderer.capabilities.getMaxAnisotropy();
     return t;
   };
-  const [frameTex, leafTex] = await Promise.all([picture("/entry/doorframe.webp"), picture("/intro/door-leaf.webp")]);
+  const [frameTex, leafTex, meadowTex] = await Promise.all([
+    picture("/entry/doorframe.webp"),
+    picture("/intro/door-leaf.webp"),
+    backdrop === "meadow" ? picture("/entry/meadow.webp") : Promise.resolve(null),
+  ]);
+  const meadow = backdrop === "meadow";
+  // everything that makes the door: moved as one onto its spot in the picture (meadow), else at the origin
+  const doorGroup = new THREE.Group();
+  scene.add(doorGroup);
 
   // ---- light: a low warm sun from the left, a soft sky fill
   scene.add(new THREE.HemisphereLight(0xfff1dd, 0x8a5a3c, 1.1));
@@ -186,6 +204,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   );
   sky.position.set(0, 30, -160);
   sky.renderOrder = -10;
+  sky.visible = !meadow;
   scene.add(sky);
 
   // ---- clouds: far banks, a ring round the arch, and low puffs in front over the steps
@@ -209,6 +228,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
         toneMapped: false,
       }),
     );
+    if (meadow) return;
     const m = new THREE.Mesh(cloudGeo, mat);
     m.scale.set(size * (rand() > 0.5 ? 1 : -1), size, 1);
     m.position.set(x, y, z);
@@ -235,7 +255,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   );
   frame.position.set((FRAME_PX.w / 2) * PX - OPEN_X, (FRAME_PX.open.b - FRAME_PX.h / 2) * PX, 0);
   frame.renderOrder = 5;
-  scene.add(frame);
+  doorGroup.add(frame);
 
   // ---- the doorway itself: where the canvas turns transparent, showing the site underneath
   const doorwayZ = -0.01;
@@ -253,7 +273,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   );
   portal.position.set(0, DOOR_Y + DOOR_H / 2, doorwayZ);
   portal.renderOrder = 10;
-  scene.add(portal);
+  doorGroup.add(portal);
 
   // ---- the sign over the door, standing on the head of the frame
   const signTex = keep(signTexture());
@@ -275,7 +295,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   const frameTop = (FRAME_PX.open.b - 66) * PX; // the top of the head, in the picture
   sign.position.set(0, frameTop + 0.5, 0.02);
   sign.renderOrder = 12;
-  scene.add(sign);
+  doorGroup.add(sign);
   // its glow in the air round it when lit
   const glowTex = keep(
     canvasTex(256, 256, (g) => {
@@ -295,10 +315,10 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   );
   glow.position.set(0, sign.position.y, sign.position.z - 0.01);
   glow.renderOrder = 11;
-  scene.add(glow);
+  doorGroup.add(glow);
   const signLight = new THREE.PointLight(0xffb060, 0, 6, 1.6);
   signLight.position.set(0, sign.position.y - 0.2, sign.position.z + 0.8);
-  scene.add(signLight);
+  doorGroup.add(signLight);
 
   // ---- ARPIT's door, hinged on the left (where its hinges are drawn), swinging outward toward us
   const leafMat = keep(new THREE.MeshBasicMaterial({ map: leafTex, toneMapped: false }));
@@ -309,7 +329,38 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
   slab.position.set(DOOR.w / 2, DOOR.h / 2, 0);
   slab.renderOrder = 15;
   hinge.add(slab);
-  scene.add(hinge);
+  doorGroup.add(hinge);
+
+  // ---- the meadow picture: a plane far behind, covering the view like a photograph (laid out in resize)
+  const meadowPlane = meadowTex
+    ? new THREE.Mesh(keep(new THREE.PlaneGeometry(1, 1)), keep(new THREE.MeshBasicMaterial({ map: meadowTex, depthWrite: false, toneMapped: false })))
+    : null;
+  if (meadowPlane) {
+    meadowPlane.position.z = MEADOW_Z;
+    meadowPlane.renderOrder = -10;
+    scene.add(meadowPlane);
+  }
+  // the camera stands back further on narrow screens, so the doorframe still fits
+  const startZFor = (aspect: number) => (aspect < 1 ? CAM.z * (1.25 / Math.max(0.45, aspect)) * 0.62 : CAM.z);
+  const layoutMeadow = () => {
+    if (!meadowPlane) return;
+    const d0 = startZFor(camera.aspect); // camera to the door
+    const D = d0 - MEADOW_Z; // camera to the picture
+    const vh = 2 * D * Math.tan(THREE.MathUtils.degToRad(CAM.fov / 2)) * 1.04; // a little extra for the breathing
+    const vw = vh * camera.aspect;
+    const img = MEADOW_PX.w / MEADOW_PX.h;
+    const W = Math.max(vw, vh * img);
+    const H = W / img;
+    meadowPlane.scale.set(W, H, 1);
+    // slide the picture to bring the door's spot toward the middle, as far as it still covers the view
+    const spare = (W - vw) / 2;
+    const px = THREE.MathUtils.clamp(-(MEADOW_SPOT.u - 0.5) * W, -spare, spare);
+    meadowPlane.position.set(px, CAM.y, MEADOW_Z);
+    // the spot on the picture, and where the door must stand so its foot lines up with it from the camera
+    const sx = px + (MEADOW_SPOT.u - 0.5) * W;
+    const sy = CAM.y + (0.5 - MEADOW_SPOT.v) * H;
+    doorGroup.position.set((sx * d0) / D, CAM.y + ((sy - CAM.y) * d0) / D, 0);
+  };
 
   // ---- sizing
   let w = 1,
@@ -323,6 +374,7 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+    layoutMeadow();
   };
 
   let time = 0;
@@ -345,16 +397,17 @@ export async function createEntryScene(canvas: HTMLCanvasElement, params: EntryP
     leafMat.color.setScalar(1 - 0.35 * Math.sin(Math.PI * 0.5 * p.door));
     // the camera: a slow breath while waiting, then straight in through the doorway; it sits on narrow
     // screens further back so the doorframe still fits
-    const portrait = camera.aspect < 1;
-    const startZ = portrait ? CAM.z * (1.25 / Math.max(0.45, camera.aspect)) * 0.62 : CAM.z;
+    const startZ = startZFor(camera.aspect);
+    const dx = doorGroup.position.x + DOORWAY.x;
+    const dy = doorGroup.position.y + DOORWAY.y;
     const breathe = (1 - p.push) * p.life;
     // ending just short of the doorway, where the opening overfills the screen (all transparent)
     const endZ = doorwayZ + 0.12;
     const z = startZ + (endZ - startZ) * p.push;
     const k = (z - doorwayZ) / (startZ - doorwayZ);
     camera.position.set(
-      DOORWAY.x + (CAM.x - DOORWAY.x) * k + Math.sin(time * 0.23) * 0.12 * breathe,
-      DOORWAY.y + (CAM.y - DOORWAY.y) * k + Math.sin(time * 0.31) * 0.06 * breathe,
+      dx + (CAM.x - dx) * k + Math.sin(time * 0.23) * 0.12 * breathe,
+      dy + (CAM.y - dy) * k + Math.sin(time * 0.31) * 0.06 * breathe,
       z,
     );
     camera.fov = CAM.fov + 8 * p.push * p.push;
