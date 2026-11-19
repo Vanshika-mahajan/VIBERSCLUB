@@ -1,0 +1,88 @@
+/* The Earth on its own, full screen, above the site header and contents. */
+.entry {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  background: #0b0716;
+}
+
+.canvas,
+.still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.canvas {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.canvas[data-live] {
+  opacity: 1;
+}
+
+.canvas:active {
+  cursor: grabbing;
+}
+
+.still {
+  object-fit: contain;
+}
+
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* behind the door on the first page, as the camp was */
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: #05040b;
+}
+
+/* the place name under Manali, as the journey showed it (journey/discovery.module.css) */
+.place {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 24px);
+  transform: translateX(-50%);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px 7px 10px;
+  border-radius: 999px;
+  background: rgba(6, 10, 26, 0.5);
+  border: 1px solid rgba(231, 188, 105, 0.45);
+  backdrop-filter: blur(6px);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fbe7c2;
+  text-shadow: 0 0 18px rgba(231, 188, 105, 0.65);
+  opacity: 0;
+}
+
+.placeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffd9a0;
+  box-shadow:
+    0 0 0 4px rgba(255, 217, 160, 0.18),
+    0 0 16px 4px rgba(255, 196, 120, 0.7);
+}

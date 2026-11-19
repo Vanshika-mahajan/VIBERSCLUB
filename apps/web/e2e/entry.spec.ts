@@ -1,82 +1,73 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
- * The first page: ARPIT's entry film played with depth in three.js (features/film). The motion is
- * reviewed frame by frame; these check that the film starts from the button, Enter and a tap on the
- * picture, that the page is clean, and that with reduced motion the button goes straight to Home.
- * (The earlier door-and-camp entry, features/entry and features/camp, is kept but no longer routed.)
+ * The first page: the door in ARPIT's meadow opens onto the journey's Earth, which dives into Manali and
+ * hands over to Home (features/entry, features/earth). The motion is reviewed frame by frame; these
+ * check that the door opens by keyboard, tap and the Unveil button and the Earth leads on to Home, and
+ * that Home opens straight away when the entry cannot run.
  */
 test.beforeEach(async ({ page }) => {
   await page.route("**/images.pexels.com/**", (r) => r.abort());
 });
 
-const consoleErrors = (page: Page) => {
+// the Earth behind the door dives into Manali, then Home takes over
+const reachesHome = (page: import("@playwright/test").Page) => expect(page).toHaveURL(/\/home$/, { timeout: 150_000 });
+
+const consoleErrors = (page: import("@playwright/test").Page) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => {
-    if (
-      m.type() === "error" &&
-      !/Failed to load resource|ERR_FAILED|localhost:8000|ERR_CONNECTION_REFUSED/.test(
-        m.text(),
-      )
-    )
+    if (m.type() === "error" && !/Failed to load resource|ERR_FAILED|localhost:8000|ERR_CONNECTION_REFUSED/.test(m.text()))
       errors.push(m.text());
   });
   return errors;
 };
 
-const entry = (page: Page) => page.locator("[data-film]");
-const unveil = (page: Page) =>
-  page.getByRole("button", { name: "Unveil What Awaits" });
-
-test("the entry shows the title and the button, cleanly", async ({ page }) => {
-  test.setTimeout(90_000);
+test("the door opens onto the Earth with the keyboard", async ({ page }) => {
+  // software WebGL is slow on CI machines (about a frame a second with the Earth behind the door)
+  test.setTimeout(360_000);
   const errors = consoleErrors(page);
   await page.goto("/", { waitUntil: "load" });
-  await expect(
-    page.getByRole("heading", { level: 1, name: /A World Awaits/ }),
-  ).toBeVisible();
-  await expect(unveil(page)).toBeEnabled();
-  await expect(entry(page)).toHaveAttribute("data-state", "ready");
-  const axe = await new AxeBuilder({ page }).analyze();
-  expect(
-    axe.violations.filter(
-      (v) => v.impact === "serious" || v.impact === "critical",
-    ),
-  ).toEqual([]);
-  const wide = await page.evaluate(
-    () => document.documentElement.scrollWidth > window.innerWidth,
-  );
-  expect(wide).toBe(false);
+  await expect(page.locator('[data-entry][data-state="ready"]')).toBeAttached({ timeout: 60_000 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).include("[data-entry]").analyze();
+  expect(scan.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id)).toEqual([]);
+  // the scene and its loading are clean (checked before leaving: Home's own scroll loops throw once
+  // when any page with Home on it is left, a known issue of Home's, not of the entry)
   expect(errors).toEqual([]);
+  // the key listener catches up just after the door turns ready
+  await page.waitForTimeout(500);
+  await page.keyboard.press("Enter");
+  await expect(page.locator("[data-entry]")).toHaveCount(0, { timeout: 150_000 });
+  await reachesHome(page);
 });
 
-for (const how of ["button", "Enter", "tap"] as const) {
-  test(`the film starts from the ${how}`, async ({ page }) => {
-    test.setTimeout(90_000);
-    await page.goto("/?world=3d", { waitUntil: "load" });
-    await expect(unveil(page)).toBeEnabled();
-    if (how === "button") await unveil(page).click();
-    else if (how === "Enter") await page.keyboard.press("Enter");
-    else {
-      // the picture only takes taps once three.js has it on screen
-      await expect(page.locator("canvas[data-live]")).toBeAttached({
-        timeout: 60_000,
-      });
-      const box = page.viewportSize() ?? { width: 800, height: 600 };
-      await page.mouse.click(box.width * 0.75, box.height * 0.7);
-    }
-    await expect(entry(page)).toHaveAttribute("data-state", /playing|leaving/);
-    await expect(unveil(page)).toBeDisabled();
-  });
-}
-
-test("with reduced motion the button goes straight to Home", async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+test("a tap on the door opens it too", async ({ page }) => {
+  test.setTimeout(360_000);
   await page.goto("/", { waitUntil: "load" });
-  await unveil(page).click();
-  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.locator('[data-entry][data-state="ready"]')).toBeAttached({ timeout: 60_000 });
+  await page.getByRole("button", { name: "Open the door to Vibers Club" }).click();
+  await expect(page.locator("[data-entry]")).toHaveCount(0, { timeout: 150_000 });
+  await reachesHome(page);
+});
+
+test("the Unveil What Awaits button opens it", async ({ page }) => {
+  test.setTimeout(360_000);
+  await page.goto("/", { waitUntil: "load" });
+  await expect(page.locator('[data-entry][data-state="ready"]')).toBeAttached({ timeout: 60_000 });
+  const unveil = page.getByRole("button", { name: "Unveil What Awaits" });
+  await expect(unveil).toBeInViewport();
+  await unveil.click();
+  await expect(page.locator("[data-entry]")).toHaveCount(0, { timeout: 150_000 });
+  await reachesHome(page);
+});
+
+test.describe("reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+  test("goes straight to Home, with no entry", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("[data-entry]")).toHaveCount(0, { timeout: 20_000 });
+    await reachesHome(page);
+  });
 });

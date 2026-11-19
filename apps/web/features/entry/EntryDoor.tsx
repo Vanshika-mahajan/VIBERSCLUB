@@ -28,10 +28,13 @@ const MEADOW_BUTTON = { u: 381 / 1671, v: 600 / 941 };
  */
 export function EntryDoor({
   onDone,
+  onStart,
   backdrop = "clouds",
   alive = false,
 }: {
   onDone: () => void;
+  /** the moment the door is asked to open, inside the click (so sound may start there) */
+  onStart?: () => void;
   backdrop?: EntryBackdrop;
   /** the meadow's scenery moving, after Temple Night (scenery.ts) */
   alive?: boolean;
@@ -119,6 +122,7 @@ export function EntryDoor({
     if (!ready.current || started.current) return;
     started.current = true;
     setState("going");
+    onStart?.();
     const p = params.current;
     const tl = gsap.timeline({
       onComplete: () => {
@@ -141,7 +145,7 @@ export function EntryDoor({
       .to(root.current, { autoAlpha: 0, duration: 0.2, ease: "power1.in" }, 2.55);
     running.current = tl;
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __entryTimeline: tl });
-  }, []);
+  }, [onStart]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

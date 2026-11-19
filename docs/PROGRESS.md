@@ -14,6 +14,13 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-19 (evening): change of plan, the door opens onto the Earth
+
+- Why: the film entry froze in Safari on Mac and looked poor on phones; ARPIT changed the plan: "door needs to open to the earth then earth will transition to the home".
+- What changed: `/` is ARPIT's painted meadow door from checkpoint 7 (features/entry, unchanged apart from an optional `onStart` callback) over the journey's Earth (`features/earth`: `DoorToEarth`, `EarthStage`, `earthScene.ts`). The Earth is drawn exactly as the journey drew it (cosmos.ts starfield and galaxy band, the same bloom) and plays the journey's moves from timelines/discovery.ts: turning fast behind the door, slowing until Manali comes round, diving in as the valley lights with "Manali, India", then that frame lifts away into Home (the hand-over). ARPIT's door sound and nature loop play from the click. The film entry (features/film) is kept, unrouted.
+- Tests: lint clean, typecheck passes; e2e `entry.spec` (rewritten for door to Earth) 8/8 and `sweep.spec` 26/26. Software WebGL here runs at about a frame a second with the Earth's bloom, so the entry tests have long timeouts.
+- Known issues: not yet checked in Safari or on a real phone by ARPIT.
+
 ## 2026-11-19: the entry film with depth at /
 
 - What changed: `/` now plays ARPIT's own entry film (door in the sunset meadow, walk into the camp, the paraglider's canopy covering the screen) with per-frame depth in three.js (`features/film/FilmEntry.tsx`, `depthFilm.ts`). Before the click the first frame already moves with depth and drifting pollen, with "A World Awaits" and the brown "Unveil What Awaits" button. The button, Enter or a tap plays the film; its last frame hands over into `/home` with the canopy lift. Phones get a lighter 1280-wide file with the door centred. Without WebGL the film plays flat; with reduced motion the button goes straight to Home. The door-and-camp entry code is kept, unrouted. Review page `/film-demo`.

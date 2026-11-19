@@ -1,10 +1,10 @@
-import { FilmEntry } from "@/features/film/FilmEntry";
+import { DoorToEarth } from "@/features/earth/DoorToEarth";
 
 /**
- * The first page: ARPIT's film of the door in the sunset meadow opening onto the hilltop camp and the
- * paraglider, played with real depth in three.js (features/film). Home is at /home. The earlier door
- * and camp scenes (features/entry, features/camp) are kept, unused here, until ARPIT says they can go.
+ * The first page: ARPIT's vine-wrapped door in their painted meadow opens onto the journey's Earth,
+ * which dives into Manali and lifts away into Home (features/earth). Home is at /home. The film entry
+ * (features/film) and the camp (features/camp) are kept, unused here, until ARPIT says they can go.
  */
 export default function FirstPage() {
-  return <FilmEntry />;
+  return <DoorToEarth />;
 }
