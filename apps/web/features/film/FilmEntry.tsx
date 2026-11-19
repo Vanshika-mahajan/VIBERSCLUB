@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { canUse3D } from "@/features/journey/world/support";
 import { UnveilButton } from "@/features/intro/UnveilButton";
 import { handover, preloadHome } from "@/features/camp/handover";
+import { useJourneySound } from "@/features/journey/sound";
 import { FILM, type DepthFilm } from "./depthFilm";
 import s from "./film.module.css";
 
@@ -17,12 +18,15 @@ type State = "ready" | "playing" | "leaving";
  * with real depth (depthFilm.ts): before the click the first frame already lives, the near things
  * shifting against the far valley as the pointer moves, pollen drifting between them. "Unveil What
  * Awaits" (or Enter, or a tap on the picture) plays the film; on its last frame, the canopy, the
- * hand-over lifts it away into Home (handover.ts, components/handover/Handover.tsx). Without 3D the
- * same film plays flat; with reduced motion the still shows and the button goes straight to Home.
+ * hand-over lifts it away into Home (handover.ts, components/handover/Handover.tsx). The door
+ * sounds as it opens (ARPIT's own sound, public/film/door.mp3). Without 3D the same film plays flat; with reduced motion the still shows and the button goes straight to Home.
  */
 export function FilmEntry() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const video = useRef<HTMLVideoElement>(null);
+  const door = useRef<HTMLAudioElement>(null);
+  // the entry keeps the sound on/off the visitor chose before (on unless they ask for reduced motion)
+  const soundOn = useJourneySound();
   const film = useRef<DepthFilm | null>(null);
   const [state, setState] = useState<State>("ready");
   const [flat, setFlat] = useState(false);
@@ -119,6 +123,13 @@ export function FilmEntry() {
     setState("playing");
     v.currentTime = 0;
     void v.play().catch(() => router.push("/home"));
+    // the door sound starts with the film, inside the click, so the browser lets it play
+    const a = door.current;
+    if (a && soundOn) {
+      a.currentTime = 0;
+      a.volume = 0.85;
+      void a.play().catch(() => {});
+    }
   };
 
   // the canopy covers the screen on the film's last frame: lay that frame over everything and go Home
@@ -172,6 +183,7 @@ export function FilmEntry() {
           aria-hidden="true"
         />
       </div>
+      <audio ref={door} src={FILM.door} preload="auto" />
       <canvas
         ref={canvas}
         className={s.canvas}
