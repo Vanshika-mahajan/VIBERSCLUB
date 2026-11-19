@@ -33,26 +33,36 @@ export function EarthStage({
   const router = useRouter();
   const home = useRef<Promise<unknown> | null>(null);
 
+  // Home, and the Earth's own map, are fetched at once; the Earth's WebGL is only made when the door
+  // is asked to open. Two big WebGL scenes made together on load left Safari drawing neither (ARPIT's
+  // screenshot, 2026-11-19: only the button on black), so the door's scene has the GPU to itself first.
   useEffect(() => {
     router.prefetch("/home");
     home.current = preloadHome();
+    const map = new Image();
+    map.src = "/journey/earth-land.png";
+  }, [router]);
+
+  const made = useRef(false);
+  const raf = useRef(0);
+  useEffect(() => {
+    if (!drawing || made.current) return;
     const el = canvas.current;
     if (!el || !canUse3D()) return;
-    let raf = 0;
-    let gone = false;
-    const onResize = () => earth.current?.resize();
+    made.current = true;
     import("./earthScene")
       .then(async ({ makeEarth, at, ENTRY_LENGTH }) => {
-        const made = await makeEarth(el, ENTRY_LENGTH);
-        if (gone) return made.dispose();
-        earth.current = made;
-        made.wait();
+        const e = await makeEarth(el, ENTRY_LENGTH);
+        if (!made.current) return e.dispose();
+        earth.current = e;
+        // the door may already have opened while it was being made
+        if (go.current) e.replay();
+        else e.wait();
         el.dataset.live = "";
-        made.render(performance.now());
         const loop = (time: number) => {
-          raf = requestAnimationFrame(loop);
+          raf.current = requestAnimationFrame(loop);
           if (!draw.current) return;
-          const t = made.render(time);
+          const t = e.render(time);
           // the place name shows with the marker, just under Manali at the centre (as in the journey)
           if (label.current)
             label.current.style.opacity = String(
@@ -61,7 +71,7 @@ export function EarthStage({
           if (t >= ENTRY_LENGTH && !left.current) {
             left.current = true;
             try {
-              handover.show(made.snapshot(), home.current ?? Promise.resolve());
+              handover.show(e.snapshot(), home.current ?? Promise.resolve());
               stopAmbience(3);
             } catch {
               /* Home simply opens */
@@ -69,18 +79,22 @@ export function EarthStage({
             router.push("/home");
           }
         };
-        raf = requestAnimationFrame(loop);
+        raf.current = requestAnimationFrame(loop);
       })
-      .catch(() => {});
+      .catch(() => router.push("/home"));
+  }, [drawing, router]);
+
+  useEffect(() => {
+    const onResize = () => earth.current?.resize();
     window.addEventListener("resize", onResize);
     return () => {
-      gone = true;
-      cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(raf.current);
+      made.current = false;
       earth.current?.dispose();
       earth.current = null;
     };
-  }, [router]);
+  }, []);
 
   // the door has opened: the Earth slows for Manali and dives; without 3D, Home straight away
   useEffect(() => {
@@ -89,11 +103,11 @@ export function EarthStage({
       earth.current?.wait();
       return;
     }
-    if (!earth.current) {
+    if (!canUse3D()) {
       router.push("/home");
       return;
     }
-    earth.current.replay();
+    earth.current?.replay();
   }, [goNow, router]);
 
   return (
