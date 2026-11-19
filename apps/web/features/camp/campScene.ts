@@ -349,6 +349,8 @@ export async function createCampScene(canvas: HTMLCanvasElement, { glider: withG
   let walk = -1;
   let drift = 0; // 0 … 1 the glider's drift across into its path
   const walkOn = () => {
+    // without the paraglider the whole camp stays in view, as in ARPIT's picture: no walk in
+    if (!withGlider) return;
     if (walk < 0) walk = 0;
   };
   const wake = () => {
