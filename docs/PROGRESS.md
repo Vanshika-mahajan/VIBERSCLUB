@@ -14,6 +14,16 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (early morning): camp experiment at /camp-experiment
+
+ARPIT's experiment, separate from `/` (checkpoint 8 untouched):
+- The meadow door opens onto the camp with the cut-out characters, no paraglider clip, and the whole camp stays in view (no walk in).
+- The background is ARPIT's bluer-sky camp picture (`public/camp/blue*`), with the old tree, flag and sky masks warped onto it by optical flow and the holes refilled.
+- Depth: a Depth Anything map of ARPIT's reference (`blue-depth.png`) drives pointer and idle parallax, a softer far valley, warm haze, backlit people and deeper contact shadows.
+- ARPIT's own paraglider code and pilot picture (`features/camp/ParagliderFlight.tsx`, `public/camp/pilot.png`) fly in after the door; the canopy fills the screen and Home opens behind it. One change to their values: the final dip goes to -2.6 so the canopy covers the whole screen.
+
+Tests: lint and typecheck pass; sweep desktop 13/13 earlier in the round; flight checked by screenshots.
+
 ## CHECKPOINT 8 (2026-11-19, ARPIT): commit bd77e47
 
 ARPIT marked this state as checkpoint 8. Nothing in it changes without their explicit approval.
