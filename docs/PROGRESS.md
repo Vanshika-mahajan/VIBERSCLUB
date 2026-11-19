@@ -14,6 +14,10 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## CHECKPOINT 8 (2026-11-19, ARPIT): commit bd77e47
+
+ARPIT marked this state as checkpoint 8. Nothing in it changes without their explicit approval.
+
 ## 2026-11-19 (late night): a smoother door swing
 
 ARPIT felt the door sound made the door less smooth. Everything heavy that ran inside the tap now happens earlier:
