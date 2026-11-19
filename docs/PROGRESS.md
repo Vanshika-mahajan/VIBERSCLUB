@@ -14,6 +14,15 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-19 (late night): a smoother door swing
+
+ARPIT felt the door sound made the door less smooth. Everything heavy that ran inside the tap now happens earlier:
+- The door clip is fetched and decoded through Web Audio on load (`prepareClip`/`playClip` in `features/journey/sound.ts`). The tap only starts it, and the `<audio>` element is gone.
+- The Earth hum starts 1.2 s after the tap, once the door is swinging.
+- The Earth's WebGL is made 2.5 s after the page loads and draws one frame then, so its shaders are compiled before the door opens.
+
+Tests: lint and typecheck pass; e2e entry + sweep 17/17 desktop and 17/17 phone. Watch for: Safari's earlier black screen if two WebGL scenes at load is the cause.
+
 ## 2026-11-19 (night): Earth sounds, door depth, the journey's arrival into Home
 
 ARPIT's recording (10:17 PM) asked for three things:

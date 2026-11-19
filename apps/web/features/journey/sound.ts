@@ -152,6 +152,39 @@ export function unlockJourneySound() {
   return () => events.forEach((e) => window.removeEventListener(e, go));
 }
 
+/* ---------- recorded clips (ARPIT's door) ---------- */
+
+const clips = new Map<string, Promise<AudioBuffer | null>>();
+/** fetches and decodes a recorded clip ahead of time, so playing it later costs nothing */
+export function prepareClip(url: string) {
+  const c = audio();
+  if (!c) return;
+  if (!clips.has(url))
+    clips.set(
+      url,
+      fetch(url)
+        .then((r) => r.arrayBuffer())
+        .then((data) => c.decodeAudioData(data))
+        .catch(() => null),
+    );
+}
+
+/** plays a prepared clip from `offset` seconds, through the journey's own volume and speaker button */
+export function playClip(url: string, offset = 0, volume = 1) {
+  const c = audio();
+  if (!c || !master) return;
+  prepareClip(url);
+  void clips.get(url)?.then((buf) => {
+    if (!buf || !master) return;
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    const g = c.createGain();
+    g.gain.value = volume;
+    src.connect(g).connect(master);
+    src.start(c.currentTime, Math.min(offset, buf.duration));
+  });
+}
+
 /* ---------- the sounds ---------- */
 
 /** the door page ambience: the night meadow (far-off crickets over a faint low breeze), a 20 second

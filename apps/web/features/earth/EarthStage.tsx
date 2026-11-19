@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { canUse3D } from "@/features/journey/world/support";
 import { preloadHome } from "@/features/camp/handover";
 import {
@@ -73,10 +73,18 @@ export function EarthStage({
     map.src = "/journey/earth-land.png";
   }, [router]);
 
+  // the Earth's WebGL is made a moment after the door has settled, not inside the tap: compiling it
+  // there made the door's first swing stutter (ARPIT, 2026-11-19)
+  const [early, setEarly] = useState(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => setEarly(true), 2500);
+    return () => window.clearTimeout(id);
+  }, []);
+
   const made = useRef(false);
   const raf = useRef(0);
   useEffect(() => {
-    if (!drawing || made.current) return;
+    if (!(drawing || early) || made.current) return;
     const el = canvas.current;
     if (!el || !canUse3D()) return;
     made.current = true;
@@ -89,6 +97,8 @@ export function EarthStage({
         if (go.current) e.replay();
         else e.wait();
         el.dataset.live = "";
+        // one frame now, so its shaders are ready before the door opens onto it
+        e.render(performance.now());
         const loop = (time: number) => {
           raf.current = requestAnimationFrame(loop);
           if (!draw.current) return;
@@ -117,7 +127,7 @@ export function EarthStage({
         raf.current = requestAnimationFrame(loop);
       })
       .catch(() => router.push("/home"));
-  }, [drawing, router]);
+  }, [drawing, early, router]);
 
   useEffect(() => {
     const onResize = () => earth.current?.resize();
