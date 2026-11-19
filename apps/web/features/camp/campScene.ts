@@ -76,9 +76,10 @@ const person = (c: Clip, i: number) => /* glsl */ `
 const fragment = /* glsl */ `
 precision highp float;
 varying vec2 v, sc;
-uniform sampler2D P, B, R, D, GL;
+uniform sampler2D P, B, R, D, GL, Z;
 uniform sampler2D ${PEOPLE.map((_, i) => `V${i}`).join(", ")};
-uniform float t, S, off, vOn, glOn, glX, glS, fwd;
+uniform float t, S, off, vOn, glOn, glX, glS, fwd, deep;
+uniform vec2 look;
 const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
 
 // the tree turns a touch around its trunk; branches further out follow a moment later
@@ -103,6 +104,10 @@ vec2 flagD(float s, float hg) {
 // and light haze on the far ones
 vec3 grade(vec3 c, float a, vec3 bg, float haze) {
   c *= vec3(1.03, 0.99, 0.95);
+  // with depth (ARPIT: "so everything looks as it belongs there"): the sun is low behind them, so their
+  // fronts sit a touch in shade and their outlines catch its warm light
+  c *= mix(vec3(1.0), vec3(0.92, 0.91, 0.95), deep);
+  c += vec3(1.0, 0.62, 0.3) * 0.26 * deep * smoothstep(0.08, 0.45, a) * smoothstep(0.98, 0.62, a);
   c = mix(c, bg, smoothstep(0.95, 0.3, a) * 0.3);
   return mix(c, bg * 0.9 + vec3(0.04), haze * 0.18);
 }
@@ -113,8 +118,13 @@ void main() {
   // seats swell and slide past faster than the far valley and the sky, so it moves with depth
   float near = smoothstep(0.45, 1.0, v.y);
   vec2 uv = vec2(0.5, 0.56) + (v - vec2(0.5, 0.56)) / (1.0 + fwd * (0.3 + 1.0 * near));
+  // depth: the camera drifts a little (and follows the pointer); near things slide more than far ones
+  float z = texture2D(Z, uv).r * deep;
+  uv -= look * (z - 0.12) / SZ;
   vec2 p = uv * SZ;
-  vec3 col = texture2D(B, uv).rgb;
+  // and the lens focuses on the camp: the far valley a touch softer (not the sky, whose clouds drift)
+  float soft = deep * 1.1 * (1.0 - smoothstep(0.04, 0.32, z)) * smoothstep(420.0, 520.0, uv.y * SZ.y);
+  vec3 col = texture2D(B, uv, soft).rgb;
 
   // clouds: swap the fine detail here for detail drifted in from the side (mirrored so it never runs out)
   float k = mod(uv.x + off, 2.0);
@@ -134,7 +144,7 @@ void main() {
     float sh = blob(p, vec2(400.0, 925.0), vec2(330.0, 34.0)) + blob(p, vec2(1035.0, 876.0), vec2(95.0, 16.0))
       + blob(p, vec2(1365.0, 802.0), vec2(110.0, 14.0)) + blob(p, vec2(1520.0, 858.0), vec2(120.0, 18.0))
       + 0.6 * blob(p, vec2(1086.0, 787.0), vec2(45.0, 7.0));
-    col *= 1.0 - 0.25 * clamp(sh, 0.0, 1.0);
+    col *= 1.0 - (0.25 + 0.17 * deep) * clamp(sh, 0.0, 1.0);
   }
 ${PEOPLE.map(person).join("\n")}
 
@@ -151,6 +161,9 @@ ${PEOPLE.map(person).join("\n")}
       a = smoothstep(0.1, 0.95, a);
       col = mix(col, grade(c, a, col, 0.12), a);
     } }
+
+  // air: the valley and the peaks fade into warm evening haze, the further the more
+  col = mix(col, vec3(0.93, 0.8, 0.7), deep * 0.16 * pow(1.0 - z, 3.0) * smoothstep(380.0, 520.0, p.y));
 
   // finish: cool, pale distant ridges, restrained crisp colour (cool shade, warm light), soft highlights,
   // a glow on the sun and the lanterns, deep shadows that keep their detail, a dark frame and fine grain
@@ -227,12 +240,21 @@ export async function createCampScene(
     tex.needsUpdate = true;
     return tex;
   };
-  const [P, B, R, D] = await Promise.all([
+  // the depth of ARPIT's bluer camp (Depth Anything on their reference picture, people included)
+  const deep = picture === "blue";
+  const flat = keep(new THREE.DataTexture(new Uint8Array(4), 1, 1));
+  flat.needsUpdate = true;
+  const [P, B, R, D, Z] = await Promise.all([
     load(`/camp/${picture}.webp`, false),
     load(`/camp/${picture}-bg.webp`, false),
     load(`/camp/${picture}-rig.png`, true),
     load(`/camp/${picture}-sky.webp`, true),
+    deep ? load("/camp/blue-depth.png", true) : Promise.resolve(flat),
   ]);
+  // where the pointer is, -1 … 1 (the camera leans toward it, gently)
+  const pointer = new THREE.Vector2();
+  const onPointer = (e: PointerEvent) => pointer.set((e.clientX / window.innerWidth) * 2 - 1, (e.clientY / window.innerHeight) * 2 - 1);
+  if (deep) window.addEventListener("pointermove", onPointer, { passive: true });
 
   // the people play as muted looping videos
   const people = PEOPLE.map((c) => makeVideo(c.src, true));
@@ -305,6 +327,9 @@ export async function createCampScene(
     R: { value: R },
     D: { value: D },
     GL: { value: GL },
+    Z: { value: Z },
+    deep: { value: deep ? 1 : 0 },
+    look: { value: new THREE.Vector2() },
     vOn: { value: 0 },
     glOn: { value: 0 },
     glX: { value: DRIFT.x },
@@ -378,6 +403,12 @@ export async function createCampScene(
     // under way from the first moment (it carries on from the push through the doorway), easing out
     u.fwd.value = WALK.far * (1 - (1 - x) * (1 - x));
     u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
+    if (deep) {
+      // a slow breath of the camera plus a lean toward the pointer, in picture px at the nearest point
+      const tt = u.t.value as number;
+      const aim = new THREE.Vector2(10 * Math.sin(tt * 0.23) - 14 * pointer.x, 4 * Math.sin(tt * 0.31 + 1) - 7 * pointer.y);
+      (u.look.value as THREE.Vector2).lerp(aim, Math.min(1, step * 2.5));
+    }
     u.vOn.value = people.every((v) => v.readyState >= 2) ? 1 : 0;
     const ready = glider.readyState >= 2;
     u.glOn.value = ready && flying ? 1 : 0;
@@ -437,6 +468,7 @@ export async function createCampScene(
     },
     dispose: () => {
       window.removeEventListener("pointerdown", play);
+      window.removeEventListener("pointermove", onPointer);
       for (const v of [...people, glider]) {
         v.pause();
         v.removeAttribute("src");
