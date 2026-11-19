@@ -28,17 +28,24 @@ const DIST = 12; // camera distance from the far plane
 const LOOK = { x: 0.8, y: 0.4 }; // how far the camera can ease with the pointer
 const OVERSCAN = 1.1; // a little bigger than the screen, so the edges never show as the camera moves
 const DOOR_X = 0.58; // where the door stands across the film, 0..1
+// the last moment: the canopy comes at us, but in the clip it never quite fills the frame (its curved
+// edge leaves sky below). The camera pushes on into the cloth over the last stretch until it covers
+// the screen, anchored near the top where the canopy is (ARPIT, 2026-11-19).
+const PUSH = { len: 0.9, zoom: 1.85, x: 0.5, y: 0.9 };
 
 const VERT = /* glsl */ `
 uniform sampler2D map;
-uniform float depthAmt, dist;
+uniform float depthAmt, dist, zoom;
+uniform vec2 anchor;
 varying vec2 vUv;
 varying float vD;
+varying vec2 vUv0;
 const float TOP = ${(FILM.depthH / (FILM.h + FILM.depthH)).toFixed(6)};
 void main() {
-  vUv = uv;
+  vUv0 = uv;
+  vUv = anchor + (uv - anchor) / zoom;
   // the depth strip: left half, bottom part of the video (VideoTexture is flipped, so v = 0 is the bottom)
-  float d = texture2D(map, vec2(uv.x * 0.5, uv.y * TOP)).r;
+  float d = texture2D(map, vec2(vUv.x * 0.5, vUv.y * TOP)).r;
   vD = d;
   float z = d * depthAmt;
   // scale toward the centre so from the resting camera everything lands where the film has it
@@ -51,8 +58,10 @@ uniform sampler2D map;
 uniform float t;
 varying vec2 vUv;
 varying float vD;
+varying vec2 vUv0;
 const float TOP = ${(FILM.depthH / (FILM.h + FILM.depthH)).toFixed(6)};
 void main() {
+  vec2 uv0 = vUv0;
   vec3 c = texture2D(map, vec2(vUv.x, TOP + vUv.y * (1.0 - TOP))).rgb;
   // a breath of warm evening air on the far valley only, so distance reads without washing anything out
   float far = (1.0 - vD) * (1.0 - vD);
@@ -61,7 +70,7 @@ void main() {
   c = clamp((c - 0.5) * 1.06 + 0.5, 0.0, 1.0);
   float l = dot(c, vec3(0.299, 0.587, 0.114));
   c = mix(vec3(l), c, 1.05);
-  vec2 q = vUv - 0.5;
+  vec2 q = uv0 - 0.5;
   c *= 1.0 - 0.22 * dot(q, q) * 2.0;
   float g = fract(sin(dot(floor(gl_FragCoord.xy / 1.5) + floor(t * 24.0) * 7.3, vec2(12.9898, 78.233))) * 43758.5453);
   c += (g - 0.5) * 0.018;
@@ -131,6 +140,8 @@ export function createDepthFilm(
     depthAmt: { value: DEPTH },
     dist: { value: DIST },
     t: { value: 0 },
+    zoom: { value: 1 },
+    anchor: { value: new THREE.Vector2(PUSH.x, PUSH.y) },
   };
   const film = new THREE.Mesh(
     new THREE.PlaneGeometry(16, 9, 384, 216),
@@ -232,6 +243,10 @@ export function createDepthFilm(
       // VideoTexture waits for a new video frame callback, which some browsers skip after a seek or
       // while decoding is busy; asking every frame keeps the picture moving
       if (video.readyState >= 2) tex.needsUpdate = true;
+      // the push into the canopy over the film's last stretch, easing in
+      const left = (video.duration || Infinity) - video.currentTime;
+      const k = Math.min(1, Math.max(0, 1 - left / PUSH.len));
+      uniforms.zoom.value = 1 + (PUSH.zoom - 1) * k * k;
       uniforms.t.value = s;
       dustU.t.value = s;
       renderer.render(scene, camera);
