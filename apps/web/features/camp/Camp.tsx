@@ -25,7 +25,10 @@ const STILL_FOR = 2500;
  * behind it (handover.ts). Without 3D, or with reduced motion, the still picture
  * shows for a moment and then Home.
  */
-export function Camp({ glider = true }: { glider?: boolean } = {}) {
+export function Camp({
+  glider = true,
+  picture = "sunset",
+}: { glider?: boolean; picture?: "sunset" | "blue" } = {}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const root = useRef<HTMLElement>(null);
   const router = useRouter();
@@ -110,7 +113,7 @@ export function Camp({ glider = true }: { glider?: boolean } = {}) {
       frame = requestAnimationFrame(loop);
     };
     import("./campScene")
-      .then(({ createCampScene }) => createCampScene(el, { glider }))
+      .then(({ createCampScene }) => createCampScene(el, { glider, picture }))
       .then((sc) => {
         if (gone) return sc.dispose();
         scene = sc;
@@ -124,14 +127,14 @@ export function Camp({ glider = true }: { glider?: boolean } = {}) {
       scene?.dispose();
       scene = null;
     };
-  }, [router, glider]);
+  }, [router, glider, picture]);
 
   return (
     <section ref={root} className={s.camp} aria-label="Vibers Club camp">
       <h1 className={s.title}>Vibers Club</h1>
       <Image
         className={s.picture}
-        src="/camp/sunset.webp"
+        src={`/camp/${picture}.webp`}
         alt="A hilltop camp at sunset above a river valley: the Vibers Club sign, a tent, lanterns and seats on the grass."
         fill
         priority

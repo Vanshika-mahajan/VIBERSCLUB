@@ -199,8 +199,14 @@ function makeVideo(src: string, loop: boolean) {
   return video;
 }
 
-/** `glider: false` leaves the paraglider out: the camp alone (ARPIT's experiment, 2026-11-20) */
-export async function createCampScene(canvas: HTMLCanvasElement, { glider: withGlider = true } = {}) {
+/**
+ * `glider: false` leaves the paraglider out: the camp alone. `picture: "blue"` is ARPIT's bluer-sky
+ * camp with snowy peaks (ARPIT's experiment, 2026-11-20), with its own masks and sky detail.
+ */
+export async function createCampScene(
+  canvas: HTMLCanvasElement,
+  { glider: withGlider = true, picture = "sunset" }: { glider?: boolean; picture?: "sunset" | "blue" } = {},
+) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -222,10 +228,10 @@ export async function createCampScene(canvas: HTMLCanvasElement, { glider: withG
     return tex;
   };
   const [P, B, R, D] = await Promise.all([
-    load("/camp/sunset.webp", false),
-    load("/camp/sunset-bg.webp", false),
-    load("/camp/sunset-rig.png", true),
-    load("/camp/sunset-sky.webp", true),
+    load(`/camp/${picture}.webp`, false),
+    load(`/camp/${picture}-bg.webp`, false),
+    load(`/camp/${picture}-rig.png`, true),
+    load(`/camp/${picture}-sky.webp`, true),
   ]);
 
   // the people play as muted looping videos
