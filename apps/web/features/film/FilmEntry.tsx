@@ -127,14 +127,19 @@ export function FilmEntry() {
     setState("playing");
     v.currentTime = 0;
     void v.play().catch(() => router.push("/home"));
-    // the door sound starts with the film, inside the click, so the browser lets it play
-    const a = door.current;
-    if (a && soundOn) {
-      a.currentTime = 0;
-      a.volume = 0.85;
-      void a.play().catch(() => {});
+    // the door sound starts with the film, inside the click, so the browser lets it play; a sound
+    // that fails never holds up the film
+    try {
+      const a = door.current;
+      if (a && soundOn) {
+        a.currentTime = 0;
+        a.volume = 0.85;
+        void a.play().catch(() => {});
+      }
+      if (soundOn) startAmbience();
+    } catch {
+      /* no sound, the film goes on */
     }
-    if (soundOn) startAmbience();
   };
 
   // the canopy covers the screen on the film's last frame: lay that frame over everything and go Home
@@ -142,20 +147,43 @@ export function FilmEntry() {
     if (state !== "playing") return;
     setState("leaving");
     const v = video.current;
-    let frame: HTMLImageElement | null = film.current?.snapshot() ?? null;
-    if (!frame && v) {
-      const c = document.createElement("canvas");
-      c.width = 1920;
-      c.height = 1080;
-      c.getContext("2d")?.drawImage(v, 0, 0, 1920, 1080, 0, 0, 1920, 1080);
-      frame = new Image();
-      frame.src = c.toDataURL("image/jpeg", 0.9);
+    // Home opens whatever happens below
+    try {
+      let frame: HTMLImageElement | null = film.current?.snapshot() ?? null;
+      if (!frame && v) {
+        const c = document.createElement("canvas");
+        c.width = 1920;
+        c.height = 1080;
+        c.getContext("2d")?.drawImage(v, 0, 0, 1920, 1080, 0, 0, 1920, 1080);
+        frame = new Image();
+        frame.src = c.toDataURL("image/jpeg", 0.9);
+      }
+      if (frame) handover.show(frame, home.current ?? Promise.resolve());
+      // the nature sound fades away as Home appears
+      stopAmbience(3);
+    } catch {
+      /* no hand-over picture: Home simply opens */
     }
-    if (frame) handover.show(frame, home.current ?? Promise.resolve());
-    // the nature sound fades away as Home appears
-    stopAmbience(3);
     router.push("/home");
   };
+
+  // a safety net while the film plays: some browsers miss the "ended" event, and a film that stalls
+  // (a slow connection, a decoder hiccup) must never leave the visitor stuck on the entry
+  useEffect(() => {
+    if (state !== "playing") return;
+    const v = video.current;
+    if (!v) return;
+    let last = -1;
+    let still = 0;
+    const id = window.setInterval(() => {
+      if (v.ended || (v.duration > 0 && v.currentTime >= v.duration - 0.05)) return ended();
+      if (v.currentTime === last) still += 0.5;
+      else still = 0;
+      last = v.currentTime;
+      if (still >= 6) ended();
+    }, 500);
+    return () => window.clearInterval(id);
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
