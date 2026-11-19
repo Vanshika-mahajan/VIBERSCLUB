@@ -206,7 +206,9 @@ export function FilmEntry() {
         src={FILM.first}
         alt="A wooden door wrapped in vines stands alone on a stone path in a mountain meadow at sunset."
       />
-      <div className={flat ? s.flat : s.hidden}>
+      {/* the film itself sits full size under the 3D picture: Safari pauses a video it thinks nobody can
+          see (a tiny or transparent one), which froze the entry on Unveil; without 3D it is the picture */}
+      <div className={s.flat}>
         <video
           ref={video}
           src={src}

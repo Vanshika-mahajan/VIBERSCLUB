@@ -31,7 +31,8 @@
   opacity: 1;
 }
 
-/* without 3D: the plain film, showing only its top part (the depth strip under it stays hidden) */
+/* the plain film, showing only its top part (the depth strip under it stays hidden): the picture
+   without 3D, and with 3D the layer under the canvas that keeps Safari playing it */
 .flat {
   overflow: hidden;
 }
@@ -46,13 +47,6 @@
   aspect-ratio: 1920 / 1620;
 }
 
-.hidden {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* the words and the button, where ARPIT's painting had them: left of the door */
 .words {
