@@ -14,6 +14,13 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-19: the entry film with depth at /
+
+- What changed: `/` now plays ARPIT's own entry film (door in the sunset meadow, walk into the camp, the paraglider's canopy covering the screen) with per-frame depth in three.js (`features/film/FilmEntry.tsx`, `depthFilm.ts`). Before the click the first frame already moves with depth and drifting pollen, with "A World Awaits" and the brown "Unveil What Awaits" button. The button, Enter or a tap plays the film; its last frame hands over into `/home` with the canopy lift. Phones get a lighter 1280-wide file with the door centred. Without WebGL the film plays flat; with reduced motion the button goes straight to Home. The door-and-camp entry code is kept, unrouted. Review page `/film-demo`.
+- Tests: lint clean, typecheck passes, unit 101/101, e2e `entry.spec` 10/10 (rewritten for the film), `sweep.spec` 26/26.
+- Known issues: the video tool's watermark is still in the clips (needs a clean export); the source clips are a little soft; near edges stretch slightly at full camera movement; on phones the camp crop leaves out the guitar group.
+- Next: ARPIT reviews the frames; clean exports to replace the watermarked clips.
+
 ## 2026-11-18: the whole camp scene, the paraglider take-off and one light
 
 ARPIT approved ("perfect") the full camp from their reference picture, after reviewing it on the "Camp characters" Artifact page.

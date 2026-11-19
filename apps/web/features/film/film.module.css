@@ -1,0 +1,140 @@
+/* The entry: ARPIT's film with depth, full screen, above the site's own header and contents. */
+.entry {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  background: #1a100a;
+}
+
+.still,
+.canvas,
+.flat {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.still {
+  object-fit: cover;
+  object-position: 58% 50%;
+}
+
+.canvas {
+  display: block;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.canvas[data-live] {
+  opacity: 1;
+}
+
+/* without 3D: the plain film, showing only its top part (the depth strip under it stays hidden) */
+.flat {
+  overflow: hidden;
+}
+
+.flat video {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: max(100vw, calc(100vh * 16 / 9));
+  height: auto;
+  transform: translateX(-50%);
+  aspect-ratio: 1920 / 1620;
+}
+
+.hidden {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* the words and the button, where ARPIT's painting had them: left of the door */
+.words {
+  position: absolute;
+  left: max(16px, 5.5vw);
+  top: 33%;
+  display: grid;
+  gap: clamp(18px, 3vh, 32px);
+  justify-items: start;
+  /* taps between the words reach the picture; only the button takes them */
+  pointer-events: none;
+  transition:
+    opacity 0.7s ease,
+    transform 0.9s cubic-bezier(0.6, 0, 0.3, 1);
+}
+
+.words > * {
+  pointer-events: auto;
+}
+
+.entry[data-state="playing"] .words,
+.entry[data-state="leaving"] .words {
+  opacity: 0;
+  transform: translateY(-14px);
+  pointer-events: none;
+}
+
+.title {
+  margin: 0;
+  font: 800 clamp(40px, 5.2vw, 92px) / 0.92 var(--font-display);
+  letter-spacing: -0.035em;
+  color: #2a1b13;
+  text-shadow: 0 1px 24px rgba(255, 226, 180, 0.45);
+}
+
+.title em {
+  display: block;
+  font-style: normal;
+  color: #8f2a12;
+}
+
+.wordmark {
+  position: absolute;
+  left: max(16px, 4.5vw);
+  top: max(16px, 4vh);
+  margin: 0;
+  font: 800 clamp(18px, 1.7vw, 26px) / 1 var(--font-display);
+  letter-spacing: -0.02em;
+  color: #f7f2e8;
+  text-shadow: 0 1px 14px rgba(42, 27, 19, 0.7);
+  transition: opacity 0.7s ease;
+}
+
+.entry[data-state="playing"] .wordmark,
+.entry[data-state="leaving"] .wordmark {
+  opacity: 0;
+}
+
+/* phones: the door sits in the middle, so the words go up top and the button near the bottom */
+@media (max-width: 720px) {
+  .words {
+    left: 16px;
+    right: 16px;
+    top: 12vh;
+    bottom: 10vh;
+    align-content: space-between;
+    justify-items: center;
+    text-align: center;
+  }
+
+  /* over the door and vines the words need to be light to read */
+  .title {
+    color: #f7f2e8;
+    text-shadow: 0 2px 22px rgba(42, 27, 19, 0.75);
+  }
+
+  .title em {
+    color: #f0b25c;
+  }
+
+  .wordmark {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

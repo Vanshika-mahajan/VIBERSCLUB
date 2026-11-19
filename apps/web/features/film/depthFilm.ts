@@ -14,15 +14,20 @@ import * as THREE from "three";
 
 export const FILM = {
   src: "/film/entry-depth.mp4",
+  /** phones and small screens: 1280 wide, lighter */
+  small: "/film/entry-depth-small.mp4",
+  /** the first frame, shown until the film is ready and as the still without 3D */
+  first: "/film/entry-first.webp",
   w: 1920,
   h: 1080,
   depthH: 540, // the depth strip under the film, at half size, in the left half
 };
 
-const DEPTH = 3.6; // how far the nearest things stand forward of the farthest, in scene units
+const DEPTH = 3.0; // how far the nearest things stand forward of the farthest, in scene units
 const DIST = 12; // camera distance from the far plane
-const LOOK = { x: 1.1, y: 0.55 }; // how far the camera can ease with the pointer
+const LOOK = { x: 0.8, y: 0.4 }; // how far the camera can ease with the pointer
 const OVERSCAN = 1.1; // a little bigger than the screen, so the edges never show as the camera moves
+const DOOR_X = 0.58; // where the door stands across the film, 0..1
 
 const VERT = /* glsl */ `
 uniform sampler2D map;
@@ -95,6 +100,8 @@ export type DepthFilm = {
   pointer(x: number, y: number): void;
   /** dev review: jump the camera straight to where the pointer asks, no easing */
   snap(): void;
+  /** the frame on screen now, as a picture (for the hand-over to Home) */
+  snapshot(): HTMLImageElement;
   dispose(): void;
 };
 
@@ -177,6 +184,9 @@ export function createDepthFilm(
     const s = Math.max(viewH / 9, (viewH * camera.aspect) / 16) * OVERSCAN;
     film.scale.set(s, s, 1);
     dust.scale.set(s, s, 1);
+    // on tall screens only a slice of the film fits: keep the door (a little right of centre) in the middle
+    const spare = Math.max(0, (16 * s - viewH * camera.aspect) / 2);
+    film.position.x = -Math.min(spare, (DOOR_X - 0.5) * 16 * s);
     dustU.px.value = renderer.getPixelRatio() * (h / 900);
     camera.updateProjectionMatrix();
   };
@@ -185,6 +195,13 @@ export function createDepthFilm(
   return {
     video,
     play: () => video.play(),
+    snapshot() {
+      // read the canvas straight after drawing, before the browser clears it
+      renderer.render(scene, camera);
+      const img = new Image();
+      img.src = canvas.toDataURL("image/jpeg", 0.9);
+      return img;
+    },
     snap() {
       cam.x = aim.x * LOOK.x;
       cam.y = aim.y * LOOK.y;
