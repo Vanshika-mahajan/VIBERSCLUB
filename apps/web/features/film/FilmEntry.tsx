@@ -7,6 +7,7 @@ import { UnveilButton } from "@/features/intro/UnveilButton";
 import { handover, preloadHome } from "@/features/camp/handover";
 import { useJourneySound } from "@/features/journey/sound";
 import { FILM, type DepthFilm } from "./depthFilm";
+import { preloadAmbience, startAmbience, stopAmbience } from "./ambience";
 import s from "./film.module.css";
 
 type State = "ready" | "playing" | "leaving";
@@ -19,7 +20,8 @@ type State = "ready" | "playing" | "leaving";
  * shifting against the far valley as the pointer moves, pollen drifting between them. "Unveil What
  * Awaits" (or Enter, or a tap on the picture) plays the film; on its last frame, the canopy, the
  * hand-over lifts it away into Home (handover.ts, components/handover/Handover.tsx). The door
- * sounds as it opens (ARPIT's own sound, public/film/door.mp3). Without 3D the same film plays flat; with reduced motion the still shows and the button goes straight to Home.
+ * sounds as it opens (ARPIT's own sound, public/film/door.mp3), over their soft nature recording
+ * (ambience.ts). Without 3D the same film plays flat; with reduced motion the still shows and the button goes straight to Home.
  */
 export function FilmEntry() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -49,6 +51,7 @@ export function FilmEntry() {
       v.pause();
       v.currentTime = 0;
     }
+    stopAmbience(0.3);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset when the page is shown again
     setState("ready");
   }, [path]);
@@ -56,6 +59,7 @@ export function FilmEntry() {
   useEffect(() => {
     router.prefetch("/home");
     home.current = preloadHome();
+    preloadAmbience();
     const el = canvas.current;
     const v = video.current;
     if (!el || !v) return;
@@ -130,6 +134,7 @@ export function FilmEntry() {
       a.volume = 0.85;
       void a.play().catch(() => {});
     }
+    if (soundOn) startAmbience();
   };
 
   // the canopy covers the screen on the film's last frame: lay that frame over everything and go Home
@@ -147,6 +152,8 @@ export function FilmEntry() {
       frame.src = c.toDataURL("image/jpeg", 0.9);
     }
     if (frame) handover.show(frame, home.current ?? Promise.resolve());
+    // the nature sound fades away as Home appears
+    stopAmbience(3);
     router.push("/home");
   };
 

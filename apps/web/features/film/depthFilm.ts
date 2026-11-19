@@ -18,6 +18,8 @@ export const FILM = {
   small: "/film/entry-depth-small.mp4",
   /** ARPIT's door sound, with half a second of quiet first so it lands as the door opens on screen */
   door: "/film/door.mp3",
+  /** ARPIT's nature recording, a soft seamless loop under the film (ambience.ts) */
+  nature: "/film/nature.mp3",
   /** the first frame, shown until the film is ready and as the still without 3D */
   first: "/film/entry-first.webp",
   w: 1920,
