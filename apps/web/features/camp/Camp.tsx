@@ -25,7 +25,7 @@ const STILL_FOR = 2500;
  * behind it (handover.ts). Without 3D, or with reduced motion, the still picture
  * shows for a moment and then Home.
  */
-export function Camp() {
+export function Camp({ glider = true }: { glider?: boolean } = {}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const root = useRef<HTMLElement>(null);
   const router = useRouter();
@@ -34,6 +34,8 @@ export function Camp() {
     router.prefetch("/home");
     const el = canvas.current;
     if (!el || !canUse3D()) {
+      // without the paraglider the camp is where the visit ends, so it stays
+      if (!glider) return;
       const t = window.setTimeout(() => router.push("/home"), STILL_FOR);
       return () => window.clearTimeout(t);
     }
@@ -98,7 +100,7 @@ export function Camp() {
         if (sawDoor) scene?.walkOn();
         scene?.render(dt);
         clear = clear < 0 ? 0 : clear + dt;
-        if (phase === "waiting" && sawDoor && clear >= BEFORE_FLIGHT) void fly();
+        if (glider && phase === "waiting" && sawDoor && clear >= BEFORE_FLIGHT) void fly();
       } else if (entry.dataset.state === "going") {
         // the door is opening: the camp shows through the doorway, alive from the first moment
         sawDoor = true;
@@ -108,7 +110,7 @@ export function Camp() {
       frame = requestAnimationFrame(loop);
     };
     import("./campScene")
-      .then(({ createCampScene }) => createCampScene(el))
+      .then(({ createCampScene }) => createCampScene(el, { glider }))
       .then((sc) => {
         if (gone) return sc.dispose();
         scene = sc;
@@ -122,7 +124,7 @@ export function Camp() {
       scene?.dispose();
       scene = null;
     };
-  }, [router]);
+  }, [router, glider]);
 
   return (
     <section ref={root} className={s.camp} aria-label="Vibers Club camp">

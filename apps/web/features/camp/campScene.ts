@@ -199,7 +199,8 @@ function makeVideo(src: string, loop: boolean) {
   return video;
 }
 
-export async function createCampScene(canvas: HTMLCanvasElement) {
+/** `glider: false` leaves the paraglider out: the camp alone (ARPIT's experiment, 2026-11-20) */
+export async function createCampScene(canvas: HTMLCanvasElement, { glider: withGlider = true } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -247,7 +248,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
   const glider = makeVideo("", false);
   shelf.appendChild(glider);
   let gliderUrl = "";
-  void fetch(GLIDER.src)
+  if (withGlider) void fetch(GLIDER.src)
     .then((r) => r.blob())
     .then((b) => {
       gliderUrl = URL.createObjectURL(b);
@@ -271,7 +272,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
           window.setTimeout(done, 8000);
         });
   const cruise = () => {
-    if (flying) return;
+    if (flying || !withGlider) return;
     flying = true;
     void loaded().then(() => {
       if (!flying) return;
@@ -281,7 +282,7 @@ export async function createCampScene(canvas: HTMLCanvasElement) {
   };
   /** it picks up speed and comes at us; resolves when its canopy covers the screen */
   const takeOff = async () => {
-    if (rushing) return;
+    if (rushing || !withGlider) return;
     await loaded();
     if (glider.readyState < 2) return;
     cruise();
