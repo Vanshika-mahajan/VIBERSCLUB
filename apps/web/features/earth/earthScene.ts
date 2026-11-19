@@ -22,10 +22,12 @@ const DIVE_FROM = 0.78;
 const DIVE_TO = 7;
 const DIVE_AT = 3.4;
 const DIVE_LEN = 4.4;
-/** where the dive stops and holds (in the journey the club home took over here) */
-const HOLD = 6.6;
-/** the entry hands over to Home here, close over Manali with the valley lit (as in the journey) */
-export const ENTRY_LENGTH = 6.6;
+/** the dive runs to its end, as in the journey */
+const HOLD = DIVE_AT + DIVE_LEN;
+/** the valley opens out into the home page's own colour from here (as in the journey) */
+export const ARRIVE_AT = 6.6;
+/** Home takes over here, when that colour has filled the screen */
+export const ENTRY_LENGTH = ARRIVE_AT + 1.2;
 
 const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
 const sineInOut = (x: number) => -(Math.cos(Math.PI * x) - 1) / 2;
@@ -44,7 +46,8 @@ export function at(t: number, hold = HOLD) {
           Math.pow(clamp01((k - DIVE_AT) / DIVE_LEN), 2),
         );
   const manali = sineInOut(clamp01((k - 3.7) / 1.6));
-  const marker = power3Out(clamp01((k - 4.6) / 0.7));
+  // lights up over Manali, and fades as we fall in past it
+  const marker = power3Out(clamp01((k - 4.6) / 0.7)) * (1 - clamp01((k - 6.1) / 0.8) ** 2);
   return { spin, planet, manali, marker };
 }
 
@@ -123,13 +126,6 @@ export async function makeEarth(canvas: HTMLCanvasElement, hold = HOLD) {
     /** behind the closed door: the globe turning fast, as it is when the door opens */
     wait() {
       waiting = true;
-    },
-    /** the frame on screen now, as a picture (for the hand-over to Home) */
-    snapshot() {
-      composer.render(0.016);
-      const img = new Image();
-      img.src = canvas.toDataURL("image/jpeg", 0.9);
-      return img;
     },
     /** renders a frame; returns the seconds into the sequence */
     render(time: number, freeze?: number) {

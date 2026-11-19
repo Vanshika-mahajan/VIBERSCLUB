@@ -14,6 +14,19 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-19 (night): Earth sounds, door depth, the journey's arrival into Home
+
+ARPIT's recording (10:17 PM) asked for three things:
+- **Sound.** The nature recording is gone from `/`. ARPIT's door sound still plays as the door opens, then the journey's own Earth sounds (`features/journey/sound.ts`): the hum while the door opens, the rush through the doorway, the dive, the bell as Manali lights and the arrival chime, at the journey's own moments.
+- **Door depth.** The open door's thickness was a flat tan strip. It is now walnut grain with lighter corners, and the doorway has inner sides (`PAINTED.jamb`, 70 px) that shade into the dark, so it reads as a solid frame as the camera nears.
+- **Transition into Home.** The snapshot hand-over is replaced by the journey's ending: the dive keeps falling into the valley, the home page's colour opens out from the centre (6.6 s to 7.8 s), and Home settles in out of it (`data-arrived`).
+
+Also: a still meadow picture now sits under the door's 3D scene, so a browser that fails to draw 3D shows the meadow instead of black.
+
+Tests: lint and typecheck pass; unit 101/101; e2e entry + sweep 34/34 (phone and desktop, workers=1). Not yet seen in Safari.
+
+Next: ARPIT checks the door, sounds and arrival on Safari and phone.
+
 ## 2026-11-19 (evening): change of plan, the door opens onto the Earth
 
 - Why: the film entry froze in Safari on Mac and looked poor on phones; ARPIT changed the plan: "door needs to open to the earth then earth will transition to the home".

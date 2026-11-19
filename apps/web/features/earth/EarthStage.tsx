@@ -3,17 +3,45 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { canUse3D } from "@/features/journey/world/support";
-import { handover, preloadHome } from "@/features/camp/handover";
-import { stopAmbience } from "@/features/film/ambience";
+import { preloadHome } from "@/features/camp/handover";
+import {
+  arrivalChime,
+  dive,
+  endDive,
+  leaveJourney,
+  markerBell,
+  stopHum,
+} from "@/features/journey/sound";
 import s from "./earth.module.css";
 
 type Earth = Awaited<ReturnType<typeof import("./earthScene").makeEarth>>;
 
 /**
  * Behind the door: the journey's Earth among the stars, turning fast while the door is shut. When the
- * door has opened (`go`), it slows until Manali comes round and dives toward it; close over Manali
- * with the valley lit, that frame lifts away over Home (the hand-over, components/handover/Handover.tsx).
+ * door has opened (`go`), it slows until Manali comes round and dives toward it; still falling into the
+ * valley, it opens out into the home page's own colour from the centre and Home settles in out of it,
+ * as the journey did (features/journey/timelines/discovery.ts). The journey's Earth sounds play along.
  */
+
+/** the journey's sounds over the dive, at its own moments (seconds after the door has opened) */
+const CUES: [number, () => void][] = [
+  [3.4, () => dive(3.3)],
+  [4.6, markerBell],
+  [6.2, () => stopHum(1.4)],
+  [6.6, arrivalChime],
+  [6.7, () => endDive(0.6)],
+];
+const clamp01 = (x: number) => Math.min(Math.max(x, 0), 1);
+
+/**
+ * The journey ends on the home page's own background; this marks the page so the club home settles in
+ * out of it (see "arriving" in globals.css) instead of popping in (as in features/journey).
+ */
+function arriveHome() {
+  const root = document.documentElement;
+  root.dataset.arrived = "";
+  window.setTimeout(() => delete root.dataset.arrived, 1400);
+}
 export function EarthStage({
   go: goNow,
   drawing,
@@ -23,6 +51,8 @@ export function EarthStage({
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const label = useRef<HTMLParagraphElement>(null);
+  const arrive = useRef<HTMLDivElement>(null);
+  const cue = useRef(0);
   const earth = useRef<Earth | null>(null);
   const left = useRef(false);
   // behind the shut door nothing shows, so the Earth is drawn only once (to be ready), not every frame
@@ -51,7 +81,7 @@ export function EarthStage({
     if (!el || !canUse3D()) return;
     made.current = true;
     import("./earthScene")
-      .then(async ({ makeEarth, at, ENTRY_LENGTH }) => {
+      .then(async ({ makeEarth, at, ARRIVE_AT, ENTRY_LENGTH }) => {
         const e = await makeEarth(el, ENTRY_LENGTH);
         if (!made.current) return e.dispose();
         earth.current = e;
@@ -68,14 +98,19 @@ export function EarthStage({
             label.current.style.opacity = String(
               go.current ? at(t, ENTRY_LENGTH).marker : 0,
             );
+          if (!go.current) return;
+          while (cue.current < CUES.length && t >= CUES[cue.current][0])
+            CUES[cue.current++][1]();
+          // the home page's colour opens out from the centre, over the valley we are still falling into
+          const a = arrive.current;
+          if (a) {
+            const k = t - ARRIVE_AT;
+            a.style.opacity = String(Math.sin((Math.PI / 2) * clamp01(k / 0.5)));
+            a.style.setProperty("--r", `${-30 + 140 * clamp01(k / 1.2) ** 2}%`);
+          }
           if (t >= ENTRY_LENGTH && !left.current) {
             left.current = true;
-            try {
-              handover.show(e.snapshot(), home.current ?? Promise.resolve());
-              stopAmbience(3);
-            } catch {
-              /* Home simply opens */
-            }
+            arriveHome();
             router.push("/home");
           }
         };
@@ -91,6 +126,7 @@ export function EarthStage({
       window.removeEventListener("resize", onResize);
       cancelAnimationFrame(raf.current);
       made.current = false;
+      leaveJourney();
       earth.current?.dispose();
       earth.current = null;
     };
@@ -100,6 +136,8 @@ export function EarthStage({
   useEffect(() => {
     if (!goNow) {
       left.current = false;
+      cue.current = 0;
+      if (arrive.current) arrive.current.style.opacity = "0";
       earth.current?.wait();
       return;
     }
@@ -117,6 +155,7 @@ export function EarthStage({
         <span className={s.placeDot} />
         Manali, India
       </p>
+      <div ref={arrive} className={s.arrive} />
     </div>
   );
 }

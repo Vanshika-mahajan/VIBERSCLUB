@@ -112,6 +112,54 @@ function glowTexture() {
   });
 }
 
+/** The door's thickness and the doorway's sides: walnut end grain running the height, a lighter arris
+ * along each corner and darker toward the middle, so the wood reads as a solid block, not a flat card. */
+function woodEdgeTexture() {
+  return canvasTex(64, 1024, (g) => {
+    let sd = 11;
+    const r = () => ((sd = (sd * 16807) % 2147483647) - 1) / 2147483646;
+    g.fillStyle = "#5a3220";
+    g.fillRect(0, 0, 64, 1024);
+    // grain: long, slightly wandering streaks
+    for (let i = 0; i < 70; i++) {
+      const x = r() * 64;
+      const dark = r() < 0.6;
+      g.strokeStyle = dark ? `rgba(30,14,6,${0.12 + r() * 0.22})` : `rgba(150,92,52,${0.08 + r() * 0.16})`;
+      g.lineWidth = 0.6 + r() * 2.2;
+      g.beginPath();
+      g.moveTo(x, 0);
+      for (let y = 0; y <= 1024; y += 64) g.lineTo(x + Math.sin(y * 0.01 + i) * (1 + r() * 2), y);
+      g.stroke();
+    }
+    // across the thickness: rounded corners catch the light, the middle sits a touch deeper
+    const across = g.createLinearGradient(0, 0, 64, 0);
+    across.addColorStop(0, "rgba(255,210,160,0.32)");
+    across.addColorStop(0.08, "rgba(255,200,150,0.05)");
+    across.addColorStop(0.5, "rgba(0,0,0,0.16)");
+    across.addColorStop(0.92, "rgba(255,200,150,0.05)");
+    across.addColorStop(1, "rgba(255,210,160,0.32)");
+    g.fillStyle = across;
+    g.fillRect(0, 0, 64, 1024);
+    // and darker toward the foot, out of the sun
+    const down = g.createLinearGradient(0, 0, 0, 1024);
+    down.addColorStop(0, "rgba(0,0,0,0)");
+    down.addColorStop(1, "rgba(0,0,0,0.3)");
+    g.fillStyle = down;
+    g.fillRect(0, 0, 64, 1024);
+  });
+}
+
+/** Soft shade for the doorway's inner sides: dark deep inside, lifting toward the opening. */
+function jambTexture() {
+  return canvasTex(256, 16, (g) => {
+    const grd = g.createLinearGradient(0, 0, 256, 0);
+    grd.addColorStop(0, "rgba(0,0,0,0)");
+    grd.addColorStop(1, "rgba(0,0,0,0.72)");
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 256, 16);
+  });
+}
+
 /** Soft rays fanning out from the middle, uneven like light through vines. */
 function raysTexture() {
   return canvasTex(1024, 1024, (g) => {
@@ -215,7 +263,7 @@ const WOOD_UNIT = DOOR_H / (WOOD_PX.open.b - WOOD_PX.open.t);
 // grass are part of the picture; only the door is cut out (door-leaf-painted.webp), to swing open on its
 // left edge, and what stands in front of the doorway (door-front.png: grass, daisies, overhanging vines)
 // stays in front of it. Pixels of the meadow picture.
-const PAINTED = { l: 862, r: 1128, t: 247, b: 801, front: { l: 854, t: 239, r: 1136, b: 807 }, thick: 22 };
+const PAINTED = { l: 862, r: 1128, t: 247, b: 801, front: { l: 854, t: 239, r: 1136, b: 807 }, thick: 22, jamb: 70 };
 
 export async function createEntryScene(
   canvas: HTMLCanvasElement,
@@ -419,7 +467,9 @@ export async function createEntryScene(
   const uOpen = { value: 0 };
   const uLight = { value: 0 };
   // the door's thickness: dark walnut, warming as the doorway's light falls on it
-  const paintedEdge = keep(new THREE.MeshBasicMaterial({ color: COL.edge.clone(), toneMapped: false }));
+  const edgeTex = keep(woodEdgeTexture());
+  edgeTex.colorSpace = THREE.SRGBColorSpace;
+  const paintedEdge = keep(new THREE.MeshBasicMaterial({ map: edgeTex, toneMapped: false }));
   const glows: { mesh: THREE.Mesh; peak: number; spin?: number }[] = [];
   const paintedLeafMat = meadow ? keep(new THREE.MeshBasicMaterial({ map: await picture("/entry/door-leaf-painted.webp"), toneMapped: false })) : null;
   if (meadow && paintedLeafMat) {
@@ -432,8 +482,34 @@ export async function createEntryScene(
       keep(new THREE.PlaneGeometry(w, h)),
       keep(new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0, blending: THREE.NoBlending, depthWrite: true })),
     );
-    hole.position.copy(at((P.l + P.r) / 2, (P.t + P.b) / 2)).setZ(-P.thick - 1);
+    // the opening sits behind the doorway's own depth, so its inner sides show as we near it
+    hole.position.copy(at((P.l + P.r) / 2, (P.t + P.b) / 2)).setZ(-P.jamb - 1);
     hole.renderOrder = 10;
+    // the doorway's inner sides (left, right and the head): walnut, shading into the dark
+    const jambMat = keep(new THREE.MeshBasicMaterial({ map: edgeTex, side: THREE.DoubleSide, toneMapped: false }));
+    const shadeMat = keep(new THREE.MeshBasicMaterial({ map: keep(jambTexture()), side: THREE.DoubleSide, transparent: true, depthWrite: false, toneMapped: false }));
+    const jambs = new THREE.Group();
+    for (const side of ["l", "r", "t"] as const) {
+      const long = side === "t" ? w : h;
+      const geo = keep(new THREE.PlaneGeometry(P.jamb, long));
+      // u runs from the opening (z 0) inward: as laid, only the left side does, so turn the others round
+      if (side !== "l") {
+        const uv = geo.attributes.uv;
+        for (let i = 0; i < uv.count; i++) uv.setX(i, 1 - uv.getX(i));
+      }
+      for (const mat of [jambMat, shadeMat]) {
+        const m = new THREE.Mesh(geo, mat);
+        m.renderOrder = mat === jambMat ? 11 : 12;
+        if (side === "t") {
+          m.rotation.set(Math.PI / 2, 0, Math.PI / 2);
+          m.position.copy(at((P.l + P.r) / 2, P.t)).setZ(-P.jamb / 2);
+        } else {
+          m.rotation.y = side === "l" ? Math.PI / 2 : -Math.PI / 2;
+          m.position.copy(at(side === "l" ? P.l : P.r, (P.t + P.b) / 2)).setZ(-P.jamb / 2);
+        }
+        jambs.add(m);
+      }
+    }
     const swing = new THREE.Group();
     swing.position.copy(at(P.l, P.b));
     // the face: darker toward the hinge as it turns from the meadow's light, its free edge catching the
@@ -465,7 +541,7 @@ export async function createEntryScene(
     );
     front.position.copy(at((F.l + F.r) / 2, (F.t + F.b) / 2)).setZ(2);
     front.renderOrder = 20;
-    painted.add(hole, swing, front);
+    painted.add(hole, jambs, swing, front);
     // the camp's evening light spilling out as the door opens: a bloom over the doorway, slow rays
     // fanning out from it and a warm pool on the path in front
     const add = (tex: THREE.Texture, w2: number, h2: number, x: number, y: number, z: number, peak: number, spin?: number) => {
@@ -572,7 +648,8 @@ export async function createEntryScene(
       paintedLeafMat.color.setScalar(1 - 0.3 * Math.sin(Math.PI * 0.5 * p.door));
       uOpen.value = Math.min(1, p.door * 1.4);
       uLight.value = p.light;
-      paintedEdge.color.copy(COL.edge).lerp(COL.warm, 0.55 * p.light);
+      // the wood warms a little as the doorway's light falls on it
+      paintedEdge.color.setRGB(1, 1, 1).lerp(COL.warm.clone().multiplyScalar(2.2), 0.2 * p.light);
       // the light breathes a little, like a sunset through moving leaves
       const flicker = 0.92 + 0.05 * Math.sin(time * 2.3) + 0.03 * Math.sin(time * 5.1);
       for (const g of glows) {

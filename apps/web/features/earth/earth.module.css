@@ -1,38 +1,16 @@
-/* The Earth on its own, full screen, above the site header and contents. */
-.entry {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  overflow: hidden;
-  background: #0b0716;
-}
-
-.canvas,
-.still {
+/* The Earth behind the door on the first page (DoorToEarth, EarthStage). */
+.canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
-}
-
-.canvas {
   opacity: 0;
   transition: opacity 0.8s ease;
-  cursor: grab;
-  touch-action: pan-y;
 }
 
 .canvas[data-live] {
   opacity: 1;
-}
-
-.canvas:active {
-  cursor: grabbing;
-}
-
-.still {
-  object-fit: contain;
 }
 
 .hidden {
@@ -85,4 +63,27 @@
   box-shadow:
     0 0 0 4px rgba(255, 217, 160, 0.18),
     0 0 16px 4px rgba(255, 196, 120, 0.7);
+}
+
+/* the meadow still between the Earth and the door (DoorToEarth): seen only if the 3D fails to draw */
+.still {
+  position: fixed;
+  inset: 0;
+  z-index: 57;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 60% 50%; /* the door stands a little right of centre */
+}
+
+/* the home page's own colour, opening out from the centre at the end of the dive (as in the journey) */
+.arrive {
+  --r: -30%;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--color-canvas);
+  -webkit-mask-image: radial-gradient(circle at 50% 58%, #000 var(--r), transparent calc(var(--r) + 45%));
+  mask-image: radial-gradient(circle at 50% 58%, #000 var(--r), transparent calc(var(--r) + 45%));
 }
