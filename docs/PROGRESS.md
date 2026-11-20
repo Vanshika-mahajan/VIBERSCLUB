@@ -14,6 +14,10 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (5:50 PM): "A World Awaits" on phones (local, not pushed)
+- ARPIT: on phones the title was missing. It is painted into the meadow picture left of the door, and portrait screens crop that part away. Portrait screens now show the title in type above the door, in the painted colours. On landscape screens it stays only for screen readers, as the page's h1.
+- Tests: typecheck and lint clean. `e2e/sweep.spec.ts`, phone and desktop: 26/26 passed. `/` passes again now that it has an h1.
+
 ## 2026-11-20 (3:55 PM): a balanced palette across the website (local, not pushed)
 - ARPIT asked for a balance of the four colours, each used for the right thing. Ivory is the paper and espresso the structure, as before. Sage now shows as the voice of people and places: tags, photo grounds, the other side of a chat, chip hovers, and the Day plans band is real sage set in espresso (it was a dark olive). Amber is the action: main buttons (Join, Host an event, Send) are amber set in espresso, and the open Home tab has an amber rule.
 - Off-palette near-blacks (`#120c08`, `#1e130d`) and the dust spark (`#f0b45a`) now use espresso and amber.

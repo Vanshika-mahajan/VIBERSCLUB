@@ -167,6 +167,17 @@ export function EntryDoor({
     <div ref={root} className={s.entry} data-state={state} data-entry>
       <canvas ref={canvas} className={s.canvas} aria-hidden="true" />
       <button type="button" className={s.door} onClick={enter} disabled={state !== "ready"} aria-label="Open the door to Vibers Club" />
+      {/* the picture paints "A World Awaits" left of the door; portrait screens crop it away, so the title
+          is set in type there (and kept for screen readers on landscape screens) */}
+      {backdrop === "meadow" && (
+        <h1 className={s.title}>
+          <span>A World</span>
+          <span className={s.titleRed}>Awaits</span>
+          <svg className={s.swoosh} viewBox="0 0 200 12" aria-hidden="true">
+            <path d="M4 9 C 60 3, 130 2, 196 5 C 140 5, 70 7, 10 11 Z" />
+          </svg>
+        </h1>
+      )}
       {backdrop === "meadow" && (
         <div
           ref={unveil}
