@@ -9,7 +9,7 @@ import { EntryDemo } from "@/features/entry/EntryDemo";
 export function CampExperiment() {
   return (
     <>
-      <Camp glider={false} picture="blue" />
+      <Camp glider={false} picture="blue" world />
       <ParagliderFlight />
       <EntryDemo through sky="blue" />
     </>

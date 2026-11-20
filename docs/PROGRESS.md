@@ -14,6 +14,14 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (7:15 AM): the camp stands behind the door, never zoomed (local, not pushed)
+
+ARPIT: "let the ground be connected and dont zoom the camp scene". On the camp experiment, `Camp` takes a `world` prop:
+- Behind the door the camp stays full screen at its real size. It is no longer fitted into the doorway and grown, so through the doorway its grass meets the meadow's path at the threshold.
+- The settle zoom after the door has gone is off too (`createCampScene` option `still`), so the camera simply walks through and the camp's framing never changes.
+
+Tests: typecheck and lint clean; Vitest 101/101; e2e `entry.spec` + `sweep.spec` desktop 17/17.
+
 ## 2026-11-20 (7 AM): one sky over the meadow and the camp (local, not pushed)
 
 ARPIT wanted the camp to look like a world that already exists behind the door, and recalled that in the film version (976f264) the meadow had the camp's sky. On the camp experiment, the meadow now wears the blue camp's sunset sky, so the sky above the door runs on through the doorway.

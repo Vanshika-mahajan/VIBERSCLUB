@@ -220,7 +220,16 @@ function makeVideo(src: string, loop: boolean) {
  */
 export async function createCampScene(
   canvas: HTMLCanvasElement,
-  { glider: withGlider = true, picture = "sunset" }: { glider?: boolean; picture?: "sunset" | "blue" } = {},
+  {
+    glider: withGlider = true,
+    picture = "sunset",
+    still = false,
+  }: {
+    glider?: boolean;
+    picture?: "sunset" | "blue";
+    /** no walk in after the door: the camp keeps its framing (ARPIT: "dont zoom the camp scene") */
+    still?: boolean;
+  } = {},
 ) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
   const scene = new THREE.Scene();
@@ -410,7 +419,7 @@ export async function createCampScene(
     const wk = withGlider ? WALK : SETTLE;
     const x = Math.min(Math.max(walk, 0) / wk.time, 1);
     // under way from the first moment (it carries on from the push through the doorway), easing out
-    u.fwd.value = wk.far * (1 - Math.pow(1 - x, 3));
+    u.fwd.value = still ? 0 : wk.far * (1 - Math.pow(1 - x, 3));
     u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
     if (deep) {
       // a slow breath of the camera plus a lean toward the pointer, in picture px at the nearest point

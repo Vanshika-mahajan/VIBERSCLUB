@@ -28,7 +28,14 @@ const STILL_FOR = 2500;
 export function Camp({
   glider = true,
   picture = "sunset",
-}: { glider?: boolean; picture?: "sunset" | "blue" } = {}) {
+  world = false,
+}: {
+  glider?: boolean;
+  picture?: "sunset" | "blue";
+  /** the camp stands behind the door at its real size, never zoomed: through the doorway its grass
+   *  meets the meadow's at the threshold, and the camera simply walks through (ARPIT, 2026-11-20) */
+  world?: boolean;
+} = {}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const root = useRef<HTMLElement>(null);
   const router = useRouter();
@@ -73,7 +80,7 @@ export function Camp({
       const host = root.current;
       const r = portal.rect;
       if (!host) return;
-      if (!r || !document.querySelector("[data-entry]")) {
+      if (world || !r || !document.querySelector("[data-entry]")) {
         if (host.style.transform) host.style.transform = "";
         return;
       }
@@ -111,7 +118,7 @@ export function Camp({
       frame = requestAnimationFrame(loop);
     };
     import("./campScene")
-      .then(({ createCampScene }) => createCampScene(el, { glider, picture }))
+      .then(({ createCampScene }) => createCampScene(el, { glider, picture, still: world }))
       .then((sc) => {
         if (gone) return sc.dispose();
         scene = sc;
@@ -125,7 +132,7 @@ export function Camp({
       scene?.dispose();
       scene = null;
     };
-  }, [router, glider, picture]);
+  }, [router, glider, picture, world]);
 
   return (
     <section ref={root} className={s.camp} aria-label="Vibers Club camp">
