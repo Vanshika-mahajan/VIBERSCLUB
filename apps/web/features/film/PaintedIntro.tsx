@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { EntryDoor } from "@/features/entry/EntryDoor";
 import { portal } from "@/features/entry/portal";
 import { handover, preloadHome } from "@/features/camp/handover";
+import { UnveilButton } from "@/features/intro/UnveilButton";
 import {
+  DOOR_LEN,
   LEAVE_AFTER_SKY,
   PaintedScene,
   SKY_AFTER,
@@ -35,6 +37,7 @@ const NEARBY = [
   { name: "Arjun", line: "Treks at dawn", swatch: "#5f6b45" },
 ];
 const CARD_AT = 2.9; // the phone card shows once we are through the doorway
+const CARD_AT_PAINTED = 1.4; // with the painted door we are through when the camp starts
 const AUTO_AFTER = 3.2; // seconds without a tap before the next Viber connects by itself
 
 type State = {
@@ -43,7 +46,12 @@ type State = {
   sky: number | null;
 };
 
-export function PaintedIntro() {
+/**
+ * `paintedDoor` (ARPIT's experiment, 2026-11-20, /film-experiment): instead of the meadow door scene, the door is
+ * painted in the same knife strokes as the camp, in the same canvas. "A World Awaits" is set in type, Unveil swings
+ * the painted door open and the camera walks through into the light the camp paints itself on.
+ */
+export function PaintedIntro({ paintedDoor = false }: { paintedDoor?: boolean } = {}) {
   const router = useRouter();
   const layer = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -56,7 +64,10 @@ export function PaintedIntro() {
   const failed = useRef(false);
   const through = useRef(false);
   const glided = useRef(false); // the door is gone: the card may show
-  const [door, setDoor] = useState(true);
+  const shown = useRef(0); // painted door: when the page showed, for the meadow's breathing
+  const tapped = useRef<number | null>(null); // painted door: when Unveil was tapped
+  const [door, setDoor] = useState(!paintedDoor);
+  const [closed, setClosed] = useState(paintedDoor); // painted door: title and Unveil showing
   const [run, setRun] = useState(0);
   const [phase, setPhase] = useState<"wait" | "card" | "joined" | "sky">(
     "wait",
@@ -89,8 +100,11 @@ export function PaintedIntro() {
     glided.current = false;
     t0.current = null;
     st.current = { joins: [null, null, null], all: null, sky: null };
+    shown.current = performance.now();
+    tapped.current = null;
     /* eslint-disable react-hooks/set-state-in-effect -- reset when the page shows again */
-    setDoor(true);
+    setDoor(!paintedDoor);
+    setClosed(paintedDoor);
     setRun((n) => n + 1);
     setPhase("wait");
     setJoined([false, false, false]);
@@ -98,7 +112,7 @@ export function PaintedIntro() {
     router.prefetch("/home");
     preloadSound();
     return () => stopSound(0.3);
-  }, [router]);
+  }, [router, paintedDoor]);
 
   // load the painted pack and set up the renderer at the screen's shape
   useEffect(() => {
@@ -112,11 +126,15 @@ export function PaintedIntro() {
         Math.max(480, (H * window.innerWidth) / window.innerHeight),
       ),
     );
-    loadPack("/film/paint")
-      .then((pack) => {
+    Promise.all([
+      loadPack("/film/paint"),
+      paintedDoor ? loadPack("/film/paint-door") : null,
+    ])
+      .then(([pack, doorPack]) => {
         if (!alive) return;
-        scene.current = new PaintedScene(c, pack, { W, H });
-        scene.current.frame(0, st.current);
+        scene.current = new PaintedScene(c, pack, { W, H }, doorPack);
+        if (doorPack) scene.current.doorFrame(0, null);
+        else scene.current.frame(0, st.current);
       })
       .catch(() => {
         failed.current = true;
@@ -124,7 +142,7 @@ export function PaintedIntro() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [paintedDoor]);
 
   // dev only: window.__painted.at(t) freezes the clock at t seconds after the door opened; open() skips the door
   useEffect(() => {
@@ -164,7 +182,30 @@ export function PaintedIntro() {
     const tick = () => {
       raf = requestAnimationFrame(tick);
       const sc = scene.current;
-      if (!started.current || leaving.current) return;
+      if (leaving.current) return;
+      // the painted door: the meadow until Unveil, then the swing and the walk through, then the camp
+      if (paintedDoor && !started.current) {
+        if (failed.current) return leave();
+        if (!sc) return;
+        const p = performance.now(),
+          idle = (p - shown.current) / 1000;
+        const o =
+          fixedT.current != null && fixedT.current < 0
+            ? DOOR_LEN + fixedT.current
+            : tapped.current == null
+              ? null
+              : (p - tapped.current) / 1000;
+        if (o != null && o >= DOOR_LEN && fixedT.current == null) {
+          started.current = true;
+          through.current = true;
+          t0.current = tapped.current! + DOOR_LEN * 1000;
+          lastAct.current = 0;
+        } else {
+          sc.doorFrame(idle, o == null ? null : Math.min(o, DOOR_LEN));
+          return;
+        }
+      }
+      if (!started.current) return;
       if (!sc) {
         if (failed.current) leave();
         return;
@@ -175,8 +216,9 @@ export function PaintedIntro() {
       }
       const t = now(),
         s0 = st.current;
-      if (t > CARD_AT && through.current && s0.all == null) {
-        if (lastAct.current < CARD_AT) lastAct.current = t; // the idle timer starts when the card shows
+      const cardAt = paintedDoor ? CARD_AT_PAINTED : CARD_AT;
+      if (t > cardAt && through.current && s0.all == null) {
+        if (lastAct.current < cardAt) lastAct.current = t; // the idle timer starts when the card shows
         setPhase((p) => (p === "wait" ? "card" : p));
         if (t - lastAct.current > AUTO_AFTER)
           connect(s0.joins.findIndex((j) => j == null));
@@ -192,7 +234,7 @@ export function PaintedIntro() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [connect, leave]);
+  }, [connect, leave, paintedDoor]);
 
   // the painting behind the doorway, the size of the world seen through it, growing as we go through
   useEffect(() => {
@@ -239,6 +281,13 @@ export function PaintedIntro() {
 
   const start = useCallback(() => {
     started.current = true;
+    startSound();
+  }, []);
+  // painted door: Unveil (or Enter) swings it open
+  const unveil = useCallback(() => {
+    if (tapped.current != null || !scene.current) return;
+    tapped.current = performance.now();
+    setClosed(false);
     startSound();
   }, []);
   const doorDone = useCallback(() => {
@@ -306,6 +355,20 @@ export function PaintedIntro() {
             ))}
           </ul>
         </section>
+      )}
+      {paintedDoor && (
+        <div className={`${s.paintedDoor} ${closed ? "" : s.opening}`}>
+          <h1 className={s.awaits}>
+            <span>A World</span>
+            <span className={s.awaitsRed}>Awaits</span>
+            <svg className={s.swoosh} viewBox="0 0 200 12" aria-hidden="true">
+              <path d="M4 9 C 60 3, 130 2, 196 5 C 140 5, 70 7, 10 11 Z" />
+            </svg>
+          </h1>
+          <div className={s.unveil}>
+            <UnveilButton tone="brown" onClick={unveil} disabled={!closed} />
+          </div>
+        </div>
       )}
       {door && (
         <EntryDoor

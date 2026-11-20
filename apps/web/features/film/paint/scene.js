@@ -24,6 +24,11 @@ const D = Math.PI / 180;
 const GROUND = [0.96, 0.94, 0.9];
 const PW = 1920, PH = 1080; // the camp plate
 
+// the painted door experiment (pack public/film/paint-door): ARPIT's meadow, the door leaf on its own, the light behind it
+const DK = PW / 1671, DOOR = { l: 862 * DK, t: 247 * DK, w: 266 * DK, h: 554 * DK };
+/** Seconds from the tap on Unveil to the camp: the door swings, the camera walks through into the light. */
+export const DOOR_LEN = 2.5;
+
 /** Times after all three have joined (seconds). */
 export const SKY_AFTER = 2.2, LEAVE_AFTER_SKY = 3.9;
 
@@ -76,13 +81,15 @@ const blinking = (t, seed) => { const per = 2.6 + (seed % 7) * 0.31, ph = (t + s
 const wave = (t, sp = 13) => [150, 20 + Math.sin(t * sp) * 22];
 
 export class PaintedScene {
-  /** @param {HTMLCanvasElement} canvas @param {Record<string, any>} pack @param {{W:number,H:number}} size */
-  constructor(canvas, pack, { W, H }) {
+  /** @param {HTMLCanvasElement} canvas @param {Record<string, any>} pack @param {{W:number,H:number}} size @param {Record<string, any> | null} [doorPack] */
+  constructor(canvas, pack, { W, H }, doorPack = null) {
     this.W = W; this.H = H;
     const E = (this.E = new Impasto(canvas, { W, H, ss: 1 }));
     this.dyn = new Strokes(2048);
     const P = (this.P = {});
     for (const [n, p] of Object.entries(pack)) P[n] = { b: E.batch(p.data), tex: E.texture(p.img, 0), w: p.w, h: p.h, ox: p.ox, oy: p.oy };
+    this.Q = null;
+    if (doorPack) { this.Q = {}; for (const [n, p] of Object.entries(doorPack)) this.Q[n] = { b: E.batch(p.data), tex: E.texture(p.img, 0), w: p.w, h: p.h, ox: p.ox, oy: p.oy }; }
     this.V = {};
     for (const n of ["hero", "guitar", "bun", "cap"]) this.V[n] = Object.fromEntries(["head", "blink", "laugh", "torso", "ua", "fa", "th", "sh"].map((k) => [k, P[`${n}.${k}`]]));
     // camera and cast spacing from the screen shape: wide screens see more of the camp
@@ -179,6 +186,42 @@ export class PaintedScene {
     for (const [pl, M] of viberParts(this.V.hero, { x: 1040, y: 1090, s: 0.62, sit: true, armL: [166, 4], armR: [166, 4], mood: "laugh", bob: Math.sin(t * 3) * 6 })) this.put(pl, mul(G, M), t, -1e6);
     this.put(P.glider, G, t, -1e6);
     this.C = keep;
+  }
+
+  /**
+   * The painted door (experiment): the meadow breathes and leaves fall; after the tap (o seconds ago) the door
+   * swings outward on its left hinge, warm light behind it, and the camera walks into the doorway until the
+   * light fills the screen, which is the paper the camp then paints itself on.
+   * @param {number} t seconds since the page showed @param {number|null} o seconds since Unveil was tapped
+   */
+  doorFrame(t, o) {
+    const { Q, W, H, E } = this;
+    E.begin(GROUND);
+    const fit = Math.max(W / PW, H / PH) * (1.02 + 0.01 * Math.sin(t * 0.6));
+    const sw = o == null ? 0 : ss(seg(o, 0.05, 1.25));
+    const pk = o == null ? 0 : seg(o, 0.6, DOOR_LEN), push = pk * pk * (1.6 - 0.6 * pk);
+    const dx = DOOR.l + DOOR.w / 2, dy = DOOR.t + DOOR.h * 0.52;
+    const zEnd = Math.max(W / DOOR.w, H / DOOR.h) * 1.3;
+    this.setCam(lerp(dx, dx, push), lerp(PH / 2, dy, push), fit * Math.pow(zEnd / fit, push));
+    const o2 = { t, cam: this.cam, grey: 0 };
+    E.under(Q.meadow.tex, Q.meadow.w, Q.meadow.h, o2);
+    E.draw(Q.meadow.b, { ...o2, appear: -1e6, appDur: 0.14 });
+    // a few leaves drifting down across the meadow, until we are through
+    if (push < 0.5) {
+      for (let i = 0; i < 12; i++) {
+        const sp = 40 + hash(i) * 50, y = ((hash(i * 3.3) * PH + t * sp) % (PH + 80)) - 40;
+        const x = (hash(i * 7.1) * PW + Math.sin(t * 0.8 + i) * 60 + t * 18) % PW;
+        const c = [hex("#9aa63a"), hex("#c9a23a"), hex("#6f8a2e")][i % 3];
+        this.dyn.push({ x, y, ang: t * (1 + hash(i)) + i, len: 22 + hash(i * 2) * 14, wid: 11, c, type: DAB, alpha: 0.9, hgt: 0.4, seed: i });
+      }
+      this.flush(t, -1e6);
+    }
+    const at = TR(DOOR.l, DOOR.t);
+    if (sw > 0) this.put(Q.light, at, t, -1e6);
+    // outward on the left hinge: the leaf narrows, its free edge drifts down a little as it comes toward us
+    const a = sw * 82 * D;
+    this.put(Q.door, mul(at, [Math.cos(a), Math.sin(a) * 0.1, 0, 1, 0, 0]), t, -1e6);
+    E.finish({ ground: GROUND, sat: 1.05, contrast: 1.04, expo: 1.02 + push * 0.12, vig: 0.18 * (1 - push), weave: 0, spec: 0.12, norm: 2.6 });
   }
 
   /** @param {number} t seconds since the door opened @param {{joins:(number|null)[], all:number|null, sky:number|null}} st */

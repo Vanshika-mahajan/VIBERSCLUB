@@ -14,6 +14,11 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (6:20 PM): painted door experiment at /film-experiment (local, not pushed)
+- ARPIT chose to paint the door part like the camp, as an experiment. `/film-experiment` (`<PaintedIntro paintedDoor />`) now opens on ARPIT's meadow and door in the camp's knife strokes, with falling leaves and a breathing camera. "A World Awaits" is set in type, and the painted title was filled out of the picture by `tools/clean-meadow.py`. Unveil swings the painted door outward on its left hinge with warm light behind it. The camera walks into the doorway until the light fills the screen, and the camp paints itself in on it. `/` is unchanged (Checkpoint 10).
+- New pack in `public/film/paint-door/` (about 2.2 MB, baked by `tools/bake-door.html` through `bake.mjs <out> bake-door`). Pack code is shared in `tools/pack.js`.
+- Tests: typecheck clean, lint 0 errors, Vitest 101/101, `e2e/sweep.spec.ts` phone and desktop 26/26. ARPIT checks the motion frame by frame.
+
 ## CHECKPOINT 10 (2026-11-20, 5:58 PM IST, ARPIT): commit 6ea6e2e, pushed on claude/project-thread-nx32ks
 
 ARPIT marked this state as checkpoint 10. It contains:

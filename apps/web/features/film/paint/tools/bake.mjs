@@ -1,13 +1,13 @@
 import { createRequire } from 'node:module'; const { chromium } = createRequire(process.cwd() + '/')('playwright');
 import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
 const root = path.dirname(new URL(import.meta.url).pathname);
-const types = { '.html': 'text/html', '.js': 'text/javascript' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.webp': 'image/webp' };
 const srv = http.createServer((q, r) => { const p = path.join(root, decodeURIComponent(q.url.split('?')[0])); fs.readFile(p, (e, d) => { if (e) { r.writeHead(404); r.end(); return; } r.writeHead(200, { 'content-type': types[path.extname(p)] || 'application/octet-stream' }); r.end(d); }); });
 await new Promise(ok => srv.listen(0, ok));
 const out = process.argv[2]; fs.mkdirSync(out, { recursive: true });
 const b = await chromium.launch(); const p = await b.newPage();
 p.on('pageerror', e => console.log('ERR', e.message)); p.on('console', m => console.log(m.text()));
-await p.goto(`http://localhost:${srv.address().port}/bake.html`); await p.waitForFunction(() => window.ready && window.bake);
+await p.goto(`http://localhost:${srv.address().port}/${process.argv[3] || 'bake'}.html`); await p.waitForFunction(() => window.ready && window.bake);
 const { index, tex, bytes } = await p.evaluate(() => window.bake());
 const parts = []; for (let i = 0; i < bytes; i += 4 << 20) parts.push(Buffer.from(await p.evaluate(([i, n]) => window.chunk(i, n), [i, 4 << 20]), 'base64'));
 fs.writeFileSync(path.join(out, 'strokes.bin'), Buffer.concat(parts));
