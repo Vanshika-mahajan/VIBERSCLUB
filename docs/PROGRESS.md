@@ -17,7 +17,7 @@ M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/00
 ## 2026-11-20 (6:30 AM): door-to-camp pass-through and canopy colours (local, not pushed)
 
 From ARPIT's recording:
-- **Transition.** The door and meadow used to dissolve over the last 0.2 s of the push, starting while the doorframe and leaf still filled the screen edges, so they faded away like a ghost. With the new `through` prop (`EntryDoor`, passed by `EntryDemo` on the camp experiment only), the camera passes right through the doorway first. The door layer only goes at 2.72 s, when the opening already overfills the screen. Checkpoint 8's door to the Earth keeps its old timing.
+- **Transition.** The door and meadow used to dissolve over the last 0.2 s of the push, starting while the doorframe and leaf still filled the screen edges, so they faded away like a ghost. With the new `through` prop (`EntryDoor`, passed by `EntryDemo` on the camp experiment only), the camera passes right through the doorway first. The door layer only fades over 2.69 to 2.75 s, as the last edge of the doorframe slips off screen. Checkpoint 8's door to the Earth keeps its old timing.
 - **Canopy colours.** ARPIT's canopy picture is graded into the camp's light by a small shader in `ParagliderFlight.tsx`: a little less saturated, warmer and darker against the low sun, glowing on the sun's side and along the top, and softened by the valley haze while it is far off. The colours come from the camp picture.
 
 Tests: typecheck and lint clean; Vitest 101/101; e2e `entry.spec` + `sweep.spec` desktop 17/17.
