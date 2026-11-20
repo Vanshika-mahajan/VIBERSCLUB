@@ -52,6 +52,7 @@ const CRUISE = 0.3; // playback rate while the door opens (gentler than the clip
 const DRIFT = { x: -150, time: 3.4 }; // picture px it glides in from, and over how long
 // after the doorway the camera keeps walking forward into the camp (ARPIT): how far, and over how long
 const WALK = { far: 0.42, time: 2.6 };
+const SETTLE = { far: 0.1, time: 2.4 };
 
 const vertex = /* glsl */ `
 attribute vec3 position;
@@ -67,7 +68,7 @@ void main() {
 
 const person = (c: Clip, i: number) => /* glsl */ `
   { vec2 q = (p - vec2(${c.x}.0, ${c.y}.0)) / vec2(${c.w}.0, ${c.h}.0);
-    if (vOn > 0.5 && q.x > 0.0 && q.y > 0.0 && q.x < 1.0 && q.y < 1.0) {
+    if (on${i} > 0.5 && q.x > 0.0 && q.y > 0.0 && q.x < 1.0 && q.y < 1.0) {
       vec3 c = texture2D(V${i}, vec2(q.x, q.y * ${c.colour.toFixed(6)})).rgb;
       float a = texture2D(V${i}, vec2(q.x, ${c.mask.toFixed(6)} + q.y * ${c.colour.toFixed(6)})).r;
       col = mix(col, grade(c, a, col, ${c.haze.toFixed(2)}), a);
@@ -78,6 +79,7 @@ precision highp float;
 varying vec2 v, sc;
 uniform sampler2D P, B, R, D, GL, Z;
 uniform sampler2D ${PEOPLE.map((_, i) => `V${i}`).join(", ")};
+uniform float ${PEOPLE.map((_, i) => `on${i}`).join(", ")};
 uniform float t, S, off, vOn, glOn, glX, glS, fwd, deep;
 uniform vec2 look;
 const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
@@ -263,6 +265,9 @@ export async function createCampScene(
   // start a video until the page is touched
   let started = false;
   window.addEventListener("pointerdown", play, { once: true });
+  // without the paraglider (the camp experiment) they start at once, muted, so every one of them is
+  // already there in the first gap of the door instead of popping in halfway through
+  if (!withGlider) play();
 
   // the videos sit in the page, invisible: some browsers stop handing out new frames of a video that
   // is not in the page at all
@@ -341,7 +346,10 @@ export async function createCampScene(
     uScale: { value: new THREE.Vector2(1, 1) },
     uOffset: { value: new THREE.Vector2(0, 0) },
   };
-  people.forEach((v, i) => (u[`V${i}`] = { value: keep(videoTexture(v)) }));
+  people.forEach((v, i) => {
+    u[`V${i}`] = { value: keep(videoTexture(v)) };
+    u[`on${i}`] = { value: 0 };
+  });
   const material = keep(
     new THREE.RawShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms: u, depthTest: false, depthWrite: false }),
   );
@@ -380,8 +388,6 @@ export async function createCampScene(
   let walk = -1;
   let drift = 0; // 0 … 1 the glider's drift across into its path
   const walkOn = () => {
-    // without the paraglider the whole camp stays in view, as in ARPIT's picture: no walk in
-    if (!withGlider) return;
     if (walk < 0) walk = 0;
   };
   const wake = () => {
@@ -399,9 +405,12 @@ export async function createCampScene(
     u.t.value += step;
     if (since >= 0) since += step;
     if (walk >= 0) walk += step;
-    const x = Math.min(Math.max(walk, 0) / WALK.time, 1);
+    // without the paraglider the whole camp should stay in view (ARPIT's picture), so the camera only
+    // carries the push through the doorway on a little and settles, instead of stopping dead
+    const wk = withGlider ? WALK : SETTLE;
+    const x = Math.min(Math.max(walk, 0) / wk.time, 1);
     // under way from the first moment (it carries on from the push through the doorway), easing out
-    u.fwd.value = WALK.far * (1 - (1 - x) * (1 - x));
+    u.fwd.value = wk.far * (1 - Math.pow(1 - x, 3));
     u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
     if (deep) {
       // a slow breath of the camera plus a lean toward the pointer, in picture px at the nearest point
@@ -410,6 +419,8 @@ export async function createCampScene(
       (u.look.value as THREE.Vector2).lerp(aim, Math.min(1, step * 2.5));
     }
     u.vOn.value = people.every((v) => v.readyState >= 2) ? 1 : 0;
+    // each person shows as soon as their own video has a frame (not only once all of them have)
+    people.forEach((v, i) => (u[`on${i}`].value = withGlider ? u.vOn.value : v.readyState >= 2 ? 1 : 0));
     const ready = glider.readyState >= 2;
     u.glOn.value = ready && flying ? 1 : 0;
     // upload the glider's current frame every time: three's video-frame callback does not reliably fire
