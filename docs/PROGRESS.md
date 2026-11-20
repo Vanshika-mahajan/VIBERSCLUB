@@ -14,6 +14,19 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20: a real wing for the paraglider (local, not pushed)
+
+ARPIT asked to change the canopy because it was static, and chose "Real wing, breathing and swaying".
+- `features/camp/wing.ts` (new): a curved paraglider wing in ARPIT's seven panel colours. It has an arc from tip to tip, an aerofoil, upper and lower skins, open cells along the nose, ribs and panel seams, and the chord narrows toward the tips.
+- It breathes: the fabric ripples, the tips flex and the arc swells a little. The glider sways and banks gently, and the pilot swings under it a moment later. The suspension lines now run from the wing's underside to the pilot's risers and move with both.
+- A low warm sun from behind and to the left lights the top of the wing.
+- The ending changed, because a wing with depth cannot simply grow flat in front of the camera as the flat canopy did: the wing rushes up and over us, rearing back so its underside fills the whole screen, while the pilot swings through below and out of sight. The hand-over frame is fully covered (checked frame by frame).
+- ARPIT's flight path, phases, timing, pilot picture and colours are unchanged.
+- The earlier local commit also makes the door-to-camp transition seamless: the camera settles instead of stopping dead, and the people are there from the first gap of the door.
+
+Tests: `pnpm typecheck` and `pnpm lint` clean; Vitest 101/101; e2e `entry.spec` + `sweep.spec` on desktop 17/17.
+Known issue: none found in review frames. Next: ARPIT reviews the flight; push only on ARPIT's ask.
+
 ## 2026-11-20 (early morning): camp experiment at /camp-experiment
 
 ARPIT's experiment. At ARPIT's ask it is now also the first page `/` ("replace earth with the camp part"); checkpoint 8's door-to-Earth code is kept and is one line away in `app/page.tsx`:
