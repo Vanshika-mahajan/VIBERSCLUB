@@ -11,7 +11,7 @@ export function CampExperiment() {
     <>
       <Camp glider={false} picture="blue" />
       <ParagliderFlight />
-      <EntryDemo through />
+      <EntryDemo through sky="blue" />
     </>
   );
 }

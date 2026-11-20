@@ -14,6 +14,15 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (7 AM): one sky over the meadow and the camp (local, not pushed)
+
+ARPIT wanted the camp to look like a world that already exists behind the door, and recalled that in the film version (976f264) the meadow had the camp's sky. On the camp experiment, the meadow now wears the blue camp's sunset sky, so the sky above the door runs on through the doorway.
+- New pictures: `public/entry/meadow-door-blue.webp`, `meadow-bg-blue.webp`, and `meadow-sky-blue.webp` (the cloud detail and where the clouds drift). They were made from the meadow by cutting out its sky precisely (a skyline traced over the peaks plus sky colours, so leaves, vines, peaks and the title stay) and filling it with the camp's open sky, taken from right of its tree, sign and sun.
+- Wiring: a `sky="blue"` option on `EntryDoor` and `EntryDemo`, which `createEntryScene` and `loadMeadowLayers` turn into the `-blue` files. Only `CampExperiment` passes it, so checkpoints 7 and 8 keep the original meadow.
+- I also tried showing the camp at its full size behind the door. The nearest person then filled the doorway, so the camp stays fitted to the doorway as before, which matches the film's look of small people far off.
+
+Tests: typecheck and lint clean; Vitest 101/101; e2e `entry.spec` + `sweep.spec` desktop 17/17.
+
 ## 2026-11-20 (6:30 AM): door-to-camp pass-through and canopy colours (local, not pushed)
 
 From ARPIT's recording:

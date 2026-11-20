@@ -32,6 +32,7 @@ export function EntryDoor({
   backdrop = "clouds",
   alive = false,
   through = false,
+  sky,
 }: {
   onDone: () => void;
   /** the moment the door is asked to open, inside the click (so sound may start there) */
@@ -42,6 +43,8 @@ export function EntryDoor({
   /** the camera passes right through the doorway before the door goes, instead of the door and meadow
    *  dissolving over the last steps (ARPIT, camp experiment, 2026-11-20) */
   through?: boolean;
+  /** "blue": the meadow wears the blue camp's sunset sky, so one sky runs over the door and through it */
+  sky?: "blue";
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -79,7 +82,7 @@ export function EntryDoor({
       const x = Math.min(Math.max(a.x * box.width, 24 + half), box.width - 24 - half);
       setSpot({ x, y: a.y * box.height });
     };
-    createEntryScene(canvas.current, params.current, backdrop, { alive }).then((sc) => {
+    createEntryScene(canvas.current, params.current, backdrop, { alive, sky }).then((sc) => {
       if (cancelled) return sc.dispose();
       scene = sc;
       gsap.ticker.add(tick);
@@ -110,7 +113,7 @@ export function EntryDoor({
       running.current?.kill();
       scene?.dispose();
     };
-  }, [backdrop, alive]);
+  }, [backdrop, alive, sky]);
 
   // while the entry is up, the page under it does not scroll
   useEffect(() => {

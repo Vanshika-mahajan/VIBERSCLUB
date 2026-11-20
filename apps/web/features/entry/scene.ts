@@ -270,7 +270,8 @@ export async function createEntryScene(
   params: EntryParams,
   backdrop: EntryBackdrop = "clouds",
   /** the meadow's scenery moving, after Temple Night (scenery.ts) */
-  opts: { alive?: boolean } = {},
+  /** sky "blue": the meadow wears the blue camp's sunset sky (camp experiment, 2026-11-20) */
+  opts: { alive?: boolean; sky?: "blue" } = {},
 ) {
   await document.fonts?.ready;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: true });
@@ -293,10 +294,10 @@ export async function createEntryScene(
     // (in the meadow these stay hidden: its door is painted into the picture)
     picture("/entry/doorframe.webp"),
     picture("/intro/door-leaf.webp"),
-    backdrop === "meadow" ? picture("/entry/meadow-door.webp") : Promise.resolve(null),
+    backdrop === "meadow" ? picture(`/entry/meadow-door${opts.sky === "blue" ? "-blue" : ""}.webp`) : Promise.resolve(null),
   ]);
   const alive = backdrop === "meadow" && !!opts.alive;
-  const layers = alive ? await loadMeadowLayers(loader, keep) : null;
+  const layers = alive ? await loadMeadowLayers(loader, keep, opts.sky === "blue" ? "-blue" : "") : null;
   const meadow = backdrop === "meadow";
   // everything that makes the door: moved as one onto its spot in the picture (meadow), else at the origin
   const doorGroup = new THREE.Group();

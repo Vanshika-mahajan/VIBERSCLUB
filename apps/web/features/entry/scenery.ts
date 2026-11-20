@@ -29,7 +29,12 @@ const FLOWERS = [
   0.05689, 8.5, 80, 990, 0.05826, 10.2, 355, 1000, 0.05385, 11.9, 250, 1010, 0.05932, 13.6,
 ];
 
-export async function loadMeadowLayers(loader: THREE.TextureLoader, keep: <T extends { dispose(): void }>(d: T) => T): Promise<MeadowLayers> {
+export async function loadMeadowLayers(
+  loader: THREE.TextureLoader,
+  keep: <T extends { dispose(): void }>(d: T) => T,
+  /** "-blue": the meadow with the blue camp's sky (meadow-bg-blue.webp, meadow-sky-blue.webp) */
+  variant = "",
+): Promise<MeadowLayers> {
   const load = async (url: string, kind: "picture" | "data" | "ids") => {
     const t = keep(await loader.loadAsync(url));
     t.flipY = false; // rows run downwards, as in the picture
@@ -42,9 +47,9 @@ export async function loadMeadowLayers(loader: THREE.TextureLoader, keep: <T ext
     return t;
   };
   const [bg, rig, sky, flowers] = await Promise.all([
-    load("/entry/meadow-bg.webp", "picture"),
+    load(`/entry/meadow-bg${variant}.webp`, "picture"),
     load("/entry/meadow-rig.png", "data"),
-    load("/entry/meadow-sky.webp", "data"),
+    load(`/entry/meadow-sky${variant}.webp`, "data"),
     load("/entry/meadow-flowers.png", "ids"),
   ]);
   return { bg, rig, sky, flowers };
