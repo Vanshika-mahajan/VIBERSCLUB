@@ -5,13 +5,12 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { canUse3D } from "@/features/journey/world/support";
 import { handover, preloadHome } from "./handover";
-import { makeWing } from "./wing";
 
 /**
  * ARPIT's own paraglider (their code and pilot picture, 2026-11-20), flying over the camp experiment.
  * Their flight is kept as they wrote it: the pilot sprite, the suspension lines and the three phases (descend from high, fly straight at us, accelerate until the canopy covers the
- * screen). The flat canopy became a real wing that breathes and sways (ARPIT's choice, 2026-11-20,
- * features/camp/wing.ts), in their colours. Here it draws on a transparent canvas over the camp instead of over its own background,
+ * screen). The flat canopy became ARPIT's own canopy picture (public/camp/canopy.webp, 2026-11-20) on a
+ * curved sheet that breathes and sways. Here it draws on a transparent canvas over the camp instead of over its own background,
  * starts once the door has gone, and when the canopy covers the screen Home opens underneath
  * (the same hand-over as the camp: the frame lifts away over Home).
  */
@@ -52,16 +51,69 @@ export function ParagliderFlight() {
     scene.add(paraglider);
     const canopy = new THREE.Group();
     paraglider.add(canopy);
-    // the wing (features/camp/wing.ts): ARPIT's panel colours on a curved, breathing paraglider wing
-    const colors = [
-      0xd9471e, 0xf39a17, 0xffc94a, 0xe64e25, 0xf28a20, 0xffc94a, 0xd9471e,
+    // the canopy: ARPIT's own canopy picture (2026-11-20), cut out, on a gently curved sheet that breathes
+    const CANOPY_W = 6.4;
+    const CANOPY_H = (CANOPY_W * 705) / 1883; // the picture's proportions
+    const COLS = 48;
+    const ROWS = 8;
+    const canopyGeo = new THREE.PlaneGeometry(CANOPY_W, CANOPY_H, COLS, ROWS);
+    const canopyMat = new THREE.MeshBasicMaterial({
+      transparent: true,
+      alphaTest: 0.02,
+      side: THREE.DoubleSide,
+    });
+    new THREE.TextureLoader().load("/camp/canopy.webp", (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      canopyMat.map = texture;
+      canopyMat.needsUpdate = true;
+    });
+    const canopyMesh = new THREE.Mesh(canopyGeo, canopyMat);
+    canopyMesh.frustumCulled = false;
+    canopy.add(canopyMesh);
+    const canopyPos = canopyGeo.attributes.position as THREE.BufferAttribute;
+    const canopyUv = canopyGeo.attributes.uv as THREE.BufferAttribute;
+    /** where a spot of the picture sits on the canopy (u 0..1 across, v 0..1 from the top), breathing over time */
+    const onCanopy = (u: number, v: number, t: number, out: THREE.Vector3) => {
+      const x = (u - 0.5) * 2;
+      // the picture's bottom edge sits at the canopy's origin, its top about 2.4 up, like ARPIT's canopy
+      out.set(
+        x * (CANOPY_W / 2) * (1 + 0.012 * Math.sin(t * 1.3)),
+        (1 - v) * CANOPY_H,
+        // tips a little toward us, so the wing has depth when it banks; the cloth ripples and the tips flex
+        0.55 * x * x +
+          0.035 * Math.sin(t * 2.3 + x * 4.0 + v * 2.0) +
+          0.05 * x * x * Math.sin(t * 1.7 - x),
+      );
+      out.y += 0.04 * x * x * Math.sin(t * 1.9 - x * 1.5);
+      return out;
+    };
+    const spot = new THREE.Vector3();
+    const breathe = (t: number) => {
+      for (let k = 0; k < canopyPos.count; k++) {
+        onCanopy(canopyUv.getX(k), 1 - canopyUv.getY(k), t, spot);
+        canopyPos.setXYZ(k, spot.x, spot.y, spot.z);
+      }
+      canopyPos.needsUpdate = true;
+    };
+    // where the lines meet the canopy: along the bottom edge of the picture (measured from it)
+    const EDGE: [number, number][] = [
+      [0.06, 0.86],
+      [0.106, 0.747],
+      [0.171, 0.655],
+      [0.237, 0.594],
+      [0.303, 0.548],
+      [0.369, 0.536],
+      [0.434, 0.524],
+      [0.5, 0.52],
+      [0.566, 0.517],
+      [0.631, 0.541],
+      [0.697, 0.572],
+      [0.763, 0.621],
+      [0.829, 0.692],
+      [0.894, 0.801],
+      [0.94, 0.9],
     ];
-    const wing = makeWing(colors);
-    canopy.add(wing.group);
-    // the low sun behind and to the left lights the top of the wing; the underside stays in its glow
-    const sun = new THREE.DirectionalLight(0xffe2b8, 1.6);
-    sun.position.set(-4, 6, -6);
-    scene.add(sun);
     canopy.position.set(0, 0.35, 0);
 
     // PILOT: ARPIT's PNG as a sprite
@@ -85,28 +137,27 @@ export function ParagliderFlight() {
       pilot = pilotSprite;
     });
 
-    // SUSPENSION LINES: from the underside of the wing down to the pilot's two risers, moving with both
+    // SUSPENSION LINES: fine lines from the canopy's bottom edge down to the pilot's two risers, moving with both
     const lineMaterial = new THREE.LineBasicMaterial({
-      color: 0x111111,
+      color: 0x2b2420,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.5,
     });
-    const lineCount = wing.anchors.length;
-    const linePos = new Float32Array(lineCount * 6);
+    const linePos = new Float32Array(EDGE.length * 6);
     const lineGeo = new THREE.BufferGeometry();
     lineGeo.setAttribute("position", new THREE.BufferAttribute(linePos, 3));
-    paraglider.add(new THREE.LineSegments(lineGeo, lineMaterial));
+    const lines = new THREE.LineSegments(lineGeo, lineMaterial);
+    lines.frustumCulled = false;
+    paraglider.add(lines);
     const riser = new THREE.Vector3();
     const anchor = new THREE.Vector3();
-    const placeLines = () => {
+    const placeLines = (t: number) => {
       canopy.updateMatrix();
-      const swing = pilot ? pilot.position.x : 0;
-      wing.anchors.forEach((a, k) => {
-        anchor.copy(a).applyMatrix4(canopy.matrix);
+      const px = pilot ? pilot.position.x : 0;
+      EDGE.forEach(([u, v], k) => {
+        onCanopy(u, v - 0.01, t, anchor).applyMatrix4(canopy.matrix);
         // the risers clip into the harness at the pilot's shoulders
-        const py = pilot ? pilot.position.y : -0.95;
-        const pz = pilot ? pilot.position.z : 0.25;
-        riser.set(swing + (a.x < 0 ? -0.42 : 0.42), py + 0.4, pz + 0.01);
+        riser.set(px + (u < 0.5 ? -0.32 : 0.32), -0.5, 0.26);
         linePos.set(
           [anchor.x, anchor.y, anchor.z, riser.x, riser.y, riser.z],
           k * 6,
@@ -120,11 +171,10 @@ export function ParagliderFlight() {
     const flightStartY = 8;
     const start = new THREE.Vector3(0, flightStartY, -50);
     const cameraApproach = new THREE.Vector3(0, flightY, 7.0);
-    // the end (instead of ARPIT's flat canopy growing in front of the camera, which a wing with depth
-    // cannot do): the wing rushes up and over us, rearing back so that its underside, with its seams and
-    // cells, fills the whole screen; it ends behind us, its underside about 5 away, the pilot swung
-    // through below and out of sight
-    const END = { y: 1.9, pitch: -1.57, scale: 4.5, z: 15.6 };
+    // the end: as in ARPIT's flight, the canopy rushes in until it covers the screen. The picture is an
+    // arc, so it ends with the band of red and orange cells across the middle of the canopy filling the
+    // view (about 2.4 in front of us), the pilot far below and out of sight
+    const END = { y: -4.3, scale: 2, z: 7.64 };
     const duration = 4000;
 
     let startTime = -1;
@@ -175,8 +225,8 @@ export function ParagliderFlight() {
           THREE.MathUtils.lerp(0.72, END.scale, eased),
         );
       }
-      // life: the wing breathes and sways, banking a little, the pilot swinging under it a moment later;
-      // over the last rush the sway settles and the wing pitches up over us
+      // life: the canopy breathes and sways, banking a little, the pilot swinging under it a moment later;
+      // over the last rush the sway settles
       const time = (now - startTime) / 1000;
       const end =
         progress < 0.78 ? 0 : 1 - Math.pow(1 - (progress - 0.78) / 0.22, 4);
@@ -186,20 +236,13 @@ export function ParagliderFlight() {
         0,
         0.07 * Math.sin(time * 0.9) * calm,
       );
-      canopy.rotation.set(
-        END.pitch * end,
-        0,
-        0.035 * Math.sin(time * 0.9 - 0.7) * calm,
-      );
+      canopy.rotation.set(0, 0, 0.035 * Math.sin(time * 0.9 - 0.7) * calm);
       if (pilot) {
         pilot.position.x = 0.08 * Math.sin(time * 0.9 - 1.2) * calm;
-        // as the wing rears up over us the pilot swings through underneath, out of sight below
-        pilot.position.y = -0.95 - 1.2 * end;
-        pilot.position.z = 0.25 + 1.4 * end;
         pilot.material.rotation = -0.05 * Math.sin(time * 0.9 - 1.2) * calm;
       }
-      wing.update(time, 1);
-      placeLines();
+      breathe(time);
+      placeLines(time);
       renderer.render(scene, camera);
 
       // the canopy covers the screen: lay this frame over everything and open Home underneath
@@ -235,7 +278,9 @@ export function ParagliderFlight() {
 
     return () => {
       cancelAnimationFrame(frame);
-      wing.dispose();
+      canopyGeo.dispose();
+      canopyMat.map?.dispose();
+      canopyMat.dispose();
       window.removeEventListener("resize", handleResize);
       scene.traverse((object) => {
         const o = object as THREE.Mesh;

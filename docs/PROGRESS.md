@@ -14,6 +14,16 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (6 AM): ARPIT's canopy picture replaces the code-drawn wing (local, not pushed)
+
+ARPIT said the 3D wing looked bad and sent a photo of a real canopy. That photo is now the canopy:
+- `public/camp/canopy.webp`: ARPIT's picture, cut out cleanly (the coloured fringe and stray specks removed).
+- In `features/camp/ParagliderFlight.tsx` it sits on a gently curved sheet (tips a little toward us) that breathes: the cloth ripples, the tips flex, the span swells slightly. It still sways and banks, with the pilot swinging under it. Fine lines run from the picture's bottom edge (measured from it) to the pilot's risers.
+- The ending is ARPIT's again: the canopy rushes in until its red and orange cells fill the screen, with the pilot far below and out of sight. Home opens from that frame.
+- `features/camp/wing.ts` (the code-drawn wing) is removed; it stays in git history (46f37d2).
+
+Tests: typecheck and lint clean; Vitest 101/101; e2e `entry.spec` + `sweep.spec` desktop 17/17.
+
 ## 2026-11-20: a real wing for the paraglider (local, not pushed)
 
 ARPIT asked to change the canopy because it was static, and chose "Real wing, breathing and swaying".
