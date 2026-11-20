@@ -1,10 +1,11 @@
-import { DoorToEarth } from "@/features/earth/DoorToEarth";
+import { CampExperiment } from "@/features/camp/CampExperiment";
 
 /**
- * The first page: ARPIT's vine-wrapped door in their painted meadow opens onto the journey's Earth,
- * which dives into Manali and lifts away into Home (features/earth). Home is at /home. The film entry
- * (features/film) and the camp (features/camp) are kept, unused here, until ARPIT says they can go.
+ * The first page. For ARPIT's experiment (2026-11-20: "just for the experiment sake replace earth with
+ * the camp part") the door opens onto the camp, and ARPIT's paraglider opens Home (features/camp).
+ * Checkpoint 8, the door opening onto the Earth, is one line away: render <DoorToEarth /> from
+ * "@/features/earth/DoorToEarth" here instead. Home is at /home.
  */
 export default function FirstPage() {
-  return <DoorToEarth />;
+  return <CampExperiment />;
 }

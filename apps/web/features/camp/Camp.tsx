@@ -37,8 +37,6 @@ export function Camp({
     router.prefetch("/home");
     const el = canvas.current;
     if (!el || !canUse3D()) {
-      // without the paraglider the camp is where the visit ends, so it stays
-      if (!glider) return;
       const t = window.setTimeout(() => router.push("/home"), STILL_FOR);
       return () => window.clearTimeout(t);
     }
