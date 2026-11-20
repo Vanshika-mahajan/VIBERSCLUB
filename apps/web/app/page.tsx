@@ -1,11 +1,12 @@
-import { CampExperiment } from "@/features/camp/CampExperiment";
+import { PaintedIntro } from "@/features/film/PaintedIntro";
 
 /**
- * The first page. For ARPIT's experiment (2026-11-20: "just for the experiment sake replace earth with
- * the camp part") the door opens onto the camp, and ARPIT's paraglider opens Home (features/camp).
- * Checkpoint 8, the door opening onto the Earth, is one line away: render <DoorToEarth /> from
- * "@/features/earth/DoorToEarth" here instead. Home is at /home.
+ * The first page (ARPIT, 2026-11-20: "real entry and add the music"): the meadow door opens onto the
+ * interactive painted intro (features/film/PaintedIntro.tsx): connect with Vibers nearby on the hero's
+ * phone, then the paraglider's canopy opens Home. Checkpoint 9, the door opening onto the camp with
+ * ARPIT's paraglider, is one line away: render <CampExperiment /> from "@/features/camp/CampExperiment"
+ * here instead. Home is at /home.
  */
 export default function FirstPage() {
-  return <CampExperiment />;
+  return <PaintedIntro />;
 }

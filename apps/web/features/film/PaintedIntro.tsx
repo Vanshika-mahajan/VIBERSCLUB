@@ -11,6 +11,13 @@ import {
   SKY_AFTER,
   loadPack,
 } from "./paint/scene.js";
+import {
+  chime,
+  glide,
+  preloadSound,
+  startSound,
+  stopSound,
+} from "./paint/sound";
 import s from "./painted.module.css";
 
 /**
@@ -20,6 +27,7 @@ import s from "./painted.module.css";
  * they connect by themselves). Then the hero paraglides in and the canopy fills the screen, and that
  * frame is lifted away over Home (components/handover). Skip intro (or Escape) goes straight to Home.
  * Without WebGL2 the door does not run or the painting cannot start, and the page goes to Home.
+ * Sound (features/film/paint/sound.ts): ARPIT's door sound, a guitar loop, a chime per Viber, wind for the glide.
  */
 const NEARBY = [
   { name: "Kabir", line: "Guitar by the fire", swatch: "#3c3a36" },
@@ -46,7 +54,8 @@ export function PaintedIntro() {
   const leaving = useRef(false);
   const started = useRef(false);
   const failed = useRef(false);
-  const through = useRef(false); // the door is gone: the card may show
+  const through = useRef(false);
+  const glided = useRef(false); // the door is gone: the card may show
   const [door, setDoor] = useState(true);
   const [run, setRun] = useState(0);
   const [phase, setPhase] = useState<"wait" | "card" | "joined" | "sky">(
@@ -62,6 +71,7 @@ export function PaintedIntro() {
   const leave = useCallback(() => {
     if (leaving.current) return;
     leaving.current = true;
+    stopSound(1.6);
     const c = canvas.current;
     if (c && scene.current && t0.current != null) {
       const img = new Image();
@@ -76,6 +86,7 @@ export function PaintedIntro() {
     leaving.current = false;
     started.current = false;
     through.current = false;
+    glided.current = false;
     t0.current = null;
     st.current = { joins: [null, null, null], all: null, sky: null };
     /* eslint-disable react-hooks/set-state-in-effect -- reset when the page shows again */
@@ -85,6 +96,8 @@ export function PaintedIntro() {
     setJoined([false, false, false]);
     /* eslint-enable react-hooks/set-state-in-effect */
     router.prefetch("/home");
+    preloadSound();
+    return () => stopSound(0.3);
   }, [router]);
 
   // load the painted pack and set up the renderer at the screen's shape
@@ -135,6 +148,7 @@ export function PaintedIntro() {
     if (s0.joins[i] != null) return;
     const t = now();
     s0.joins[i] = t;
+    chime(s0.joins.filter((j) => j != null).length - 1);
     lastAct.current = t;
     setJoined((j) => j.map((v, k) => v || k === i));
     if (s0.joins.every((j) => j != null)) {
@@ -169,6 +183,10 @@ export function PaintedIntro() {
       }
       if (s0.sky != null && t > s0.sky)
         setPhase((p) => (p === "sky" ? p : "sky"));
+      if (s0.sky != null && t > s0.sky + 0.35 && !glided.current) {
+        glided.current = true;
+        glide();
+      }
       sc.frame(t, s0);
       if (s0.sky != null && t > s0.sky + LEAVE_AFTER_SKY) leave();
     };
@@ -221,6 +239,7 @@ export function PaintedIntro() {
 
   const start = useCallback(() => {
     started.current = true;
+    startSound();
   }, []);
   const doorDone = useCallback(() => {
     through.current = true;
