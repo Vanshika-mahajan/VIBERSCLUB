@@ -167,7 +167,7 @@ export function HomeSections({
 
       {show("day-plans") && (
       <Section id="day-plans" title="Day plans" opener={open("day-plans", "IV", "Day plans", "/home/chapter-day-plans.webp", 0.5)} action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
-        <div className="vc-panel vc-panel--olive" data-tone="dark">
+        <div className="vc-panel vc-panel--olive">
         <ol className="border-t border-line2">
           {roadmaps.map((r, i) => (
             <li key={r.id} className="border-b border-line2">

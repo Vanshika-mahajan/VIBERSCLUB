@@ -14,6 +14,11 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (3:55 PM): a balanced palette across the website (local, not pushed)
+- ARPIT asked for a balance of the four colours, each used for the right thing. Ivory is the paper and espresso the structure, as before. Sage now shows as the voice of people and places: tags, photo grounds, the other side of a chat, chip hovers, and the Day plans band is real sage set in espresso (it was a dark olive). Amber is the action: main buttons (Join, Host an event, Send) are amber set in espresso, and the open Home tab has an amber rule.
+- Off-palette near-blacks (`#120c08`, `#1e130d`) and the dust spark (`#f0b45a`) now use espresso and amber.
+- Tests: typecheck clean, lint 0 errors (4 old warnings), Vitest 101/101. `e2e/sweep.spec.ts` on desktop: 12 passed, 1 failed. The failure is `/`, where the painted intro has no h1 or h2 for the test to find. That comes from the intro change, not the palette.
+
 ## 2026-11-20 (3:45 PM): the painted intro is the real entry at `/`, with music (local, not pushed)
 - ARPIT: "real entry and add the music". `/` now renders `PaintedIntro`. Checkpoint 9 (`CampExperiment`) is one line away in `app/page.tsx`.
 - Music and sound (`features/film/paint/sound.ts`, Web Audio, all started inside the Unveil click): ARPIT's door sound, then an original fingerpicked guitar loop (12.8 s, D Bm G A) fading in, a rising chime for each Viber who connects (higher each time), wind and a cloth flap with a held chord for the glide, and a fade as Home appears. Files: `public/film/paint/intro-*.mp3` (about 400 KB).

@@ -38,22 +38,24 @@
   --color-canvas: #f7f2e8;
   --color-surface: #efe8da;
   --color-raised: #f2ecdf;
-  --color-sand: #e9e1d0;
+  /* sand is now a pale sage: photo grounds, the other side of a chat */
+  --color-sand: #dfe3d2;
   /* brand: Deep Espresso fills for active and selected things, with ivory type */
   --color-brand: #2a1b13;
   --color-brand-hover: #3d2a1f;
   --color-brand-deep: #2a1b13;
   --color-brand-ink: #2a1b13;
-  /* the main call to action: Deep Espresso, set in ivory */
-  --color-cta: #2a1b13;
-  --color-cta-hover: #3d2a1f;
+  /* the main call to action, one per screen: Amber, set in espresso (5.6 to 1) */
+  --color-cta: #d5851f;
+  --color-cta-hover: #e29a40;
+  --color-on-amber: #2a1b13;
   --color-on-cta: #f7f2e8;
   /* accent: a readable dark amber for small text and icons; a pale sage wash behind tags */
   --color-accent: #8a4f0c;
   --color-accent-hover: #2a1b13;
   --color-accent-wash: #e4e7d8;
   --color-rose: #879a6b;
-  --color-rose-wash: #ece6d8;
+  --color-rose-wash: #e4e7d8;
   /* highlight: the one jewel (active dots, new marks): Amber Glow */
   --color-highlight: #d5851f;
   /* the second world (places, nature): sage washes with espresso line work */
@@ -70,7 +72,9 @@
   --color-line: rgba(42, 27, 19, 0.14);
   --color-line2: rgba(42, 27, 19, 0.3);
   --color-on-dark: #f7f2e8;
-  --color-on-wine: #8a4f0c;
+  /* type on a sage wash: sage at its deepest, 5.7 to 1 */
+  --color-on-wine: #4d5b3a;
+  --color-sage-deep: #4d5b3a;
   --color-on-forest: #2a1b13;
   /* status, readable on ivory */
   --color-ok: #3f5a2a;
@@ -145,7 +149,7 @@ body::after {
   }
   /* the main action: a solid espresso bar set in ivory, square, medium weight */
   .btn {
-    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[2px] border border-cta bg-cta px-5 text-[0.9rem] font-medium tracking-[0.02em] text-on-cta transition duration-300 hover:bg-cta-hover active:scale-[0.99] disabled:pointer-events-none disabled:opacity-45;
+    @apply inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-[2px] border border-cta bg-cta px-5 text-[0.9rem] font-medium tracking-[0.02em] text-on-amber transition duration-300 hover:bg-cta-hover active:scale-[0.99] disabled:pointer-events-none disabled:opacity-45;
   }
   .btn-accent {
     @apply border-brand bg-brand text-on-cta hover:bg-brand-hover;
@@ -544,7 +548,7 @@ body:not(:has(> .vc-contents)) > main {
 .vc-inbox .bg-accent-wash {
   border: 0;
   border-radius: 0;
-  background: #55643f;
+  background: var(--color-sage-ink);
   color: var(--color-ivory);
   isolation: isolate;
 }
@@ -657,4 +661,46 @@ body::after {
   background: var(--color-amber);
   border-color: var(--color-amber);
   color: var(--color-espresso);
+}
+
+/* PALETTE BALANCE (2026-11-20). Each colour has one job you can feel on every page:
+   Ivory is the paper. Espresso is the structure: type, hairlines, the selected thing, dark bands.
+   Sage is the second voice, for people and places: tags, photo grounds, labels, the other side of a
+   chat, and a real sage band (Day plans) set in espresso. Amber is the one action on a screen (Join,
+   Host, Post, Send), the open tab, the bell, a touched link. */
+.vc-panel--olive {
+  background: var(--color-sage);
+  color: var(--color-espresso);
+}
+.vc-panel--olive .kicker,
+.vc-panel--olive .text-muted,
+.vc-panel--olive .text-ink2 {
+  color: rgb(42 27 19 / 0.82);
+}
+.vc-panel--olive .text-ink,
+.vc-panel--olive .link {
+  color: var(--color-espresso);
+}
+.vc-panel--olive .border-line2,
+.vc-panel--olive .border-ink {
+  border-color: rgb(42 27 19 / 0.3);
+}
+.vc-panel--olive .vc-num {
+  color: rgb(42 27 19 / 0.7);
+}
+.vc-panel--olive a:hover .vc-num {
+  color: var(--color-espresso);
+}
+.vc-panel--olive .vc-go {
+  border-color: rgb(42 27 19 / 0.5);
+}
+.vc-panel--olive a:hover .vc-go {
+  background: var(--color-espresso);
+  border-color: var(--color-espresso);
+  color: var(--color-ivory);
+}
+/* a chip waiting to be picked leans sage under the pointer */
+button.chip:not([aria-pressed="true"]):not([aria-selected="true"]):hover {
+  border-color: var(--color-sage-ink);
+  background: var(--color-mist);
 }

@@ -115,7 +115,7 @@
 .btn {
   border: 0;
   background: var(--color-cta);
-  color: var(--color-on-cta);
+  color: var(--color-on-amber);
 }
 .btn:hover {
   background: var(--color-cta-hover);

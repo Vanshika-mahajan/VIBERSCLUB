@@ -4,15 +4,15 @@
   height: min(66svh, 640px);
   margin: 0 calc(-1 * (100vw - 100% - var(--main-ml) - var(--main-pl))) 40px 0;
   overflow: hidden;
-  background: #120c08;
+  background: #2a1b13;
 }
 /* a soft shade at the foot and the top corner, so ivory type reads on any picture */
 .shade {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to top, rgb(18 12 8 / 0.55), rgb(18 12 8 / 0) 45%),
-    linear-gradient(to bottom, rgb(18 12 8 / 0.3), rgb(18 12 8 / 0) 22%);
+    linear-gradient(to top, rgb(42 27 19 / 0.55), rgb(42 27 19 / 0) 45%),
+    linear-gradient(to bottom, rgb(42 27 19 / 0.3), rgb(42 27 19 / 0) 22%);
   pointer-events: none;
 }
 .title {

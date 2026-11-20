@@ -102,8 +102,10 @@ uv run pytest                            # needs TEST_DATABASE_URL; tests/unit n
 - Fonts: Syne for display, Inter for text.
 - Colours:
   - Warm Ivory `#F7F2E8` and Deep Espresso `#2A1B13` dominate.
-  - Sage `#879A6B` is for atmosphere and photo toning (luminosity onto `#64754b`).
-  - Amber `#D5851F` is for small accents only.
+  - Each colour has one job (ARPIT, 2026-11-20, "a balance"; the PALETTE BALANCE block in `globals.css`):
+    - Ivory is the paper. Espresso is the structure: type, hairlines, selected things, dark bands.
+    - Sage `#879A6B` is the second voice for people and places: tags (`#4d5b3a` type on a sage wash), photo grounds, labels, the other side of a chat, and the sage Day plans band set in espresso. It also tones photos (luminosity onto `#64754b`).
+    - Amber `#D5851F` is the action: the main button on a screen (`.btn`, set in espresso), the open tab, the bell, a touched link.
 - Use hairlines and square controls. Avoid rounded cards, heavy shadows, glass, gradients and a SaaS look.
 - The old journey (door and Earth) keeps Fraunces and Manrope and is deliberately untouched.
 

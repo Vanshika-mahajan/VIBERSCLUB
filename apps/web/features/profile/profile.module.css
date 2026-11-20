@@ -107,11 +107,11 @@
   margin: 0;
   padding: 0;
   border: 0;
-  background: #1e130d;
+  background: #2a1b13;
   color: #f7f2e8;
 }
 .viewer::backdrop {
-  background: #1e130d;
+  background: #2a1b13;
 }
 .viewer:focus {
   outline: none;

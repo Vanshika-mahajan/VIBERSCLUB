@@ -41,7 +41,7 @@
 .tab[aria-selected="true"] {
   color: var(--color-ink);
 }
-/* the open tab: an espresso rule along its foot, and a small amber point by its numeral */
+/* the open tab: an amber rule along its foot, its numeral in dark amber */
 .tab::after {
   content: "";
   position: absolute;
@@ -49,7 +49,7 @@
   right: 8px;
   bottom: -1px;
   height: 3px;
-  background: var(--color-ink);
+  background: var(--color-amber);
   transform: scaleX(0);
   transform-origin: 0 50%;
   transition: transform 0.35s cubic-bezier(0.62, 0, 0.22, 1);
@@ -128,7 +128,7 @@
   height: min(62svh, 600px);
   margin: 0 0 40px calc(-1 * (var(--main-ml) + var(--main-pl)));
   overflow: hidden;
-  background: #120c08;
+  background: #2a1b13;
 }
 .video {
   position: absolute;
@@ -141,8 +141,8 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to top, rgb(18 12 8 / 0.6), rgb(18 12 8 / 0) 50%),
-    linear-gradient(to bottom, rgb(18 12 8 / 0.25), rgb(18 12 8 / 0) 25%);
+    linear-gradient(to top, rgb(42 27 19 / 0.6), rgb(42 27 19 / 0) 50%),
+    linear-gradient(to bottom, rgb(42 27 19 / 0.25), rgb(42 27 19 / 0) 25%);
   pointer-events: none;
 }
 .title {
@@ -196,7 +196,7 @@
   width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
-  background: #120c08;
+  background: #2a1b13;
   transition: transform 0.5s cubic-bezier(0.22, 0.7, 0.2, 1);
 }
 .tile:hover .tileImg {

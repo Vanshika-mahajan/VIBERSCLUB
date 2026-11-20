@@ -179,7 +179,7 @@ export class Dust {
       g.globalAlpha =
         1 - e + e * (p.lum > 0.5 ? 0.9 : 0.35) * tw * (p.q > 0.55 ? 1 : 0.25);
       // a few of the stars are amber
-      g.fillStyle = e > 0.7 && p.q > 0.9 ? "#f0b45a" : p.c;
+      g.fillStyle = e > 0.7 && p.q > 0.9 ? "#d5851f" : p.c;
       g.fillRect(x, y, size, size);
     }
     g.globalAlpha = 1;
