@@ -14,6 +14,15 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## CHECKPOINT 10 (2026-11-20, 5:58 PM IST, ARPIT): commit 6ea6e2e, pushed on claude/project-thread-nx32ks
+
+ARPIT marked this state as checkpoint 10. It contains:
+- `/`: the meadow door, with "A World Awaits" set in type on phones. It opens onto the interactive painted camp with music, and the paraglider canopy leads into Home.
+- `/home` with the tabs.
+- The balanced palette site-wide.
+
+Nothing in it changes without ARPIT's explicit approval.
+
 ## 2026-11-20 (5:50 PM): "A World Awaits" on phones (local, not pushed)
 - ARPIT: on phones the title was missing. It is painted into the meadow picture left of the door, and portrait screens crop that part away. Portrait screens now show the title in type above the door, in the painted colours. On landscape screens it stays only for screen readers, as the page's h1.
 - Tests: typecheck and lint clean. `e2e/sweep.spec.ts`, phone and desktop: 26/26 passed. `/` passes again now that it has an h1.
