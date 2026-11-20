@@ -14,6 +14,13 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (1:15 PM): door to the silkscreen film, experiment at /film-experiment (local, not pushed)
+- ARPIT: "find a way to make a transition from the door to this video and also give option to the user to skip the intro". The video is the 25 s silkscreen-poster film about the club (project files `film/silkscreen/`); web copy `public/film/silkscreen-intro.mp4` (7 MB) with `silkscreen-first.webp`.
+- `features/film/SilkscreenIntro.tsx`: the meadow door (`EntryDoor`, `through`) opens onto the film. The film starts inside the click, so its sound plays, and it sits in the doorway the way the camp does (`portal.ts`), so the first squeegee pulls show through the opening door. At the end, the last frame (the poster on the workbench) is lifted away over Home by the existing hand-over. "Skip intro" (top right, also Escape) goes to Home at any moment, lifting the current film frame away. Without WebGL or with reduced motion, it goes straight to Home.
+- `/` (checkpoint 9) is unchanged.
+- Tests: typecheck and lint clean; Vitest 101/101; checked by hand in Chromium (photos in project files `film-experiment/`). The e2e suite was not run for this experiment route.
+- Next: ARPIT's review.
+
 ## 2026-11-20 (9:15 AM): Home with tabs (local, not pushed)
 - Checkpoint 9 (e81b8e9) is the base. ARPIT's plan: the opening stays the same with a line to scroll; Home scrolls only to Your vibe; then tabs at the top for every chapter; each chapter links to the others; new backgrounds from ARPIT's clips.
 - Demo at /home-demo (23de702, pushed on ARPIT's ask). ARPIT: "its good", then chose to make it the real Home. Now `/home` renders `Opening line=...` + `features/home/tabs/HomeTabs`; `/home-demo` redirects to `/home`.
