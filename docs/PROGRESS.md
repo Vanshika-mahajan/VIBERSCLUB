@@ -14,6 +14,11 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (1:30 PM): the experiment's film is now a paper-cut camp (local, not pushed)
+- ARPIT found the poster film "not the correct execution" and chose a paper-cut lightbox film of the camp. The new film is 15 s: the hilltop camp at sunset (tree, prayer flags, tent, glowing VIBERS CLUB sign, lanterns, five Vibers round the bonfire, one playing guitar), with a slow push in. Then the paraglider turns at the camera until its canopy fills the frame. The existing hand-over lifts that canopy away over Home. The music is an original fingerpicked guitar with fire and crickets.
+- `public/film/camp-papercut.mp4` (3.8 MB) and `camp-papercut-first.webp`. `SilkscreenIntro` takes `film="camp"` (the default) or `"silkscreen"`. Masters are in project files `film/paper-cut-camp/`.
+- Tests: typecheck and lint clean; checked in Chromium (photos in project files `film-experiment/camp/`).
+
 ## 2026-11-20 (1:15 PM): door to the silkscreen film, experiment at /film-experiment (local, not pushed)
 - ARPIT: "find a way to make a transition from the door to this video and also give option to the user to skip the intro". The video is the 25 s silkscreen-poster film about the club (project files `film/silkscreen/`); web copy `public/film/silkscreen-intro.mp4` (7 MB) with `silkscreen-first.webp`.
 - `features/film/SilkscreenIntro.tsx`: the meadow door (`EntryDoor`, `through`) opens onto the film. The film starts inside the click, so its sound plays, and it sits in the doorway the way the camp does (`portal.ts`), so the first squeegee pulls show through the opening door. At the end, the last frame (the poster on the workbench) is lifted away over Home by the existing hand-over. "Skip intro" (top right, also Escape) goes to Home at any moment, lifting the current film frame away. Without WebGL or with reduced motion, it goes straight to Home.

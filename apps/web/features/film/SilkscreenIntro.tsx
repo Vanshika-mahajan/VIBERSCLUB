@@ -8,21 +8,37 @@ import { handover, preloadHome } from "@/features/camp/handover";
 import s from "./silkscreen.module.css";
 
 /**
- * ARPIT's experiment (2026-11-20): the meadow door opens onto the silkscreen film about the club.
+ * ARPIT's experiment (2026-11-20): the meadow door opens onto a short film about the club. First the
+ * silkscreen poster film; ARPIT found it the wrong look after the door and chose a paper-cut film of the
+ * camp instead (the default), which ends on the paraglider's canopy filling the frame.
  *
  *   click   the door swings out; the film starts at once (inside the click, so its sound may play),
  *           so the first squeegee pulls print the sky while we see it through the doorway
  *   ~2.7 s  the camera has passed through the doorway: the film fills the screen
- *   25 s    the film ends on the finished poster taped to a workbench; that frame is lifted away
+ *   end     the film's last frame (the camp film: the canopy filling the frame) is lifted away
  *           over Home (components/handover/Handover.tsx), the same hand-over the paraglider uses
  *
  * "Skip intro" stands in the corner the whole time (Escape too) and goes straight to Home, lifting
  * the film's current frame away when it is playing. Without WebGL or with reduced motion the door
  * does not run, so the page goes straight to Home.
  */
-const FILM = "/film/silkscreen-intro.mp4";
+const FILMS = {
+  // ARPIT's pick (2026-11-20): the camp as a paper-cut lightbox film, ending on the paraglider's canopy
+  camp: {
+    src: "/film/camp-papercut.mp4",
+    poster: "/film/camp-papercut-first.webp",
+    label: "Vibers Club camp at sunset in paper-cut: Vibers round a bonfire by a tent and a glowing sign, then a paraglider sweeps in until its canopy fills the view.",
+  },
+  // the first try: one Manali poster printed by hand, morning to a bonfire night
+  silkscreen: {
+    src: "/film/silkscreen-intro.mp4",
+    poster: "/film/silkscreen-first.webp",
+    label: "Vibers Club, a short film: one Manali travel poster printed by hand, from morning to a bonfire night.",
+  },
+};
 
-export function SilkscreenIntro() {
+export function SilkscreenIntro({ film = "camp" }: { film?: keyof typeof FILMS } = {}) {
+  const F = FILMS[film];
   const router = useRouter();
   const video = useRef<HTMLVideoElement>(null);
   const layer = useRef<HTMLDivElement>(null);
@@ -123,12 +139,12 @@ export function SilkscreenIntro() {
         <video
           ref={video}
           className={s.video}
-          src={FILM}
-          poster="/film/silkscreen-first.webp"
+          src={F.src}
+          poster={F.poster}
           playsInline
           preload="auto"
           onEnded={leave}
-          aria-label="Vibers Club, a short film: one Manali travel poster printed by hand, from morning to a bonfire night."
+          aria-label={F.label}
         />
       </div>
       {door && <EntryDoor key={run} backdrop="meadow" alive through onStart={start} onDone={doorDone} />}
