@@ -6,6 +6,7 @@ import { EntryDoor } from "@/features/entry/EntryDoor";
 import { portal } from "@/features/entry/portal";
 import { handover, preloadHome } from "@/features/camp/handover";
 import { UnveilButton } from "@/features/intro/UnveilButton";
+import { FairyDust } from "./FairyDust";
 import {
   DOOR_LEN,
   LEAVE_AFTER_SKY,
@@ -356,6 +357,7 @@ export function PaintedIntro({ paintedDoor = false }: { paintedDoor?: boolean } 
           </ul>
         </section>
       )}
+      {paintedDoor && <FairyDust />}
       {paintedDoor && (
         <div className={`${s.paintedDoor} ${closed ? "" : s.opening}`}>
           <p className={s.mark}>Vibers Club</p>

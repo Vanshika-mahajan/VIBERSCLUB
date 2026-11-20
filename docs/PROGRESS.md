@@ -14,6 +14,12 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (7:00 PM): 3D door swing and fairy dust on the painted door (local, not pushed)
+- ARPIT asked for the door to look 3D and for fairy dust on the cursor (`/film-experiment` only).
+- The painted door now swings in perspective. It is drawn in 16 upright scissored slices, each scaled for how near that part has come, so the free edge grows toward the viewer. Its walnut thickness shows along that edge.
+- `features/film/FairyDust.tsx` adds gold and ivory sparkles behind the pointer, and a small burst on a tap. It is a Canvas 2D layer that never takes clicks, and it is off for reduced motion.
+- Tests: typecheck clean, lint 0 errors, `e2e/sweep.spec.ts` phone and desktop 26/26.
+
 ## 2026-11-20 (6:45 PM): painted door fixes (local, not pushed)
 - ARPIT's notes from a screen recording:
   - The Vibers Club logo was missing. It now sits top left on the painted door page.

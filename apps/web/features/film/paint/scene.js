@@ -238,9 +238,34 @@ export class PaintedScene {
       gl.disable(gl.SCISSOR_TEST);
       this.C = keep.C; this.cam = keep.cam;
     }
-    // outward on the left hinge: the leaf narrows, its free edge drifts down a little as it comes toward us
-    const a = sw * 82 * D;
-    this.put(Q.door, mul(at, [Math.cos(a), Math.sin(a) * 0.1, 0, 1, 0, 0]), t, -1e6);
+    // outward on the left hinge, in perspective: the leaf is drawn in thin upright slices, each scaled for how near
+    // that part of the door has come, so the free edge grows toward us; then its thickness shows along that edge
+    const a = sw * 84 * D;
+    if (a <= 0) this.put(Q.door, at, t, -1e6);
+    else {
+      const w = DOOR.w, h = DOOR.h, f = 1500, cy = h * 0.56, T = 22 * DK, ca = Math.cos(a), sa = Math.sin(a);
+      const sc = (u, back = 0) => f / (f - (u * sa - back * ca));
+      const px = (u, back = 0) => (u * ca + back * sa) * sc(u, back);
+      const C = this.C, gl = E.gl, kx = E.IW / W, N = 16;
+      gl.enable(gl.SCISSOR_TEST);
+      for (let k = 0; k < N; k++) {
+        const u0 = (k / N) * w, u1 = ((k + 1) / N) * w, uc = (u0 + u1) / 2;
+        const sx0 = C[0] * (DOOR.l + px(u0)) + C[4], sx1 = C[0] * (DOOR.l + px(u1)) + C[4];
+        gl.scissor(Math.floor(sx0 * kx) - (k ? 0 : 2), 0, Math.ceil((sx1 - sx0) * kx) + 1 + (k === N - 1 ? 2 : 0), E.IH);
+        const s0 = sc(uc), d = (px(uc + 0.5) - px(uc - 0.5));
+        this.put(Q.door, mul(at, [d, 0, 0, s0, px(uc) - d * uc, cy - cy * s0]), t, -1e6);
+      }
+      gl.disable(gl.SCISSOR_TEST);
+      // the door's edge: dark walnut, as wide as the turn shows it
+      const xa = px(w), xb = px(w, T), se = sc(w), wide = xb - xa;
+      if (wide > 0.6) {
+        for (let j = 0; j < 24; j++) {
+          const v0 = (j / 24) * h, v1 = ((j + 1) / 24) * h, y0 = cy + (v0 - cy) * se, y1 = cy + (v1 - cy) * se;
+          this.dyn.push({ x: DOOR.l + (xa + xb) / 2, y: DOOR.t + (y0 + y1) / 2, ang: Math.PI / 2, len: (y1 - y0) * 1.6, wid: wide * 1.25, c: hex(j % 2 ? "#3e2416" : "#4a2c1a"), type: KNIFE, alpha: 1, hgt: 0.5, seed: j });
+        }
+        this.flush(t, -1e6);
+      }
+    }
     E.finish({ ground: GROUND, sat: 1.05, contrast: 1.04, expo: 1.02, vig: 0.18 * (1 - push), weave: 0, spec: 0.12, norm: 2.6 });
   }
 
