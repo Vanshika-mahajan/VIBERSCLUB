@@ -1,9 +1,6 @@
-import type { Metadata } from "next";
-import { HomeTabsDemo } from "@/features/home/tabs/HomeTabsDemo";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Home (tabs demo)", robots: { index: false } };
-
-/** a review copy of Home with tabs after Your vibe; /home stays as it is until ARPIT approves */
+/** the review copy of Home with tabs is Home now */
 export default function HomeDemoPage() {
-  return <HomeTabsDemo />;
+  redirect("/home");
 }

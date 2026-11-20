@@ -32,7 +32,7 @@ export function TopBar() {
       )}
       <div className="vc-top">
         <PostButton />
-        {(pathname === "/home" || pathname === "/home-demo") && <Bell />}
+        {pathname === "/home" && <Bell />}
         <Link
           href="/profile"
           className="vc-profile__button"

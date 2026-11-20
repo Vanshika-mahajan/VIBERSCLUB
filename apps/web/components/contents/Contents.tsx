@@ -30,8 +30,7 @@ const reduced = () =>
  */
 export function Contents() {
   const pathname = usePathname();
-  // /home-demo is the review copy of Home with tabs
-  const home = pathname === "/home" || pathname === "/home-demo";
+  const home = pathname === "/home";
   const [dock, setDock] = useState(!home);
   // the chapter you are reading: an anchor in the contents, while it is on this page
   const [at, setAt] = useState<string | null>(null);

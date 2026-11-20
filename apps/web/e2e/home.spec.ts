@@ -8,22 +8,35 @@ test("home shows API OK from the real API", async ({ page }) => {
 
 const CONTENTS = ["Your vibe", "Vibers like you", "This week", "Day plans", "Discover", "Events", "Explore"];
 
-test("the contents list the four chapters of Home and the other pages, I to VII, and follow every page", async ({ page }) => {
+test("the contents list the chapters of Home, I to VII, open them as tabs, and follow every page", async ({ page }) => {
+  // opens five chapters (the sphere, the clips) and two pages: slow when the suite runs side by side
+  test.slow();
   await page.goto("/home");
   const nav = page.getByRole("navigation", { name: "Main" });
   for (const name of CONTENTS) await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
   await expect(nav.getByRole("link")).toHaveCount(CONTENTS.length);
-  // Discover, Events and Explore are chapters V to VII of Home: the contents glide down to them
+  // a chapter in the contents opens its tab on Home (the contents then step aside for the tabs)
+  await nav.getByRole("link", { name: "Discover", exact: true }).click();
+  await expect(page).toHaveURL(/\/home#discover$/);
+  await expect(page.locator("#discover")).toBeInViewport({ timeout: 8000 });
+  const tabs = page.getByRole("tablist", { name: "Chapters of Home" });
+  await expect(tabs.getByRole("tab", { name: /Discover/ })).toHaveAttribute("aria-selected", "true");
+  // the tabs open the others, one chapter at a time
   for (const [label, id] of [
-    ["Discover", "discover"],
     ["Events", "events"],
     ["Explore", "explore"],
   ] as const) {
-    await nav.getByRole("link", { name: label, exact: true }).click();
+    await tabs.getByRole("tab", { name: new RegExp(label) }).click();
     await expect(page).toHaveURL(new RegExp(`/home#${id}$`));
-    await expect(page.locator(`#${id}`)).toBeInViewport();
-    await expect(nav.getByRole("link", { name: label, exact: true })).toHaveAttribute("aria-current", "location");
+    await expect(page.locator(`#${id}`)).toBeInViewport({ timeout: 8000 });
+    await expect(page.locator("#discover")).toHaveCount(0);
   }
+  // each chapter ends with the way on to the others (from Your vibe, the shortest chapter, whose
+  // tiles are not pushed about by pictures still loading above them)
+  await tabs.getByRole("tab", { name: /Your vibe/ }).click();
+  await page.getByRole("navigation", { name: "More in the club" }).getByRole("link", { name: /This week/ }).click();
+  await expect(page).toHaveURL(/\/home#this-week$/);
+  await expect(tabs.getByRole("tab", { name: /This week/ })).toHaveAttribute("aria-selected", "true");
   // each still has its own page, where its line in the contents is the current page
   await page.goto("/events");
   await expect(nav.getByRole("link", { name: "Events", exact: true })).toHaveAttribute("aria-current", "page");
@@ -51,7 +64,7 @@ test("on Home the contents sit centred, dock in the corner on scroll, and come b
   await expect.poll(async () => Math.abs((await centreX()) - viewport.width / 2)).toBeLessThan(40);
 });
 
-test("a chapter in the contents glides to it on Home", async ({ page }) => {
+test("a chapter in the contents opens its tab on Home", async ({ page }) => {
   await page.goto("/home");
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "This week", exact: true }).click();
   await expect(page.locator("#this-week")).toBeInViewport({ timeout: 8000 });
@@ -107,4 +120,10 @@ test("serves an installable manifest", async ({ request }) => {
   const response = await request.get("/manifest.webmanifest");
   expect(response.ok()).toBe(true);
   expect((await response.json()).name).toBe("Vibers Club");
+});
+
+test("an old link into Home opens that chapter's tab", async ({ page }) => {
+  await page.goto("/home#events");
+  await expect(page.getByRole("tablist", { name: "Chapters of Home" }).getByRole("tab", { name: /Events/ })).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#events")).toBeInViewport({ timeout: 8000 });
 });

@@ -191,13 +191,22 @@ function TabOpener({ id }: { id: HomeTabId }) {
   useEffect(() => {
     const v = video.current;
     if (!v) return;
-    if (reduced()) v.pause();
-    else v.play().catch(() => {});
+    if (reduced()) {
+      v.pause();
+      return;
+    }
+    // plays only while on screen, so a clip scrolled away costs nothing
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) v.play().catch(() => {});
+      else v.pause();
+    });
+    io.observe(v);
+    return () => io.disconnect();
   }, []);
   return (
     <div className={t.opener} data-tone="dark">
       {"video" in tab && (
-        <video ref={video} className={t.video} src={tab.video} poster={tab.poster} muted loop playsInline autoPlay preload="auto" aria-hidden="true" />
+        <video ref={video} className={t.video} src={tab.video} poster={tab.poster} muted loop playsInline preload="auto" aria-hidden="true" />
       )}
       <span className={t.shade} aria-hidden="true" />
       <span className={t.n} aria-hidden="true">

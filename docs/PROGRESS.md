@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-11-18
+**Last updated:** 2026-11-20
 
 ## Completed milestones
 - Phase 0 to 2: discovery, PRD, blueprint, ADR-0001 to ADR-0019 (all Accepted; ADR-0013 pending user validation).
@@ -13,6 +13,14 @@
 
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
+
+## 2026-11-20 (9:15 AM): Home with tabs (local, not pushed)
+- Checkpoint 9 (e81b8e9) is the base. ARPIT's plan: the opening stays the same with a line to scroll; Home scrolls only to Your vibe; then tabs at the top for every chapter; each chapter links to the others; new backgrounds from ARPIT's clips.
+- Demo at /home-demo (23de702, pushed on ARPIT's ask). ARPIT: "its good", then chose to make it the real Home. Now `/home` renders `Opening line=...` + `features/home/tabs/HomeTabs`; `/home-demo` redirects to `/home`.
+- Clips re-encoded (H.264, no sound, poster frames) into `apps/web/public/home/sections/`; each plays only while on screen.
+- Tests: typecheck and lint clean; Vitest 101/101; Playwright home, discover, sound and sweep on phone and desktop: 56 passed, 2 failed (the expected "API OK" test without the backend). The tabs test is marked slow: it passes alone but ran out of time with the suite running side by side.
+- Known: most clips are about 700 px wide and look soft at full width; bigger versions wanted.
+- Next: tweaks with ARPIT.
 
 ## 2026-11-20 (8:20 AM): one camera through the door into the camp (local, not pushed)
 
