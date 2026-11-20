@@ -25,6 +25,9 @@ const STILL_FOR = 2500;
  * behind it (handover.ts). Without 3D, or with reduced motion, the still picture
  * shows for a moment and then Home.
  */
+/** behind the door, how far off the camp starts (its near grass and people this much smaller) */
+const WALK_UP = 0.45;
+
 export function Camp({
   glider = true,
   picture = "sunset",
@@ -80,6 +83,12 @@ export function Camp({
       const host = root.current;
       const r = portal.rect;
       if (!host) return;
+      if (world && r && document.querySelector("[data-entry]")) {
+        // the camp stands at its real size behind the door; we walk up to it: it is a few steps off
+        // while the door opens and comes to us with the push, a little still to go as we pass through
+        const e = Math.min(1, Math.max(0, (r.push - 0.05) / 0.95));
+        scene?.setApproach(WALK_UP * (1 - 0.95 * Math.pow(e, 1.4)));
+      }
       if (world || !r || !document.querySelector("[data-entry]")) {
         if (host.style.transform) host.style.transform = "";
         return;
@@ -118,7 +127,7 @@ export function Camp({
       frame = requestAnimationFrame(loop);
     };
     import("./campScene")
-      .then(({ createCampScene }) => createCampScene(el, { glider, picture, still: world }))
+      .then(({ createCampScene }) => createCampScene(el, { glider, picture, still: world, path: world }))
       .then((sc) => {
         if (gone) return sc.dispose();
         scene = sc;

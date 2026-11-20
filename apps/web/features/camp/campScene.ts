@@ -53,6 +53,8 @@ const DRIFT = { x: -150, time: 3.4 }; // picture px it glides in from, and over 
 // after the doorway the camera keeps walking forward into the camp (ARPIT): how far, and over how long
 const WALK = { far: 0.42, time: 2.6 };
 const SETTLE = { far: 0.1, time: 2.4 };
+// after the door, the walk up to the camp settles over this long (s)
+const APPROACH_SETTLE = 0.9;
 
 const vertex = /* glsl */ `
 attribute vec3 position;
@@ -77,10 +79,10 @@ const person = (c: Clip, i: number) => /* glsl */ `
 const fragment = /* glsl */ `
 precision highp float;
 varying vec2 v, sc;
-uniform sampler2D P, B, R, D, GL, Z;
+uniform sampler2D P, B, R, D, GL, Z, W;
 uniform sampler2D ${PEOPLE.map((_, i) => `V${i}`).join(", ")};
 uniform float ${PEOPLE.map((_, i) => `on${i}`).join(", ")};
-uniform float t, S, off, vOn, glOn, glX, glS, fwd, deep;
+uniform float t, S, off, vOn, glOn, glX, glS, fwd, deep, appr;
 uniform vec2 look;
 const vec2 SZ = vec2(${PICTURE.w}.0, ${PICTURE.h}.0);
 
@@ -120,6 +122,18 @@ void main() {
   // seats swell and slide past faster than the far valley and the sky, so it moves with depth
   float near = smoothstep(0.45, 1.0, v.y);
   vec2 uv = vec2(0.5, 0.56) + (v - vec2(0.5, 0.56)) / (1.0 + fwd * (0.3 + 1.0 * near));
+  // walking up to the camp through the door (ARPIT: like a real camera walking through): the camp is
+  // still a few steps away, its near grass and people smaller and its far valley hardly so, and as we
+  // come they grow by their depth until it stands exactly as the picture (appr 0); held to the bottom
+  // edge, so the ground never leaves the frame
+  if (appr > 0.0) {
+    // each spot takes the depth of what it shows, found in a few steps, so things keep their shape
+    vec2 base = uv;
+    for (int i = 0; i < 4; i++) {
+      float nz = deep > 0.5 ? smoothstep(0.08, 0.75, texture2D(W, uv).r) : near;
+      uv = vec2(0.5, 1.0) + (base - vec2(0.5, 1.0)) * (1.0 + appr * (0.06 + 3.0 * nz));
+    }
+  }
   // depth: the camera drifts a little (and follows the pointer); near things slide more than far ones
   float z = texture2D(Z, uv).r * deep;
   uv -= look * (z - 0.12) / SZ;
@@ -224,11 +238,14 @@ export async function createCampScene(
     glider: withGlider = true,
     picture = "sunset",
     still = false,
+    path = false,
   }: {
     glider?: boolean;
     picture?: "sunset" | "blue";
     /** no walk in after the door: the camp keeps its framing (ARPIT: "dont zoom the camp scene") */
     still?: boolean;
+    /** stepping stones from the doorway to the yoga mat, carrying on the meadow path (the blue camp only) */
+    path?: boolean;
   } = {},
 ) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
@@ -255,12 +272,14 @@ export async function createCampScene(
   const deep = picture === "blue";
   const flat = keep(new THREE.DataTexture(new Uint8Array(4), 1, 1));
   flat.needsUpdate = true;
-  const [P, B, R, D, Z] = await Promise.all([
-    load(`/camp/${picture}.webp`, false),
-    load(`/camp/${picture}-bg.webp`, false),
+  const [P, B, R, D, Z, Wk] = await Promise.all([
+    load(`/camp/${path && deep ? "blue-path" : picture}.webp`, false),
+    load(`/camp/${path && deep ? "blue-path" : picture}-bg.webp`, false),
     load(`/camp/${picture}-rig.png`, true),
     load(`/camp/${picture}-sky.webp`, true),
     deep ? load("/camp/blue-depth.png", true) : Promise.resolve(flat),
+    // the same depth smoothed into the ground each thing stands on, for the walk up through the door
+    deep ? load("/camp/blue-walk.png", true) : Promise.resolve(flat),
   ]);
   // where the pointer is, -1 … 1 (the camera leans toward it, gently)
   const pointer = new THREE.Vector2();
@@ -340,6 +359,7 @@ export async function createCampScene(
     B: { value: B },
     R: { value: R },
     D: { value: D },
+    W: { value: Wk },
     GL: { value: GL },
     Z: { value: Z },
     deep: { value: deep ? 1 : 0 },
@@ -348,6 +368,7 @@ export async function createCampScene(
     glOn: { value: 0 },
     glX: { value: DRIFT.x },
     fwd: { value: 0 },
+    appr: { value: 0 },
     glS: { value: 1 },
     t: { value: 0 },
     S: { value: STRENGTH },
@@ -396,7 +417,14 @@ export async function createCampScene(
   /** seconds since the camera walked on through the doorway (-1: not yet) */
   let walk = -1;
   let drift = 0; // 0 … 1 the glider's drift across into its path
+  /** how far the camp still is while we walk up through the door (0 = as the picture), and from where it eases out once we are through */
+  let approach = 0;
+  let approachFrom = 0;
+  const setApproach = (a: number) => {
+    if (walk < 0) approach = a;
+  };
   const walkOn = () => {
+    if (walk < 0) approachFrom = approach;
     if (walk < 0) walk = 0;
   };
   const wake = () => {
@@ -420,6 +448,9 @@ export async function createCampScene(
     const x = Math.min(Math.max(walk, 0) / wk.time, 1);
     // under way from the first moment (it carries on from the push through the doorway), easing out
     u.fwd.value = still ? 0 : wk.far * (1 - Math.pow(1 - x, 3));
+    // through the door the last steps carry on and settle, ending exactly on the picture
+    if (walk >= 0) approach = approachFrom * Math.pow(1 - Math.min(walk / APPROACH_SETTLE, 1), 3);
+    u.appr.value = approach;
     u.off.value = (u.off.value + step * 0.004 * STRENGTH) % 2;
     if (deep) {
       // a slow breath of the camera plus a lean toward the pointer, in picture px at the nearest point
@@ -473,6 +504,7 @@ export async function createCampScene(
     render,
     wake,
     walkOn,
+    setApproach,
     takeOff,
     snapshot,
     /** back to the paraglider waiting in the sky */
@@ -484,6 +516,7 @@ export async function createCampScene(
       landed = null;
       since = 0;
       walk = -1;
+      approach = approachFrom = 0;
       drift = 0;
     },
     dispose: () => {

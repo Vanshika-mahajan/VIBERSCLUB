@@ -14,6 +14,17 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (8 AM): walking through the door into a camp with depth (local, not pushed)
+
+ARPIT sent a reference clip of a camera walking through an open door and chose "B: live three.js with depth".
+- **Depth as we walk up.** While the door is up, the camp is drawn as if we are still a few steps back. It is scaled about the bottom centre by a smoothed depth of the blue camp (`public/camp/blue-walk.png`, from `blue-depth.png`), so the near grass and people start small and grow faster than the far valley as the camera pushes through (`appr` uniform and `setApproach` in `campScene.ts`, driven from the portal push in `Camp.tsx`, `WALK_UP` 0.45). Four fixed-point passes keep people whole instead of doubled.
+- **A step past the door.** Once the door has gone, the rest of the approach eases out over 0.9 s and the camp settles at its usual framing, never zoomed beyond it.
+- **Stone path.** Stepping stones lifted from the meadow path now run from the bottom of the camp to the yoga mat (`blue-path.webp`, `blue-path-bg.webp`, option `path`), so the path continues past the threshold.
+
+Known issue: the camp picture ends just below the mat, so the stones are a short strip. During the walk they sit behind the threshold grass and only read once we are through. A longer path needs a camp picture with more ground in front.
+
+Tests: typecheck and lint clean; Vitest 101/101; e2e `entry.spec` + `sweep.spec` desktop 17/17.
+
 ## 2026-11-20 (7:15 AM): the camp stands behind the door, never zoomed (local, not pushed)
 
 ARPIT: "let the ground be connected and dont zoom the camp scene". On the camp experiment, `Camp` takes a `world` prop:
