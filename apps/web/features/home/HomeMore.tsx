@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Events } from "@/features/club/Events";
 import { CommunityFromDoor } from "@/features/club/MovedTabs";
 import s from "@/features/club/club.module.css";
@@ -13,15 +13,29 @@ import { Chapter } from "./Chapter";
  * and Explore, so the club reads as one issue you can scroll through. Each still has its own page
  * (/discover, /events, /explore) for links from elsewhere.
  */
-export function HomeMore() {
+export type MorePart = "discover" | "events" | "explore";
+
+export function HomeMore({
+  only,
+  opener,
+}: {
+  /** just this chapter (Home's tabs) */
+  only?: MorePart;
+  /** draws a chapter's opener in place of its illustration */
+  opener?: (id: MorePart, n: string, title: string) => ReactNode;
+} = {}) {
+  const show = (id: MorePart) => !only || only === id;
+  const open = (id: MorePart, n: string, title: string, img: string, y: number) =>
+    opener ? opener(id, n, title) : <Chapter n={n} title={title} img={img} y={y} />;
   return (
     <>
+      {show("discover") && (
       <section
         id="discover"
         aria-label="Discover"
         className="mt-16 scroll-mt-4 md:mt-24"
       >
-        <Chapter n="V" title="Discover" img="/home/chapter-discover.webp" y={0.55} />
+        {open("discover", "V", "Discover", "/home/chapter-discover.webp", 0.55)}
         <DiscoverScreen inline />
         <section
           id="community"
@@ -34,26 +48,31 @@ export function HomeMore() {
           </Suspense>
         </section>
       </section>
+      )}
 
+      {show("events") && (
       <section
         id="events"
         aria-label="Events"
         className={`${s.club} mt-16 scroll-mt-4 md:mt-24`}
       >
-        <Chapter n="VI" title="Events" img="/home/chapter-events.webp" y={0.55} />
+        {open("events", "VI", "Events", "/home/chapter-events.webp", 0.55)}
         <Events />
       </section>
+      )}
 
+      {show("explore") && (
       <section
         id="explore"
         aria-label="Explore"
         className="mt-16 scroll-mt-4 md:mt-24"
       >
-        <Chapter n="VII" title="Explore" img="/home/chapter-explore.webp" y={0.4} />
+        {open("explore", "VII", "Explore", "/home/chapter-explore.webp", 0.4)}
         <Suspense>
           <ExploreHub inline />
         </Suspense>
       </section>
+      )}
     </>
   );
 }

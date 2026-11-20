@@ -27,7 +27,7 @@ const GIRL = { x: 194, y: 80, w: 657, h: 775 },
  *   5. chapter I, Your vibe, rises                                          p .80 to .98
  * Scrolling back plays it in reverse. With reduced motion it is a still: the Earth and chapter I.
  */
-export function Opening() {
+export function Opening({ line }: { line?: string } = {}) {
   const wrap = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -194,7 +194,13 @@ export function Opening() {
           Your vibe
         </h2>
         <div ref={aside} className={s.aside} aria-hidden="true">
-          <p className={s.hint}>Scroll ↓</p>
+          {line ? (
+            <p className={s.line}>
+              {line} <span className={s.lineArrow}>↓</span>
+            </p>
+          ) : (
+            <p className={s.hint}>Scroll ↓</p>
+          )}
           <p className={s.coords}>
             Solang, Manali
             <br />

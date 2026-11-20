@@ -22,7 +22,23 @@ const noop = () => () => {};
  * (its title is the last frame of the opening), a quick post, II Vibers like you, III this week and
  * IV day plans, each opening on a photograph that gathers out of stardust; then the system status.
  */
-export function HomeSections({ post }: { post?: ReactNode }) {
+/** the parts of HomeSections, for Home's tabs, which show one at a time */
+export type HomePart = "your-vibe" | "vibers-like-you" | "this-week" | "day-plans";
+
+export function HomeSections({
+  post,
+  only,
+  opener,
+}: {
+  post?: ReactNode;
+  /** just this part, without the footer (Home's tabs) */
+  only?: HomePart;
+  /** draws a chapter's opener in place of its illustration */
+  opener?: (id: HomePart, n: string, title: string) => ReactNode;
+}) {
+  const show = (id: HomePart) => !only || only === id;
+  const open = (id: HomePart, n: string, title: string, img: string, y: number) =>
+    opener ? opener(id, n, title) : <Chapter n={n} title={title} img={img} y={y} />;
   const me = useDemo((s) => s.me);
   const hosted = useDemo((s) => s.hosted);
   const connections = useDemo((s) => s.connections);
@@ -59,6 +75,7 @@ export function HomeSections({ post }: { post?: ReactNode }) {
 
   return (
     <div>
+      {show("your-vibe") && (
       <section id="your-vibe" aria-label="Your vibe" data-tone="dark" className="vc-panel vc-panel--espresso scroll-mt-6">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr] md:gap-14">
           <div aria-labelledby="vibe-title">
@@ -99,9 +116,12 @@ export function HomeSections({ post }: { post?: ReactNode }) {
         </div>
       </section>
 
-      {post && <div id="post" className="mt-16 scroll-mt-6">{post}</div>}
+      )}
 
-      <Section id="vibers-like-you" title="Vibers like you" opener={<Chapter n="II" title="Vibers like you" img="/home/chapter-vibers.webp" y={0.5} />} action={<Link href="/discover" className="link text-sm">Discover <span className="arrow" aria-hidden="true">→</span></Link>}>
+      {show("your-vibe") && post && <div id="post" className="mt-16 scroll-mt-6">{post}</div>}
+
+      {show("vibers-like-you") && (
+      <Section id="vibers-like-you" title="Vibers like you" opener={open("vibers-like-you", "II", "Vibers like you", "/home/chapter-vibers.webp", 0.5)} action={<Link href="/discover" className="link text-sm">Discover <span className="arrow" aria-hidden="true">→</span></Link>}>
         {/* relevant profiles on a slowly turning ring: drag to spin, click one to bring it to the front */}
         <div className="relative -mx-4 h-[380px] md:mx-0 md:h-[440px]">
           {ring.length > 0 && (
@@ -130,8 +150,10 @@ export function HomeSections({ post }: { post?: ReactNode }) {
           ))}
         </ul>
       </Section>
+      )}
 
-      <Section id="this-week" title="This week" opener={<Chapter n="III" title="This week" img="/home/chapter-this-week.webp" y={0.45} />} action={<Link href="/events" className="link text-sm">All events <span className="arrow" aria-hidden="true">→</span></Link>}>
+      {show("this-week") && (
+      <Section id="this-week" title="This week" opener={open("this-week", "III", "This week", "/home/chapter-this-week.webp", 0.45)} action={<Link href="/events" className="link text-sm">All events <span className="arrow" aria-hidden="true">→</span></Link>}>
         {/* asymmetric: the closest match leads, larger; the next two stack beside it */}
         <div className="grid gap-8 md:grid-cols-[1.5fr_1fr] md:gap-10">
           {upcoming.map((e, i) => (
@@ -141,8 +163,10 @@ export function HomeSections({ post }: { post?: ReactNode }) {
           ))}
         </div>
       </Section>
+      )}
 
-      <Section id="day-plans" title="Day plans" opener={<Chapter n="IV" title="Day plans" img="/home/chapter-day-plans.webp" y={0.5} />} action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
+      {show("day-plans") && (
+      <Section id="day-plans" title="Day plans" opener={open("day-plans", "IV", "Day plans", "/home/chapter-day-plans.webp", 0.5)} action={<Link href="/explore" className="link text-sm">Places <span className="arrow" aria-hidden="true">→</span></Link>}>
         <div className="vc-panel vc-panel--olive" data-tone="dark">
         <ol className="border-t border-line2">
           {roadmaps.map((r, i) => (
@@ -161,13 +185,16 @@ export function HomeSections({ post }: { post?: ReactNode }) {
         </ol>
         </div>
       </Section>
+      )}
 
+      {!only && (
       <footer className="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-ink pt-4 text-sm text-muted">
         <span>Design preview: everyone here is a fictional sample Viber. </span>
         <span className="flex items-center gap-2">
           <span className="kicker">System status</span> <HealthStatus />
         </span>
       </footer>
+      )}
     </div>
   );
 }

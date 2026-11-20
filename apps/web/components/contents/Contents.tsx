@@ -11,6 +11,7 @@ import {
   type MouseEvent,
 } from "react";
 import { contents, isActive, ROMAN } from "@/lib/nav";
+import { OPEN_TAB } from "@/features/home/tabs/sections";
 import s from "./contents.module.css";
 
 const reduced = () =>
@@ -29,7 +30,8 @@ const reduced = () =>
  */
 export function Contents() {
   const pathname = usePathname();
-  const home = pathname === "/home";
+  // /home-demo is the review copy of Home with tabs
+  const home = pathname === "/home" || pathname === "/home-demo";
   const [dock, setDock] = useState(!home);
   // the chapter you are reading: an anchor in the contents, while it is on this page
   const [at, setAt] = useState<string | null>(null);
@@ -194,6 +196,13 @@ export function Contents() {
   // a chapter on this page: glide down to it (the list moves aside first)
   const go = (e: MouseEvent<HTMLAnchorElement>, href: string) => {
     const [path, id] = href.split("#");
+    // Home with tabs: open the chapter's tab
+    if (home && id && document.querySelector("[data-tabs-area]")) {
+      e.preventDefault();
+      move(true);
+      dispatchEvent(new CustomEvent(OPEN_TAB, { detail: id }));
+      return;
+    }
     if (!id || path !== pathname) return;
     const target = document.getElementById(id);
     if (!target) return;
