@@ -1,5 +1,5 @@
 // Bake the painted door experiment (2026-11-20): ARPIT's meadow with the door, painted in the camp's knife
-// strokes, plus the door leaf on its own (finer strokes, so it can swing) and the warm light behind it.
+// strokes, plus the door leaf on its own (finer strokes, so it can swing). Through the open doorway the scene shows the camp.
 // img/meadow-clean.png is ARPIT's meadow-door.webp with the painted title and wordmark filled in (clean-meadow.py).
 import { Ref, paintRef } from './engine/plate.js';
 import { pack } from './pack.js';
@@ -19,10 +19,6 @@ window.bake = async () => {
   const D = new Ref(DOOR.w, DOOR.h, 1.1);
   D.fill(c => c.rect(0, 0, DOOR.w, DOOR.h), c => { c.drawImage(leaf, 0, 0, DOOR.w, DOOR.h); return 'rgba(0,0,0,0)'; }, { dir: 90, fallback: 90, group: 'door' });
   out.door = plate(D, paintRef(D, { R: [7, 3.5, 1.8, 1], T: 10, seed: 5 }), DOOR.w, DOOR.h, 0.8);
-  // the light through the doorway: warm at the floor, paper-pale above, so the camp can paint in on it
-  const L = new Ref(DOOR.w, DOOR.h, 0.6);
-  L.fill(c => c.rect(0, 0, DOOR.w, DOOR.h), c => { const g = c.createLinearGradient(0, 0, 0, DOOR.h); g.addColorStop(0, '#fbf3e2'); g.addColorStop(0.6, '#f8e2b4'); g.addColorStop(1, '#efc27a'); return g; }, { dir: 90, fallback: 90, group: 'light' });
-  out.light = plate(L, paintRef(L, { R: [8, 4, 2], T: 10, seed: 9 }), DOOR.w, DOOR.h, 2);
   return pack(out);
 };
 window.ready = true;

@@ -14,6 +14,12 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (6:45 PM): painted door fixes (local, not pushed)
+- ARPIT's notes from a screen recording:
+  - The Vibers Club logo was missing. It now sits top left on the painted door page.
+  - ARPIT didn't like the yellow light behind the opening door. The open doorway now shows the camp itself, framed exactly as it fills the screen once we are through (a scissored draw in `doorFrame`), and the camp no longer paints in from blank paper after the door. The light plate is gone from the pack.
+- Tests: typecheck clean, lint 0 errors, `e2e/sweep.spec.ts` phone and desktop 26/26.
+
 ## 2026-11-20 (6:20 PM): painted door experiment at /film-experiment (local, not pushed)
 - ARPIT chose to paint the door part like the camp, as an experiment. `/film-experiment` (`<PaintedIntro paintedDoor />`) now opens on ARPIT's meadow and door in the camp's knife strokes, with falling leaves and a breathing camera. "A World Awaits" is set in type, and the painted title was filled out of the picture by `tools/clean-meadow.py`. Unveil swings the painted door outward on its left hinge with warm light behind it. The camera walks into the doorway until the light fills the screen, and the camp paints itself in on it. `/` is unchanged (Checkpoint 10).
 - New pack in `public/film/paint-door/` (about 2.2 MB, baked by `tools/bake-door.html` through `bake.mjs <out> bake-door`). Pack code is shared in `tools/pack.js`.

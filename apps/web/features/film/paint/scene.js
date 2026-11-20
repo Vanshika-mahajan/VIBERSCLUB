@@ -137,14 +137,19 @@ export class PaintedScene {
     this.put(P["dog.body"], mul(M, RO(Math.sin(t * 2.4) * 0.02)), t, ap);
   }
 
+  /** the camp's slow camera: a touch closer at first, settling over ten seconds */
+  campView(t) {
+    const cx = 940, kk = ss(seg(t, 0, 10));
+    this.setCam(lerp(cx + 40, cx, kk), 700, lerp(this.zoom * 1.06, this.zoom, kk));
+  }
+
   camp(t, joins, all) {
     const { P, S, k } = this, cx = 940;
-    const kk = ss(seg(t, 0, 10));
-    this.setCam(lerp(cx + 40, cx, kk), 700, lerp(this.zoom * 1.06, this.zoom, kk));
-    // the camp paints in from t = 0
-    const o = { t, cam: this.cam, grey: 0 };
-    if (t > 1.3) this.E.under(P.bg.tex, P.bg.w, P.bg.h, o);
-    this.E.draw(P.bg.b, { ...o, appear: t < 1.4 ? 0 : -1e6, appDur: 0.14 });
+    this.campView(t);
+    // the camp paints in from t = 0 (with the painted door it was already seen through the doorway, so it is there)
+    const o = { t, cam: this.cam, grey: 0 }, there = !!this.Q;
+    if (t > 1.3 || there) this.E.under(P.bg.tex, P.bg.w, P.bg.h, o);
+    this.E.draw(P.bg.b, { ...o, appear: t < 1.4 && !there ? 0 : -1e6, appDur: 0.14 });
     const X = (dx) => cx + dx * k, Y = 1010;
     const n = joins.filter((j) => j != null).length;
     const laugh = all != null && t > all;
@@ -217,11 +222,26 @@ export class PaintedScene {
       this.flush(t, -1e6);
     }
     const at = TR(DOOR.l, DOOR.t);
-    if (sw > 0) this.put(Q.light, at, t, -1e6);
+    // through the open doorway: the camp itself, framed exactly as it will fill the screen once we are through
+    if (sw > 0) {
+      const C = this.C, gl = E.gl, sx = E.IW / W, sy = E.IH / H;
+      const x0 = C[0] * DOOR.l + C[4], y0 = C[3] * DOOR.t + C[5], x1 = C[0] * (DOOR.l + DOOR.w) + C[4], y1 = C[3] * (DOOR.t + DOOR.h) + C[5];
+      const keep = { C: this.C, cam: this.cam };
+      gl.enable(gl.SCISSOR_TEST);
+      gl.scissor(Math.floor(x0 * sx), Math.floor((H - y1) * sy), Math.ceil((x1 - x0) * sx), Math.ceil((y1 - y0) * sy));
+      gl.clearBufferfv(gl.COLOR, 0, [GROUND[0], GROUND[1], GROUND[2], 0]);
+      gl.clearBufferfv(gl.COLOR, 1, [0, 0, 0, 0]);
+      this.campView(0);
+      const oc = { t, cam: this.cam, grey: 0 };
+      E.under(this.P.bg.tex, this.P.bg.w, this.P.bg.h, oc);
+      E.draw(this.P.bg.b, { ...oc, appear: -1e6, appDur: 0.14 });
+      gl.disable(gl.SCISSOR_TEST);
+      this.C = keep.C; this.cam = keep.cam;
+    }
     // outward on the left hinge: the leaf narrows, its free edge drifts down a little as it comes toward us
     const a = sw * 82 * D;
     this.put(Q.door, mul(at, [Math.cos(a), Math.sin(a) * 0.1, 0, 1, 0, 0]), t, -1e6);
-    E.finish({ ground: GROUND, sat: 1.05, contrast: 1.04, expo: 1.02 + push * 0.12, vig: 0.18 * (1 - push), weave: 0, spec: 0.12, norm: 2.6 });
+    E.finish({ ground: GROUND, sat: 1.05, contrast: 1.04, expo: 1.02, vig: 0.18 * (1 - push), weave: 0, spec: 0.12, norm: 2.6 });
   }
 
   /** @param {number} t seconds since the door opened @param {{joins:(number|null)[], all:number|null, sky:number|null}} st */

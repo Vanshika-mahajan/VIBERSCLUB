@@ -358,6 +358,7 @@ export function PaintedIntro({ paintedDoor = false }: { paintedDoor?: boolean } 
       )}
       {paintedDoor && (
         <div className={`${s.paintedDoor} ${closed ? "" : s.opening}`}>
+          <p className={s.mark}>Vibers Club</p>
           <h1 className={s.awaits}>
             <span>A World</span>
             <span className={s.awaitsRed}>Awaits</span>

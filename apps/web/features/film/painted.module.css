@@ -225,6 +225,17 @@
 .opening {
   opacity: 0;
 }
+.mark {
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  margin: 0;
+  color: #2a1b13;
+  font: 800 clamp(20px, 2.1vw, 34px) / 1 var(--font-display);
+  letter-spacing: -0.03em;
+  text-shadow: 0 0 18px rgb(255 240 220 / 0.7);
+  animation: rise 0.8s ease 0.2s both;
+}
 .awaits {
   position: absolute;
   left: 23%;
@@ -261,7 +272,7 @@
 @media (max-aspect-ratio: 1/1) {
   .awaits {
     left: 50%;
-    top: calc(env(safe-area-inset-top) + 58px);
+    top: calc(env(safe-area-inset-top) + 76px);
     transform: translateX(-50%);
     font-size: clamp(34px, 10vw, 64px);
   }
