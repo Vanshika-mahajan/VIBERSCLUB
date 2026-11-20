@@ -14,6 +14,13 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (3:30 PM): interactive painted intro at /film-experiment (pushed)
+- ARPIT wanted the intro made with the Lemo-Opuscar library, with animated characters, a smooth transition from the door, a character who uses his phone to connect with other Vibers, interactive and short, ending on the paraglider. After stills, ARPIT said "this is good".
+- What it does: the meadow door opens onto ARPIT's camp, painted live in palette-knife strokes (Impasto renderer, `features/film/paint/`, MIT). A chibi Viber checks his phone, and a "Vibers nearby" card offers Connect on three Vibers. Each one tapped paints into the scene waving; after 3.2 s with no tap the next one connects by itself. When all three are in, everyone laughs, the sky is painted over the camp, and the hero paraglides in until the canopy fills the screen. That frame is lifted away over Home. Skip intro and Escape go straight to Home. Without WebGL2 the page goes to Home.
+- Painted plates are baked once into `public/film/paint/` (5.3 MB of strokes plus underpaintings); bake again with `features/film/paint/tools/`.
+- Tests: typecheck and lint clean (4 warnings in the vendored engine), Vitest 101/101. In Chromium (software GL) the whole flow ran door to Home, and frozen-clock captures checked each step. This machine has no GPU, so live frame rate was not measured; check it on a real device.
+- Known issues: the camp phone card on phones and the portrait camera are untested on a real phone. No music yet. The earlier painted journey film and its stills stay in project files `film/painted/`.
+
 ## 2026-11-20 (1:30 PM): the experiment's film is now a paper-cut camp (local, not pushed)
 - ARPIT found the poster film "not the correct execution" and chose a paper-cut lightbox film of the camp. The new film is 15 s: the hilltop camp at sunset (tree, prayer flags, tent, glowing VIBERS CLUB sign, lanterns, five Vibers round the bonfire, one playing guitar), with a slow push in. Then the paraglider turns at the camera until its canopy fills the frame. The existing hand-over lifts that canopy away over Home. The music is an original fingerpicked guitar with fire and crickets.
 - `public/film/camp-papercut.mp4` (3.8 MB) and `camp-papercut-first.webp`. `SilkscreenIntro` takes `film="camp"` (the default) or `"silkscreen"`. Masters are in project files `film/paper-cut-camp/`.
