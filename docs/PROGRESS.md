@@ -14,6 +14,15 @@
 ## Current milestone
 M0 Foundations. **Plan changed on 2026-10-26: website first** ([ADR-0020](adr/0020-mobile-first-website-first.md)). M0a and M0b are done, plus the Discover design step. Next: M0c (CI and staging deploys).
 
+## 2026-11-20 (8:20 AM): one camera through the door into the camp (local, not pushed)
+
+ARPIT, after the depth walk: "why it just cant be the same ground and camera angle to be natural, no squeezing no nothing". The squeeze came from the camp being one flat picture that had to grow from the doorway to full screen. ARPIT chose a wider camp picture: the same camp seen from a few steps back, made in ChatGPT from my guide frame (`/mnt/project-files/entry-shots/wider-camp/`).
+- `public/camp/blue-wide.webp`: ARPIT's picture at 2x, with our camp (with its stone path) feathered into its middle. Feature matching found our camp inside it at scale 0.5087, offset (467, 170), and the two match almost exactly.
+- `Camp` `world` mode now stands the camera that far back behind the door. As the door camera pushes through, the camp grows as a real view does, 1 / (1/k - (1/k - 1) p), about the point where the wider picture and the screen coincide, and it ends exactly on its usual framing. The wider picture fills round the camp while we walk (`.wide`, with the canvas edge softened into it). Once the door has gone, the last of the step eases out instead of snapping.
+- The depth walk-up (`appr`) is no longer used by the camp experiment. It stays in `campScene.ts` and is unused.
+
+Tests: typecheck and lint clean; Vitest 101/101; e2e `entry.spec` + `sweep.spec` desktop 17/17.
+
 ## 2026-11-20 (8 AM): walking through the door into a camp with depth (local, not pushed)
 
 ARPIT sent a reference clip of a camera walking through an open door and chose "B: live three.js with depth".
