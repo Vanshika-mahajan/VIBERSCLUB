@@ -31,6 +31,7 @@ export function EntryDoor({
   onStart,
   backdrop = "clouds",
   alive = false,
+  through = false,
 }: {
   onDone: () => void;
   /** the moment the door is asked to open, inside the click (so sound may start there) */
@@ -38,6 +39,9 @@ export function EntryDoor({
   backdrop?: EntryBackdrop;
   /** the meadow's scenery moving, after Temple Night (scenery.ts) */
   alive?: boolean;
+  /** the camera passes right through the doorway before the door goes, instead of the door and meadow
+   *  dissolving over the last steps (ARPIT, camp experiment, 2026-11-20) */
+  through?: boolean;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -142,10 +146,10 @@ export function EntryDoor({
       .to(p, { life: 0.4, duration: 1.0, ease: "none" }, 0.6)
       .to(p, { push: 1, duration: 2.05, ease: "power3.in" }, 0.7)
       // over the last steps through the doorway the door and the meadow dissolve softly into the camp
-      .to(root.current, { autoAlpha: 0, duration: 0.2, ease: "power1.in" }, 2.55);
+      .to(root.current, through ? { autoAlpha: 0, duration: 0.03, ease: "none" } : { autoAlpha: 0, duration: 0.2, ease: "power1.in" }, through ? 2.72 : 2.55);
     running.current = tl;
     if (process.env.NODE_ENV !== "production") Object.assign(window, { __entryTimeline: tl });
-  }, [onStart]);
+  }, [onStart, through]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

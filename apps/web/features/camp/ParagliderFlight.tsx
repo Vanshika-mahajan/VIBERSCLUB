@@ -57,16 +57,53 @@ export function ParagliderFlight() {
     const COLS = 48;
     const ROWS = 8;
     const canopyGeo = new THREE.PlaneGeometry(CANOPY_W, CANOPY_H, COLS, ROWS);
-    const canopyMat = new THREE.MeshBasicMaterial({
+    // graded into the camp's light (ARPIT: the colours should feel as if it belongs to the camp): the
+    // photo is crisp and studio-bright, the camp is a hazy golden sunset with the sun low on the left
+    // behind the glider, so the cloth is seen against the light: a little less saturated, warmer and
+    // darker, glowing where the sun shines through it, brighter on the sun's side, softened by the
+    // valley's haze while it is far off
+    const canopyMat = new THREE.ShaderMaterial({
       transparent: true,
-      alphaTest: 0.02,
       side: THREE.DoubleSide,
+      uniforms: {
+        map: { value: null as THREE.Texture | null },
+        haze: { value: 0 },
+        hazeColor: { value: new THREE.Color(0xe99a6b) },
+        sunColor: { value: new THREE.Color(0xfbcd7d) },
+      },
+      vertexShader: /* glsl */ `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform sampler2D map;
+        uniform float haze;
+        uniform vec3 hazeColor, sunColor;
+        varying vec2 vUv;
+        void main() {
+          vec4 tex = texture2D(map, vUv);
+          if (tex.a < 0.02) discard;
+          vec3 c = tex.rgb;
+          float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+          c = mix(vec3(l), c, 0.8);
+          // against the light: warmer and darker, the white panels a warm cream
+          c *= vec3(1.0, 0.84, 0.66) * 0.86;
+          // the sun through the cloth: the top of the canopy and the sun's side glow
+          float glow = smoothstep(0.25, 1.0, vUv.y) * 0.55 + (1.0 - vUv.x) * 0.25;
+          c += c * sunColor * glow * 0.45;
+          c *= mix(1.08, 0.88, vUv.x);
+          // the valley's haze, and a little everywhere so the shadows are never black
+          c = mix(c, hazeColor * 0.75, 0.06 + 0.55 * haze);
+          gl_FragColor = vec4(c, tex.a);
+          #include <colorspace_fragment>
+        }`,
     });
     new THREE.TextureLoader().load("/camp/canopy.webp", (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      canopyMat.map = texture;
-      canopyMat.needsUpdate = true;
+      canopyMat.uniforms.map.value = texture;
     });
     const canopyMesh = new THREE.Mesh(canopyGeo, canopyMat);
     canopyMesh.frustumCulled = false;
@@ -241,6 +278,11 @@ export function ParagliderFlight() {
         pilot.position.x = 0.08 * Math.sin(time * 0.9 - 1.2) * calm;
         pilot.material.rotation = -0.05 * Math.sin(time * 0.9 - 1.2) * calm;
       }
+      // far off, the haze of the valley lies over it; close by it is clear
+      canopyMat.uniforms.haze.value = Math.min(
+        1,
+        Math.max(0, (camera.position.z - paraglider.position.z - 8) / 45),
+      );
       breathe(time);
       placeLines(time);
       renderer.render(scene, camera);
@@ -279,7 +321,7 @@ export function ParagliderFlight() {
     return () => {
       cancelAnimationFrame(frame);
       canopyGeo.dispose();
-      canopyMat.map?.dispose();
+      canopyMat.uniforms.map.value?.dispose();
       canopyMat.dispose();
       window.removeEventListener("resize", handleResize);
       scene.traverse((object) => {
